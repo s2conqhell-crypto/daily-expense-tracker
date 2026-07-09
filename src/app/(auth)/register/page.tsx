@@ -1,0 +1,124 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/contexts/AuthContext';
+import { Button, Input, Label, Card, CardContent } from '@/components/ui';
+import { Wallet, Eye, EyeOff, Loader2 } from 'lucide-react';
+import { registerSchema, type RegisterFormData } from '@/lib/validations';
+import toast from 'react-hot-toast';
+
+export default function RegisterPage() {
+  const { user, signUp, error, clearError } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (user) router.push('/dashboard');
+  }, [user, router]);
+  const [form, setForm] = useState<RegisterFormData & { confirmPassword: string }>({
+    name: '', email: '', password: '', confirmPassword: '',
+  });
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState<Partial<Record<string, string>>>({});
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrors({});
+    clearError();
+
+    const result = registerSchema.safeParse(form);
+    if (!result.success) {
+      const fieldErrors: Record<string, string> = {};
+      result.error.issues.forEach((err) => {
+        const field = err.path[0] as string;
+        fieldErrors[field] = err.message;
+      });
+      setErrors(fieldErrors);
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await signUp(form.email, form.password, form.name);
+      toast.success('Account created! Check your email for verification.');
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Registration failed');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen flex items-center justify-center px-4 py-12">
+      <div className="w-full max-w-md space-y-8 animate-fade-in">
+        <div className="text-center space-y-2">
+          <div className="flex justify-center mb-4">
+            <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center shadow-lg shadow-primary/25">
+              <Wallet className="h-8 w-8 text-white" />
+            </div>
+          </div>
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
+            Create Account
+          </h1>
+          <p className="text-muted-foreground">Start tracking your finances today</p>
+        </div>
+
+        <Card className="border-0 shadow-xl shadow-primary/5">
+          <CardContent className="p-6 space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="name">Full Name</Label>
+                <Input id="name" placeholder="John Doe" value={form.name}
+                  onChange={(e) => setForm({ ...form, name: e.target.value })} />
+                {errors.name && <p className="text-xs text-destructive">{errors.name}</p>}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input id="email" type="email" placeholder="you@example.com" value={form.email}
+                  onChange={(e) => setForm({ ...form, email: e.target.value })} />
+                {errors.email && <p className="text-xs text-destructive">{errors.email}</p>}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="password">Password</Label>
+                <div className="relative">
+                  <Input id="password" type={showPassword ? 'text' : 'password'} placeholder="••••••••"
+                    value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} />
+                  <button type="button" onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
+                {errors.password && <p className="text-xs text-destructive">{errors.password}</p>}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="confirmPassword">Confirm Password</Label>
+                <Input id="confirmPassword" type="password" placeholder="••••••••"
+                  value={form.confirmPassword} onChange={(e) => setForm({ ...form, confirmPassword: e.target.value })} />
+                {errors.confirmPassword && <p className="text-xs text-destructive">{errors.confirmPassword}</p>}
+              </div>
+
+              {error && (
+                <div className="rounded-lg bg-destructive/10 p-3 text-sm text-destructive">{error}</div>
+              )}
+
+              <Button type="submit" className="w-full h-11" disabled={loading}>
+                {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                Create Account
+              </Button>
+            </form>
+
+            <p className="text-center text-sm text-muted-foreground">
+              Already have an account?{' '}
+              <Link href="/login" className="text-primary font-medium hover:underline">Sign in</Link>
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+}
