@@ -353,36 +353,37 @@ export default function IncomePage() {
         </Card>
       )}
 
-      <TransactionDialog type="income" open={dialogOpen} onOpenChange={setDialogOpen}
-        onSubmit={async (data) => { try { await addIncome(data as any); } catch {} }} />
-      {editingIncome && (
-        <TransactionDialog type="income" open={true} onOpenChange={() => setEditingId(null)}
-          defaultValues={{
-            amount: String(editingIncome.amount), description: editingIncome.description,
-            notes: editingIncome.notes || '', source: editingIncome.source,
-            incomeDate: toDate(editingIncome.incomeDate).toISOString().split('T')[0],
-            paymentMethod: editingIncome.paymentMethod, isRecurring: editingIncome.isRecurring,
-            recurringInterval: editingIncome.recurringInterval || 'monthly',
-          }}
-          onSubmit={handleEditSubmit}
-        />
-      )}
+    </div>
+    </div>
+    
+    <TransactionDialog type="income" open={dialogOpen} onOpenChange={setDialogOpen}
+      onSubmit={async (data) => { try { await addIncome(data as any); } catch {} }} />
+    {editingIncome && (
+      <TransactionDialog type="income" open={true} onOpenChange={() => setEditingId(null)}
+        defaultValues={{
+          amount: String(editingIncome.amount), description: editingIncome.description,
+          notes: editingIncome.notes || '', source: editingIncome.source,
+          incomeDate: toDate(editingIncome.incomeDate).toISOString().split('T')[0],
+          paymentMethod: editingIncome.paymentMethod, isRecurring: editingIncome.isRecurring,
+          recurringInterval: editingIncome.recurringInterval || 'monthly',
+        }}
+        onSubmit={handleEditSubmit}
+      />
+    )}
 
-      {deletingId && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <Card className="w-80 mx-4">
-            <CardContent className="p-6 text-center space-y-4">
-              <p className="text-sm text-muted-foreground">Are you sure you want to delete this income entry?</p>
-              <div className="flex gap-2 justify-center">
-                <Button variant="outline" onClick={() => setDeletingId(null)}>Cancel</Button>
-                <Button variant="destructive" onClick={() => handleDelete(deletingId)}>Delete</Button>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
-    </div>
-    </div>
+    {deletingId && (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+        <Card className="w-80 mx-4">
+          <CardContent className="p-6 text-center space-y-4">
+            <p className="text-sm text-muted-foreground">Are you sure you want to delete this income entry?</p>
+            <div className="flex gap-2 justify-center">
+              <Button variant="outline" onClick={() => setDeletingId(null)}>Cancel</Button>
+              <Button variant="destructive" onClick={() => handleDelete(deletingId)}>Delete</Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    )}
     </>
   );
 }

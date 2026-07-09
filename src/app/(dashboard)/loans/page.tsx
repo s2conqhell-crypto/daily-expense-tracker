@@ -250,15 +250,15 @@ export default function LoansPage() {
           </div>
         )}
       </div>
-
-      <LoanDialog
-        open={dialogOpen}
-        onOpenChange={(o) => { if (!o) { setDialogOpen(false); setEditing(null); } }}
-        onSubmit={handleSubmit}
-        defaultValues={editing}
-      />
     </div>
     </div>
+    
+    <LoanDialog
+      open={dialogOpen}
+      onOpenChange={(o) => { if (!o) { setDialogOpen(false); setEditing(null); } }}
+      onSubmit={handleSubmit}
+      defaultValues={editing}
+    />
     </>
   );
 }

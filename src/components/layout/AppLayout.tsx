@@ -5,6 +5,8 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { Sidebar } from './Sidebar';
 import { Header } from './Header';
 import { BottomNav } from './BottomNav';
+import { MobileHeader } from '@/components/mobile/MobileHeader';
+import { MobileBottomNav } from '@/components/mobile/MobileBottomNav';
 import { useIsMobile } from '@/hooks/useMediaQuery';
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
@@ -13,10 +15,17 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-dvh bg-background">
-      <Sidebar />
-      <Header />
+      {/* Desktop components */}
+      {!isMobile && <Sidebar />}
+      {!isMobile && <Header />}
+      {!isMobile && <BottomNav />}
+
+      {/* Mobile components */}
+      {isMobile && <MobileHeader />}
+      {isMobile && <MobileBottomNav />}
+
       <div className={`${!isMobile ? 'ml-[240px]' : ''} transition-all duration-300`}>
-        <main className={`${isMobile ? 'pb-[calc(64px+env(safe-area-inset-bottom,0px))] pt-[calc(56px+env(safe-area-inset-top,0px))]' : 'pt-6'} min-h-dvh`}>
+        <main className={`${isMobile ? 'pt-0' : 'pt-6'} min-h-dvh`}>
           <AnimatePresence mode="wait">
             <motion.div
               key={pathname}
@@ -30,7 +39,6 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
           </AnimatePresence>
         </main>
       </div>
-      {isMobile && <BottomNav />}
     </div>
   );
 }

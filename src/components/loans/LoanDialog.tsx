@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { Button, Input, Label, Dialog, DialogContent, DialogHeader, DialogFooter, DialogTitle, DialogDescription } from '@/components/ui';
+import { Button, Input, Label } from '@/components/ui';
+import { MobileFormSheet } from '@/components/mobile/MobileFormSheet';
 import type { Loan } from '@/types';
 import { toDate } from '@/utils/helpers';
 import toast from 'react-hot-toast';
@@ -121,70 +122,65 @@ export function LoanDialog({ open, onOpenChange, onSubmit, defaultValues }: Loan
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[480px]">
-        <DialogHeader>
-          <DialogTitle>{defaultValues ? 'Edit Loan' : 'Add Loan / EMI'}</DialogTitle>
-          <DialogDescription>Track your loans and EMIs.</DialogDescription>
-        </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="name">Loan Name</Label>
-            <Input id="name" placeholder="Home Loan, Car Loan, ..." value={form.name as string} onChange={(e) => set('name', e.target.value)} required />
-          </div>
+    <MobileFormSheet
+      open={open}
+      onOpenChange={onOpenChange}
+      title={defaultValues ? 'Edit Loan' : 'Add Loan / EMI'}
+      description="Track your loans and EMIs."
+      loading={loading}
+      submitLabel={loading ? 'Saving...' : defaultValues ? 'Update' : 'Add Loan'}
+      onSubmit={handleSubmit}
+    >
+      <div className="space-y-2">
+        <Label htmlFor="name">Loan Name</Label>
+        <Input id="name" placeholder="Home Loan, Car Loan, ..." value={form.name as string} onChange={(e) => set('name', e.target.value)} required />
+      </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-2">
-              <Label htmlFor="principalAmount">Principal Amount</Label>
-              <Input id="principalAmount" type="number" step="0.01" min="0" placeholder="0.00" value={form.principalAmount as string} onChange={(e) => set('principalAmount', e.target.value)} required />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="interestRate">Interest Rate (%)</Label>
-              <Input id="interestRate" type="number" step="0.01" min="0" placeholder="0" value={form.interestRate as string} onChange={(e) => set('interestRate', e.target.value)} />
-            </div>
-          </div>
+      <div className="grid grid-cols-2 gap-3">
+        <div className="space-y-2">
+          <Label htmlFor="principalAmount">Principal Amount</Label>
+          <Input id="principalAmount" type="number" step="0.01" min="0" placeholder="0.00" value={form.principalAmount as string} onChange={(e) => set('principalAmount', e.target.value)} required />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="interestRate">Interest Rate (%)</Label>
+          <Input id="interestRate" type="number" step="0.01" min="0" placeholder="0" value={form.interestRate as string} onChange={(e) => set('interestRate', e.target.value)} />
+        </div>
+      </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-2">
-              <Label htmlFor="emiAmount">EMI Amount</Label>
-              <Input id="emiAmount" type="number" step="0.01" min="0" placeholder={computedEMI ? computedEMI.toFixed(2) : '0.00'} value={form.emiAmount as string} onChange={(e) => set('emiAmount', e.target.value)} />
-              {computedEMI > 0 && !form.emiAmount && (
-                <p className="text-[10px] text-muted-foreground">Calculated: {computedEMI.toFixed(2)}</p>
-              )}
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="totalEmi">Total EMI</Label>
-              <Input id="totalEmi" type="number" min="1" placeholder="60" value={form.totalEmi as string} onChange={(e) => set('totalEmi', e.target.value)} required />
-            </div>
-          </div>
+      <div className="grid grid-cols-2 gap-3">
+        <div className="space-y-2">
+          <Label htmlFor="emiAmount">EMI Amount</Label>
+          <Input id="emiAmount" type="number" step="0.01" min="0" placeholder={computedEMI ? computedEMI.toFixed(2) : '0.00'} value={form.emiAmount as string} onChange={(e) => set('emiAmount', e.target.value)} />
+          {computedEMI > 0 && !form.emiAmount && (
+            <p className="text-[10px] text-muted-foreground">Calculated: {computedEMI.toFixed(2)}</p>
+          )}
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="totalEmi">Total EMI</Label>
+          <Input id="totalEmi" type="number" min="1" placeholder="60" value={form.totalEmi as string} onChange={(e) => set('totalEmi', e.target.value)} required />
+        </div>
+      </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-2">
-              <Label htmlFor="outstandingBalance">Outstanding Balance</Label>
-              <Input id="outstandingBalance" type="number" step="0.01" min="0" placeholder="Same as principal" value={form.outstandingBalance as string} onChange={(e) => set('outstandingBalance', e.target.value)} />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="startDate">Start Date</Label>
-              <Input id="startDate" type="date" value={form.startDate as string} onChange={(e) => set('startDate', e.target.value)} required />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="emiDay">EMI Due Day</Label>
-              <Input id="emiDay" type="number" min="1" max="31" placeholder="Day of month" value={form.emiDay as string} onChange={(e) => set('emiDay', e.target.value)} />
-              <p className="text-[10px] text-muted-foreground">Leave empty to use start date day ({new Date(form.startDate).getDate() || '?'})</p>
-            </div>
-          </div>
+      <div className="grid grid-cols-2 gap-3">
+        <div className="space-y-2">
+          <Label htmlFor="outstandingBalance">Outstanding Balance</Label>
+          <Input id="outstandingBalance" type="number" step="0.01" min="0" placeholder="Same as principal" value={form.outstandingBalance as string} onChange={(e) => set('outstandingBalance', e.target.value)} />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="startDate">Start Date</Label>
+          <Input id="startDate" type="date" value={form.startDate as string} onChange={(e) => set('startDate', e.target.value)} required />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="emiDay">EMI Due Day</Label>
+          <Input id="emiDay" type="number" min="1" max="31" placeholder="Day of month" value={form.emiDay as string} onChange={(e) => set('emiDay', e.target.value)} />
+          <p className="text-[10px] text-muted-foreground">Leave empty to use start date day ({new Date(form.startDate).getDate() || '?'})</p>
+        </div>
+      </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="notes">Notes (optional)</Label>
-            <Input id="notes" placeholder="Add a note..." value={form.notes as string} onChange={(e) => set('notes', e.target.value)} />
-          </div>
-
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-            <Button type="submit" disabled={loading}>{loading ? 'Saving...' : defaultValues ? 'Update' : 'Add Loan'}</Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
+      <div className="space-y-2">
+        <Label htmlFor="notes">Notes (optional)</Label>
+        <Input id="notes" placeholder="Add a note..." value={form.notes as string} onChange={(e) => set('notes', e.target.value)} />
+      </div>
+    </MobileFormSheet>
   );
 }

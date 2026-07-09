@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Button, Input, Label, Select, SelectTrigger, SelectValue, SelectContent, SelectItem, Dialog, DialogContent, DialogHeader, DialogFooter, DialogTitle, DialogDescription } from '@/components/ui';
+import { Button, Input, Label, Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui';
+import { MobileFormSheet } from '@/components/mobile/MobileFormSheet';
 import { EXPENSE_CATEGORIES, INCOME_SOURCES, PAYMENT_METHODS } from '@/constants';
 import type { RecurringTransaction } from '@/types';
 import { toDate } from '@/utils/helpers';
@@ -69,96 +70,91 @@ export function RecurringRuleDialog({ open, onOpenChange, onSubmit, defaultValue
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[480px]">
-        <DialogHeader>
-          <DialogTitle>{defaultValues ? 'Edit Recurring Rule' : 'New Recurring Rule'}</DialogTitle>
-          <DialogDescription>Set up an automatically repeating transaction.</DialogDescription>
-        </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label>Type</Label>
-            <Select value={form.type as string} onValueChange={(v) => set('type', v)}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="expense">Expense</SelectItem>
-                <SelectItem value="income">Income</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+    <MobileFormSheet
+      open={open}
+      onOpenChange={onOpenChange}
+      title={defaultValues ? 'Edit Recurring Rule' : 'New Recurring Rule'}
+      description="Set up an automatically repeating transaction."
+      loading={loading}
+      submitLabel={loading ? 'Saving...' : defaultValues ? 'Update' : 'Create Rule'}
+      onSubmit={handleSubmit}
+    >
+      <div className="space-y-2">
+        <Label>Type</Label>
+        <Select value={form.type as string} onValueChange={(v) => set('type', v)}>
+          <SelectTrigger><SelectValue /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="expense">Expense</SelectItem>
+            <SelectItem value="income">Income</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="amount">Amount</Label>
-            <Input id="amount" type="number" step="0.01" min="0" placeholder="0.00" value={form.amount as string} onChange={(e) => set('amount', e.target.value)} required />
-          </div>
+      <div className="space-y-2">
+        <Label htmlFor="amount">Amount</Label>
+        <Input id="amount" type="number" step="0.01" min="0" placeholder="0.00" value={form.amount as string} onChange={(e) => set('amount', e.target.value)} required />
+      </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
-            <Input id="description" placeholder="What is this for?" value={form.description as string} onChange={(e) => set('description', e.target.value)} required />
-          </div>
+      <div className="space-y-2">
+        <Label htmlFor="description">Description</Label>
+        <Input id="description" placeholder="What is this for?" value={form.description as string} onChange={(e) => set('description', e.target.value)} required />
+      </div>
 
-          {form.type === 'expense' ? (
-            <div className="space-y-2">
-              <Label>Category</Label>
-              <Select value={form.category as string} onValueChange={(v) => set('category', v)}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {EXPENSE_CATEGORIES.map((cat) => (<SelectItem key={cat} value={cat}>{cat}</SelectItem>))}
-                </SelectContent>
-              </Select>
-            </div>
-          ) : (
-            <div className="space-y-2">
-              <Label>Source</Label>
-              <Select value={form.source as string} onValueChange={(v) => set('source', v)}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {INCOME_SOURCES.map((src) => (<SelectItem key={src} value={src}>{src}</SelectItem>))}
-                </SelectContent>
-              </Select>
-            </div>
-          )}
+      {form.type === 'expense' ? (
+        <div className="space-y-2">
+          <Label>Category</Label>
+          <Select value={form.category as string} onValueChange={(v) => set('category', v)}>
+            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectContent>
+              {EXPENSE_CATEGORIES.map((cat) => (<SelectItem key={cat} value={cat}>{cat}</SelectItem>))}
+            </SelectContent>
+          </Select>
+        </div>
+      ) : (
+        <div className="space-y-2">
+          <Label>Source</Label>
+          <Select value={form.source as string} onValueChange={(v) => set('source', v)}>
+            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectContent>
+              {INCOME_SOURCES.map((src) => (<SelectItem key={src} value={src}>{src}</SelectItem>))}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
 
-          <div className="space-y-2">
-            <Label>Payment Method</Label>
-            <Select value={form.paymentMethod as string} onValueChange={(v) => set('paymentMethod', v)}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>
-                {PAYMENT_METHODS.map((pm) => (<SelectItem key={pm} value={pm}>{pm}</SelectItem>))}
-              </SelectContent>
-            </Select>
-          </div>
+      <div className="space-y-2">
+        <Label>Payment Method</Label>
+        <Select value={form.paymentMethod as string} onValueChange={(v) => set('paymentMethod', v)}>
+          <SelectTrigger><SelectValue /></SelectTrigger>
+          <SelectContent>
+            {PAYMENT_METHODS.map((pm) => (<SelectItem key={pm} value={pm}>{pm}</SelectItem>))}
+          </SelectContent>
+        </Select>
+      </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-2">
-              <Label>Interval</Label>
-              <Select value={form.interval as string} onValueChange={(v) => set('interval', v)}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="daily">Daily</SelectItem>
-                  <SelectItem value="weekly">Weekly</SelectItem>
-                  <SelectItem value="monthly">Monthly</SelectItem>
-                  <SelectItem value="yearly">Yearly</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="nextExecution">Next Execution</Label>
-              <Input id="nextExecution" type="date" value={form.nextExecution as string} onChange={(e) => set('nextExecution', e.target.value)} required />
-            </div>
-          </div>
+      <div className="grid grid-cols-2 gap-3">
+        <div className="space-y-2">
+          <Label>Interval</Label>
+          <Select value={form.interval as string} onValueChange={(v) => set('interval', v)}>
+            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="daily">Daily</SelectItem>
+              <SelectItem value="weekly">Weekly</SelectItem>
+              <SelectItem value="monthly">Monthly</SelectItem>
+              <SelectItem value="yearly">Yearly</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="nextExecution">Next Execution</Label>
+          <Input id="nextExecution" type="date" value={form.nextExecution as string} onChange={(e) => set('nextExecution', e.target.value)} required />
+        </div>
+      </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="notes">Notes (optional)</Label>
-            <Input id="notes" placeholder="Add a note..." value={form.notes as string} onChange={(e) => set('notes', e.target.value)} />
-          </div>
-
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-            <Button type="submit" disabled={loading}>{loading ? 'Saving...' : defaultValues ? 'Update' : 'Create Rule'}</Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
+      <div className="space-y-2">
+        <Label htmlFor="notes">Notes (optional)</Label>
+        <Input id="notes" placeholder="Add a note..." value={form.notes as string} onChange={(e) => set('notes', e.target.value)} />
+      </div>
+    </MobileFormSheet>
   );
 }

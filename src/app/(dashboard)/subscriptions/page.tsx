@@ -195,15 +195,15 @@ export default function SubscriptionsPage() {
           </div>
         )}
       </div>
-
-      <SubscriptionDialog
-        open={dialogOpen}
-        onOpenChange={(o) => { if (!o) { setDialogOpen(false); setEditing(null); } }}
-        onSubmit={handleSubmit}
-        defaultValues={editing}
-      />
     </div>
     </div>
+    
+    <SubscriptionDialog
+      open={dialogOpen}
+      onOpenChange={(o) => { if (!o) { setDialogOpen(false); setEditing(null); } }}
+      onSubmit={handleSubmit}
+      defaultValues={editing}
+    />
     </>
   );
 }

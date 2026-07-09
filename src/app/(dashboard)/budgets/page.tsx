@@ -267,42 +267,42 @@ export default function BudgetsPage() {
           })}
         </div>
       )}
-
-      <MobileFormSheet
-        open={showCreate}
-        onOpenChange={setShowCreate}
-        title="Create Budget"
-        description="Set a monthly spending limit for a category"
-        submitLabel={creating ? 'Creating...' : 'Create Budget'}
-        loading={creating}
-        asForm={false}
-        footer={
-          <div className="flex gap-2">
-            <Button variant="outline" className="flex-1 h-11 text-sm" onClick={() => setShowCreate(false)}>Cancel</Button>
-            <Button className="flex-1 h-11 text-sm" onClick={handleCreateBudget} disabled={creating || !newBudget.category || !newBudget.amount}>
-              {creating ? 'Creating...' : 'Create Budget'}
-            </Button>
-          </div>
-        }
-      >
-        <div className="space-y-2">
-          <Label>Category</Label>
-          <Select value={newBudget.category} onValueChange={(v) => setNewBudget({ ...newBudget, category: v })}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select category" />
-            </SelectTrigger>
-            <SelectContent>
-              {EXPENSE_CATEGORIES.map((cat) => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="space-y-2">
-          <Label>Monthly Limit</Label>
-          <Input type="number" placeholder="Amount" value={newBudget.amount} onChange={(e) => setNewBudget({ ...newBudget, amount: e.target.value })} />
-        </div>
-      </MobileFormSheet>
     </div>
     </div>
+    
+    <MobileFormSheet
+      open={showCreate}
+      onOpenChange={setShowCreate}
+      title="Create Budget"
+      description="Set a monthly spending limit for a category"
+      submitLabel={creating ? 'Creating...' : 'Create Budget'}
+      loading={creating}
+      asForm={false}
+      footer={
+        <div className="flex gap-2">
+          <Button variant="outline" className="flex-1 h-11 text-sm" onClick={() => setShowCreate(false)}>Cancel</Button>
+          <Button className="flex-1 h-11 text-sm" onClick={handleCreateBudget} disabled={creating || !newBudget.category || !newBudget.amount}>
+            {creating ? 'Creating...' : 'Create Budget'}
+          </Button>
+        </div>
+      }
+    >
+      <div className="space-y-2">
+        <Label>Category</Label>
+        <Select value={newBudget.category} onValueChange={(v) => setNewBudget({ ...newBudget, category: v })}>
+          <SelectTrigger>
+            <SelectValue placeholder="Select category" />
+          </SelectTrigger>
+          <SelectContent>
+            {EXPENSE_CATEGORIES.map((cat) => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
+          </SelectContent>
+        </Select>
+      </div>
+      <div className="space-y-2">
+        <Label>Monthly Limit</Label>
+        <Input type="number" placeholder="Amount" value={newBudget.amount} onChange={(e) => setNewBudget({ ...newBudget, amount: e.target.value })} />
+      </div>
+    </MobileFormSheet>
     </>
   );
 }

@@ -226,15 +226,15 @@ export default function RecurringPage() {
           </div>
         )}
       </div>
-
-      <RecurringRuleDialog
-        open={dialogOpen}
-        onOpenChange={(o) => { if (!o) { setDialogOpen(false); setEditing(null); } }}
-        onSubmit={handleSubmit}
-        defaultValues={editing}
-      />
     </div>
     </div>
+    
+    <RecurringRuleDialog
+      open={dialogOpen}
+      onOpenChange={(o) => { if (!o) { setDialogOpen(false); setEditing(null); } }}
+      onSubmit={handleSubmit}
+      defaultValues={editing}
+    />
     </>
   );
 }

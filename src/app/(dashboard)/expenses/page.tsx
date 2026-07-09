@@ -477,38 +477,38 @@ export default function ExpensesPage() {
           </div>
         </div>
       )}
-
-      {/* Dialogs */}
-      <TransactionDialog type="expense" open={dialogOpen} onOpenChange={setDialogOpen}
-        onSubmit={async (data) => { try { await addExpense(data as any); } catch {} }} />
-      {editingExpense && (
-        <TransactionDialog
-          type="expense" open={true} onOpenChange={() => setEditingId(null)}
-          defaultValues={{
-            amount: String(editingExpense.amount), description: editingExpense.description,
-            notes: editingExpense.notes || '', category: editingExpense.category,
-            expenseDate: toDate(editingExpense.expenseDate).toISOString().split('T')[0],
-            paymentMethod: editingExpense.paymentMethod, isRecurring: editingExpense.isRecurring,
-            recurringInterval: editingExpense.recurringInterval || 'monthly',
-          }}
-          onSubmit={handleEditSubmit}
-        />
-      )}
-      {deletingId && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <Card className="w-80 mx-4">
-            <CardContent className="p-6 text-center space-y-4">
-              <p className="text-sm text-muted-foreground">Are you sure you want to delete this expense?</p>
-              <div className="flex gap-2 justify-center">
-                <Button variant="outline" onClick={() => setDeletingId(null)}>Cancel</Button>
-                <Button variant="destructive" onClick={() => handleDelete(deletingId)}>Delete</Button>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
     </div>
     </div>
+    
+    {/* Dialogs */}
+    <TransactionDialog type="expense" open={dialogOpen} onOpenChange={setDialogOpen}
+      onSubmit={async (data) => { try { await addExpense(data as any); } catch {} }} />
+    {editingExpense && (
+      <TransactionDialog
+        type="expense" open={true} onOpenChange={() => setEditingId(null)}
+        defaultValues={{
+          amount: String(editingExpense.amount), description: editingExpense.description,
+          notes: editingExpense.notes || '', category: editingExpense.category,
+          expenseDate: toDate(editingExpense.expenseDate).toISOString().split('T')[0],
+          paymentMethod: editingExpense.paymentMethod, isRecurring: editingExpense.isRecurring,
+          recurringInterval: editingExpense.recurringInterval || 'monthly',
+        }}
+        onSubmit={handleEditSubmit}
+      />
+    )}
+    {deletingId && (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+        <Card className="w-80 mx-4">
+          <CardContent className="p-6 text-center space-y-4">
+            <p className="text-sm text-muted-foreground">Are you sure you want to delete this expense?</p>
+            <div className="flex gap-2 justify-center">
+              <Button variant="outline" onClick={() => setDeletingId(null)}>Cancel</Button>
+              <Button variant="destructive" onClick={() => handleDelete(deletingId)}>Delete</Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    )}
     </>
   );
 }

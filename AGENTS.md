@@ -113,6 +113,33 @@ Made the entire application responsive across all screen sizes (320px–1920px) 
 - `.txt-h1` through `.txt-label` — iPhone-native typography scale
 - `.page-padding`, `.page-container`, `.page-space` — consistent page layout
 
+### Mobile Redesign
+Created separate mobile-specific layouts (LG screen and below) for all 9 dashboard pages while preserving desktop unchanged behind `hidden lg:block`.
+
+#### Mobile Components Created
+- `src/components/mobile/` — MobileHeader, MobileBottomNav (floating rounded), MobileFAB (animated + bottom sheet with 7 quick actions), MobileBalanceCard, MobileQuickStats, MobileTransactionItem (swipeable), MobileDashboard, MobileFormSheet (responsive bottom sheet — Sheet on mobile, Dialog on desktop)
+
+#### Pages Converted (9)
+- Dashboard, Expenses, Income, Budgets, Savings, Loans, Subscriptions, Recurring, Analytics
+
+#### Forms Converted (6)
+- TransactionDialog (expense/income), LoanDialog, SubscriptionDialog, RecurringRuleDialog, Budget inline dialog, Savings inline dialog — all wrapped in MobileFormSheet
+
+### Fixed: Dialog Portal Clash — 8 Pages
+All dashboard pages had dialog components rendered **inside** the `hidden lg:block` desktop wrapper. Radix dialogs use `createPortal` to render at the body level (escaping `display: none` on parent), so both the mobile `Sheet` AND desktop `Dialog` rendered simultaneously on iPhone — creating a broken overlay.
+
+**Fix:** Moved all dialogs/sheets to be direct children of the fragment root (`<>`), outside both `lg:hidden` and `hidden lg:block` wrappers. Each dialog now renders once regardless of viewport.
+
+**Pages fixed:**
+- `subscriptions/page.tsx` — SubscriptionDialog
+- `loans/page.tsx` — LoanDialog
+- `recurring/page.tsx` — RecurringRuleDialog
+- `expenses/page.tsx` — TransactionDialog + delete modal
+- `income/page.tsx` — TransactionDialog + delete modal
+- `budgets/page.tsx` — MobileFormSheet
+- `savings/page.tsx` — MobileFormSheet + delete modal
+- `dashboard/page.tsx` — Verified already correct
+
 ### Key Decisions
 - **`toDate()` helper** (`src/utils/helpers.ts`): Universal date converter that handles: `null`/`undefined` → `new Date()`, `Date` → return as-is, object with `toDate()` method (Firestore Timestamp) → call `.toDate()`, everything else → `new Date(value)`.
 - **Undefined stripping safety net**: `Object.fromEntries(Object.entries(data).filter(([_, v]) => v !== undefined))` applied to: `loans.add`, `loans.update`, `recurringTransactions.add`, `recurringTransactions.update`, `subscriptions.add`, `subscriptions.update`, and `notifications.add`.
@@ -135,15 +162,24 @@ Made the entire application responsive across all screen sizes (320px–1920px) 
 - `src/components/shared/NotificationBell.tsx` — Visual refinements, dropdown styling, empty state
 - `src/components/ui/dialog.tsx` — Max-height, overflow, mobile margin for small screens
 - `src/components/ui/input.tsx` — iOS zoom fix (text-[16px]), h-11 touch target
-- `src/components/ui/sheet.tsx` — Radix sheet component (used by Header mobile nav + BottomNav More drawer)
-- `src/app/(dashboard)/dashboard/page.tsx` — min-h-dvh, page-container, visual redesign
-- `src/app/(dashboard)/expenses/page.tsx` — Hidden buttons fix, page-container, pagination touch targets
-- `src/app/(dashboard)/income/page.tsx` — Hidden buttons fix, page-container
-- `src/app/(dashboard)/budgets/page.tsx` — Hidden buttons fix, page-container
-- `src/app/(dashboard)/savings/page.tsx` — Hidden buttons fix, page-container
-- `src/app/(dashboard)/loans/page.tsx` — Hidden buttons fix, page-container, currency fix
-- `src/app/(dashboard)/subscriptions/page.tsx` — Hidden buttons fix, page-container, currency fix
-- `src/app/(dashboard)/recurring/page.tsx` — Currency fix, always-visible buttons, page-container
+- `src/components/ui/sheet.tsx` — Radix sheet component (used by Header mobile nav + BottomNav More drawer + mobile form sheets)
+- `src/components/mobile/MobileHeader.tsx` — Compact 56px header with logo + notification bell + avatar
+- `src/components/mobile/MobileBottomNav.tsx` — Floating rounded nav (Home/Expenses/Income/Budget/More) with `backdrop-blur-2xl`
+- `src/components/mobile/MobileFAB.tsx` — Animated + button → bottom sheet with 7 quick action choices
+- `src/components/mobile/MobileBalanceCard.tsx` — Compact gradient balance card with 3 mini stats
+- `src/components/mobile/MobileQuickStats.tsx` — 2×2 grid (Income/Expenses/Savings Rate/Balance)
+- `src/components/mobile/MobileTransactionItem.tsx` — Swipeable card with Framer Motion drag
+- `src/components/mobile/MobileDashboard.tsx` — Full mobile dashboard with greeting, balance, stats, chart, transactions, budget, overview grid, goals, FAB
+- `src/components/mobile/MobileFormSheet.tsx` — Responsive bottom sheet wrapper — Dialog on desktop, Sheet on mobile with sticky save
+- `src/components/mobile/index.ts` — Exports all mobile components
+- `src/app/(dashboard)/dashboard/page.tsx` — min-h-dvh, page-container, visual redesign, MobileDashboard
+- `src/app/(dashboard)/expenses/page.tsx` — Hidden buttons fix, page-container, pagination touch targets, dialog portal fix
+- `src/app/(dashboard)/income/page.tsx` — Hidden buttons fix, page-container, dialog portal fix
+- `src/app/(dashboard)/budgets/page.tsx` — Hidden buttons fix, page-container, dialog portal fix
+- `src/app/(dashboard)/savings/page.tsx` — Hidden buttons fix, page-container, dialog portal fix
+- `src/app/(dashboard)/loans/page.tsx` — Hidden buttons fix, page-container, currency fix, dialog portal fix
+- `src/app/(dashboard)/subscriptions/page.tsx` — Hidden buttons fix, page-container, currency fix, dialog portal fix
+- `src/app/(dashboard)/recurring/page.tsx` — Currency fix, always-visible buttons, page-container, dialog portal fix
 - `src/app/(dashboard)/analytics/page.tsx` — page-container
 - `src/app/(auth)/login/page.tsx` — iOS zoom fix, autoComplete
 - `src/app/(auth)/register/page.tsx` — iOS zoom fix, autoComplete
@@ -166,7 +202,7 @@ Made the entire application responsive across all screen sizes (320px–1920px) 
 - `package.json` — generate-icons script, prebuild hook
 
 ### Next Steps
-- Test on physical iPhone devices (SE, 13, 15 Pro, 16 Pro Max) for safe areas, splash screens, standalone mode
+- Test on physical iPhone devices (SE, 13, 15 Pro, 16 Pro Max) for dialog fix, safe areas, splash screens, standalone mode
 - Test install prompt on Chrome Android
 - Test offline support via service worker
 - Consider prefers-reduced-motion support

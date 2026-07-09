@@ -335,97 +335,97 @@ export default function SavingsPage() {
           )}
         </>
       )}
-
-      {/* Create Goal Sheet */}
-      <MobileFormSheet
-        open={showCreate}
-        onOpenChange={setShowCreate}
-        title="New Savings Goal"
-        description="Set a new financial goal to save towards"
-        submitLabel={creating ? 'Creating...' : 'Create Goal'}
-        loading={creating}
-        asForm={false}
-        footer={
-          <div className="flex gap-2">
-            <Button variant="outline" className="flex-1 h-11 text-sm" onClick={() => setShowCreate(false)}>Cancel</Button>
-            <Button className="flex-1 h-11 text-sm" onClick={handleCreateGoal} disabled={creating || !newGoal.name || !newGoal.targetAmount || !newGoal.targetDate}>
-              {creating ? 'Creating...' : 'Create Goal'}
-            </Button>
-          </div>
-        }
-      >
-        {/* Presets */}
-        <div>
-          <Label className="mb-2 block">Quick Select</Label>
-          <div className="grid grid-cols-3 gap-2">
-            {PRESET_GOALS.map((preset) => (
-              <button
-                key={preset.name}
-                type="button"
-                onClick={() => selectPreset(preset)}
-                className={`flex flex-col items-center gap-1 rounded-xl p-2.5 text-xs transition-all border ${
-                  newGoal.name === preset.name
-                    ? 'border-primary bg-primary/10 text-primary'
-                    : 'border-border hover:border-primary/30 hover:bg-accent/50'
-                }`}
-              >
-                <span className="text-lg">{preset.icon}</span>
-                <span className="font-medium leading-tight text-center">{preset.name}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-        <div className="space-y-2">
-          <Label>Goal Name</Label>
-          <Input placeholder="e.g. Emergency Fund" value={newGoal.name} onChange={(e) => setNewGoal({ ...newGoal, name: e.target.value })} />
-        </div>
-        <div className="space-y-2">
-          <Label>Description (optional)</Label>
-          <Input placeholder="Why are you saving?" value={newGoal.description} onChange={(e) => setNewGoal({ ...newGoal, description: e.target.value })} />
-        </div>
-        <div className="space-y-2">
-          <Label>Target Amount</Label>
-          <Input type="number" placeholder="Amount" value={newGoal.targetAmount} onChange={(e) => setNewGoal({ ...newGoal, targetAmount: e.target.value })} />
-        </div>
-        <div className="space-y-2">
-          <Label>Target Date</Label>
-          <Input type="date" value={newGoal.targetDate} onChange={(e) => setNewGoal({ ...newGoal, targetDate: e.target.value })} />
-        </div>
-        <div className="grid grid-cols-2 gap-3">
-          <div className="space-y-2">
-            <Label>Monthly Contribution</Label>
-            <Input type="number" placeholder="Amount per month" value={newGoal.monthlyContribution} onChange={(e) => setNewGoal({ ...newGoal, monthlyContribution: e.target.value })} />
-          </div>
-          <div className="space-y-2">
-            <Label>Priority</Label>
-            <Select value={newGoal.priority} onValueChange={(v) => setNewGoal({ ...newGoal, priority: v })}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="high">High</SelectItem>
-                <SelectItem value="medium">Medium</SelectItem>
-                <SelectItem value="low">Low</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-      </MobileFormSheet>
-
-      {/* Delete Confirmation */}
-      {deletingId && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <Card className="w-80 mx-4">
-            <CardContent className="p-6 text-center space-y-4">
-              <p className="text-sm text-muted-foreground">Are you sure you want to delete this savings goal?</p>
-              <div className="flex gap-2 justify-center">
-                <Button variant="outline" onClick={() => setDeletingId(null)}>Cancel</Button>
-                <Button variant="destructive" onClick={() => handleDeleteGoal(deletingId)}>Delete</Button>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
     </div>
     </div>
+    
+    {/* Create Goal Sheet */}
+    <MobileFormSheet
+      open={showCreate}
+      onOpenChange={setShowCreate}
+      title="New Savings Goal"
+      description="Set a new financial goal to save towards"
+      submitLabel={creating ? 'Creating...' : 'Create Goal'}
+      loading={creating}
+      asForm={false}
+      footer={
+        <div className="flex gap-2">
+          <Button variant="outline" className="flex-1 h-11 text-sm" onClick={() => setShowCreate(false)}>Cancel</Button>
+          <Button className="flex-1 h-11 text-sm" onClick={handleCreateGoal} disabled={creating || !newGoal.name || !newGoal.targetAmount || !newGoal.targetDate}>
+            {creating ? 'Creating...' : 'Create Goal'}
+          </Button>
+        </div>
+      }
+    >
+      {/* Presets */}
+      <div>
+        <Label className="mb-2 block">Quick Select</Label>
+        <div className="grid grid-cols-3 gap-2">
+          {PRESET_GOALS.map((preset) => (
+            <button
+              key={preset.name}
+              type="button"
+              onClick={() => selectPreset(preset)}
+              className={`flex flex-col items-center gap-1 rounded-xl p-2.5 text-xs transition-all border ${
+                newGoal.name === preset.name
+                  ? 'border-primary bg-primary/10 text-primary'
+                  : 'border-border hover:border-primary/30 hover:bg-accent/50'
+              }`}
+            >
+              <span className="text-lg">{preset.icon}</span>
+              <span className="font-medium leading-tight text-center">{preset.name}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+      <div className="space-y-2">
+        <Label>Goal Name</Label>
+        <Input placeholder="e.g. Emergency Fund" value={newGoal.name} onChange={(e) => setNewGoal({ ...newGoal, name: e.target.value })} />
+      </div>
+      <div className="space-y-2">
+        <Label>Description (optional)</Label>
+        <Input placeholder="Why are you saving?" value={newGoal.description} onChange={(e) => setNewGoal({ ...newGoal, description: e.target.value })} />
+      </div>
+      <div className="space-y-2">
+        <Label>Target Amount</Label>
+        <Input type="number" placeholder="Amount" value={newGoal.targetAmount} onChange={(e) => setNewGoal({ ...newGoal, targetAmount: e.target.value })} />
+      </div>
+      <div className="space-y-2">
+        <Label>Target Date</Label>
+        <Input type="date" value={newGoal.targetDate} onChange={(e) => setNewGoal({ ...newGoal, targetDate: e.target.value })} />
+      </div>
+      <div className="grid grid-cols-2 gap-3">
+        <div className="space-y-2">
+          <Label>Monthly Contribution</Label>
+          <Input type="number" placeholder="Amount per month" value={newGoal.monthlyContribution} onChange={(e) => setNewGoal({ ...newGoal, monthlyContribution: e.target.value })} />
+        </div>
+        <div className="space-y-2">
+          <Label>Priority</Label>
+          <Select value={newGoal.priority} onValueChange={(v) => setNewGoal({ ...newGoal, priority: v })}>
+            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="high">High</SelectItem>
+              <SelectItem value="medium">Medium</SelectItem>
+              <SelectItem value="low">Low</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+    </MobileFormSheet>
+
+    {/* Delete Confirmation */}
+    {deletingId && (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+        <Card className="w-80 mx-4">
+          <CardContent className="p-6 text-center space-y-4">
+            <p className="text-sm text-muted-foreground">Are you sure you want to delete this savings goal?</p>
+            <div className="flex gap-2 justify-center">
+              <Button variant="outline" onClick={() => setDeletingId(null)}>Cancel</Button>
+              <Button variant="destructive" onClick={() => handleDeleteGoal(deletingId)}>Delete</Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    )}
     </>
   );
 }
