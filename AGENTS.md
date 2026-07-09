@@ -215,11 +215,28 @@ Complete mobile UI overhaul to match premium fintech apps (Monarch Money, Copilo
 - Radius: `rounded-xl` → `rounded-[16px]`
 
 #### Home Screen Quick Actions
-- Row of pill buttons below greeting: Expense, Income, Transfer, Reports
+- Row of pill buttons below greeting: Expense, Income, Budget, Reports
 - Each pill has tinted icon + white label
 - Horizontally scrollable if needed
+- **Transfer removed** — no Transfer feature exists; replaced with Budget
 
-#### Page Updates (9 pages)
+#### Mobile Pages Added (6)
+- **Reports** (`reports/page.tsx`): Mobile wrapping + fallback card for desktop-only features
+- **Calendar** (`calendar/page.tsx`): Mobile header + day-of-week grid
+- **Search** (`search/page.tsx`): Full search UI with MobileTransactionCard styling, MoreVertical overflow
+- **Profile** (`profile/page.tsx`): Mobile design system with `bg-[#161a27]` card, `rounded-[16px]` inputs, currency grid
+- **Settings** (`settings/page.tsx`): Mobile tab bar (horizontally scrollable), mobile-optimized toggles/buttons/selects
+- **Auth pages** (login, register, forgot-password, reset-password, verify-email): Added `env(safe-area-inset-*)` safe area padding
+
+#### Expense & Income Mobile Refinements
+- Removed inline Edit/Delete buttons — replaced with `MoreVertical` (⋮) overflow button
+- Removed separate floating FAB buttons (bottom-20 right-4)
+- Stat cards: `rounded-[20px]`, larger `text-[17px]` values, `card-shadow`, `active:scale-[0.98]`
+- Search input: `h-[52px]`, `rounded-[16px]`, `bg-[#161a27]`
+- Category/source shown as pill badges
+- Pagination with proper touch targets (44px min)
+
+#### Page Updates (14 pages total)
 All mobile sections updated with consistent:
 - `px-5 space-y-6` (20px padding, 24px section spacing)
 - `bg-[#161a27]` card backgrounds, `border-white/[0.06]`
@@ -256,12 +273,12 @@ All mobile sections updated with consistent:
 - `src/components/ui/dialog.tsx` — Max-height, overflow, mobile margin for small screens
 - `src/components/ui/input.tsx` — iOS zoom fix (text-[16px]), h-11 touch target
 - `src/components/ui/sheet.tsx` — Radix sheet component (used by Header mobile nav + BottomNav More drawer + mobile form sheets)
-- `src/components/mobile/MobileHeader.tsx` — Compact 56px header with logo + notification bell + avatar
+- `src/components/mobile/MobileHeader.tsx` — 72px header with safe area, hamburger menu → 320px glass drawer
 - `src/components/mobile/MobileBottomNav.tsx` — Floating rounded nav (Home/Expenses/Income/Budget/More) with `backdrop-blur-2xl`
 - `src/components/mobile/MobileFAB.tsx` — Animated + button → bottom sheet with 7 quick action choices
 - `src/components/mobile/MobileBalanceCard.tsx` — Compact gradient balance card with 3 mini stats
 - `src/components/mobile/MobileQuickStats.tsx` — 2×2 grid (Income/Expenses/Savings Rate/Balance)
-- `src/components/mobile/MobileTransactionItem.tsx` — Swipeable card with Framer Motion drag
+- `src/components/mobile/MobileTransactionItem.tsx` — Card with ⋮ overflow → iOS bottom sheet (Edit/Duplicate/Favorite/Share/Delete)
 - `src/components/mobile/MobileDashboard.tsx` — Full mobile dashboard with greeting, balance, stats, chart, transactions, budget, overview grid, goals, FAB
 - `src/components/mobile/MobileFormSheet.tsx` — Responsive bottom sheet wrapper — Dialog on desktop, Sheet on mobile with sticky save
 - `src/components/mobile/index.ts` — Exports all mobile components
@@ -274,10 +291,16 @@ All mobile sections updated with consistent:
 - `src/app/(dashboard)/subscriptions/page.tsx` — Hidden buttons fix, page-container, currency fix, dialog portal fix, mobile styling pass
 - `src/app/(dashboard)/recurring/page.tsx` — Currency fix, always-visible buttons, page-container, dialog portal fix, mobile styling pass
 - `src/app/(dashboard)/analytics/page.tsx` — page-container, mobile styling pass
-- `src/app/(auth)/login/page.tsx` — iOS zoom fix, autoComplete
-- `src/app/(auth)/register/page.tsx` — iOS zoom fix, autoComplete
-- `src/app/(auth)/forgot-password/page.tsx` — iOS zoom fix
-- `src/app/(auth)/reset-password/page.tsx` — iOS zoom fix
+- `src/app/(dashboard)/reports/page.tsx` — Mobile wrapping + fallback card for desktop-only features
+- `src/app/(dashboard)/calendar/page.tsx` — Mobile header + day-of-week grid
+- `src/app/(dashboard)/search/page.tsx` — Full search UI with MobileTransactionCard styling, MoreVertical overflow
+- `src/app/(dashboard)/profile/page.tsx` — Mobile design system with `bg-[#161a27]` card, `rounded-[16px]` inputs, currency grid
+- `src/app/(dashboard)/settings/page.tsx` — Mobile tab bar (horizontally scrollable), mobile-optimized toggles/buttons/selects
+- `src/app/(auth)/login/page.tsx` — iOS zoom fix, autoComplete, safe area padding
+- `src/app/(auth)/register/page.tsx` — iOS zoom fix, autoComplete, safe area padding
+- `src/app/(auth)/forgot-password/page.tsx` — iOS zoom fix, safe area padding
+- `src/app/(auth)/reset-password/page.tsx` — iOS zoom fix, safe area padding
+- `src/app/(auth)/verify-email/page.tsx` — safe area padding
 - `src/components/recurring/RecurringRuleDialog.tsx` — Undefined values fix, catch block, Timestamp fix
 - `src/firebase/services.ts` — Undefined stripping, notifications.subscribe, persistence migration
 - `src/firebase/config.ts` — initializeFirestore with persistentLocalCache

@@ -8,7 +8,7 @@ import { useRouter } from 'next/navigation';
 import {
   TrendingUp, Target, Repeat, Banknote, Clock, PiggyBank,
   Receipt, BarChart3, ChevronRight, Plus,
-  TrendingDown, ArrowUpFromLine, ArrowLeftRight, FileText,
+  TrendingDown, ArrowUpFromLine, FileText,
 } from 'lucide-react';
 import { formatCurrency, formatDate } from '@/utils/format';
 import { toDate } from '@/utils/helpers';
@@ -45,7 +45,7 @@ const itemAnim = {
 const quickActions = [
   { id: 'expense', label: 'Expense', icon: TrendingDown, color: '#ff5a7a', route: '/expenses?add=true' },
   { id: 'income', label: 'Income', icon: ArrowUpFromLine, color: '#00d09c', route: '/income?add=true' },
-  { id: 'transfer', label: 'Transfer', icon: ArrowLeftRight, color: '#7c5cff', route: '/transfer' },
+  { id: 'budget', label: 'Budget', icon: Target, color: '#7c5cff', route: '/budgets' },
   { id: 'reports', label: 'Reports', icon: FileText, color: '#ffb020', route: '/reports' },
 ];
 
@@ -103,13 +103,10 @@ export function MobileDashboard() {
       <motion.div className="px-5 space-y-6 pt-3" variants={container} initial="hidden" animate="show">
         {/* Greeting */}
         <motion.div variants={itemAnim}>
-          <h1 className="text-[32px] font-bold text-white tracking-tight text-balance">
-            {greeting()} <span className="text-[#7c5cff]">👋</span>
+          <p className="text-[11px] text-[#6b7b8d] font-semibold uppercase tracking-widest">{todayStr}</p>
+          <h1 className="text-[30px] font-bold text-white tracking-tight mt-0.5">
+            {greeting()}, {userName}
           </h1>
-          <div className="mt-1">
-            <p className="text-[17px] font-semibold text-white">{userName}</p>
-            <p className="text-[12px] text-[#6b7b8d] font-medium mt-0.5">{todayStr}</p>
-          </div>
         </motion.div>
 
         {/* Quick Actions */}

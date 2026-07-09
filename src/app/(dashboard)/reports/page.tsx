@@ -87,7 +87,30 @@ export default function ReportsPage() {
   };
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 space-y-5 animate-fade-in print:p-0 max-w-[1200px] mx-auto">
+    <>
+    {/* Mobile version */}
+    <div className="lg:hidden">
+      <div className="px-5 space-y-6 min-h-dvh bg-[#09090b]" style={{ paddingBottom: 'calc(90px + env(safe-area-inset-bottom, 0px))' }}>
+        {/* Header */}
+        <div className="flex items-center justify-between pt-1">
+          <div>
+            <h1 className="text-[18px] font-bold text-white">Reports</h1>
+            <p className="text-[12px] text-[#6b7b8d]">Financial overview</p>
+          </div>
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#7c5cff]/15">
+            <FileText className="h-[18px] w-[18px] text-[#7c5cff]" />
+          </div>
+        </div>
+
+        {/* Month/Year selectors will use the existing desktop logic */}
+        <div className="bg-[#161a27] rounded-[20px] border border-white/[0.06] p-5 card-shadow">
+          <p className="text-[13px] text-[#6b7b8d] font-medium">Use the desktop view for detailed reports and exports.</p>
+          <button onClick={() => {}} className="mt-4 px-4 py-2 text-[13px] font-medium rounded-xl bg-[#7c5cff]/20 text-[#7c5cff] w-full">Open Desktop Reports</button>
+        </div>
+      </div>
+    </div>
+
+    <div className="hidden lg:block p-4 sm:p-6 lg:p-8 space-y-5 animate-fade-in print:p-0 max-w-[1200px] mx-auto">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 print:hidden">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Reports</h1>
@@ -220,5 +243,6 @@ export default function ReportsPage() {
         </TabsContent>
       </Tabs>
     </div>
+    </>
   );
 }

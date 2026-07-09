@@ -55,6 +55,66 @@ export default function ProfilePage() {
   };
 
   return (
+    <>
+    {/* Mobile version */}
+    <div className="lg:hidden">
+      <div className="px-5 space-y-6 bg-[#09090b] min-h-dvh pb-[calc(64px+env(safe-area-inset-bottom))]">
+        <div className="flex items-center justify-between pt-2">
+          <h1 className="text-[18px] font-bold text-white">Profile</h1>
+        </div>
+
+        <div className="bg-[#161a27] rounded-[20px] border border-white/[0.06] p-5 space-y-5">
+          <div className="flex flex-col items-center">
+            <div className="relative group cursor-pointer" onClick={() => fileInputRef.current?.click()}>
+              <div className="h-20 w-20 rounded-full ring-4 ring-[#7c5cff]/20 overflow-hidden">
+                <Avatar className="h-20 w-20">
+                  <AvatarImage src={user?.photoURL || undefined} />
+                  <AvatarFallback className="text-xl font-bold text-white bg-[#7c5cff]/20">{getInitials(userData?.name || 'U')}</AvatarFallback>
+                </Avatar>
+              </div>
+              <div className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
+                <Camera className="h-5 w-5 text-white" />
+              </div>
+            </div>
+            <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handlePhotoUpload} />
+            <h2 className="text-[16px] font-bold text-white mt-3">{userData?.name || 'User'}</h2>
+            <p className="text-[12px] text-[#6b7b8d]">{user?.email}</p>
+          </div>
+
+          <div className="space-y-4">
+            <div className="space-y-1.5">
+              <label className="text-[12px] font-medium text-[#6b7b8d]">Full Name</label>
+              <input id="name" value={name} onChange={(e) => setName(e.target.value)} className="w-full h-[52px] rounded-[16px] bg-[#09090b] border border-white/[0.06] px-4 text-[14px] text-white placeholder:text-[#6b7b8d] focus:outline-none focus:border-[#7c5cff]/50" />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-[12px] font-medium text-[#6b7b8d]">Email</label>
+              <input id="email" value={user?.email || ''} disabled className="w-full h-[52px] rounded-[16px] bg-[#09090b] border border-white/[0.06] px-4 text-[14px] text-white/50 placeholder:text-[#6b7b8d] focus:outline-none focus:border-[#7c5cff]/50 opacity-60" />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-[12px] font-medium text-[#6b7b8d]">Phone</label>
+              <input id="phone" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+1 234 567 890" className="w-full h-[52px] rounded-[16px] bg-[#09090b] border border-white/[0.06] px-4 text-[14px] text-white placeholder:text-[#6b7b8d] focus:outline-none focus:border-[#7c5cff]/50" />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-[12px] font-medium text-[#6b7b8d]">Preferred Currency</label>
+              <div className="flex flex-wrap gap-2">
+                {CURRENCIES.map((c) => (
+                  <button key={c.code} onClick={() => setCurrency(c.code)} className={`px-3 py-1.5 text-[12px] font-medium rounded-xl transition-all ${currency === c.code ? 'bg-[#7c5cff]/20 text-[#7c5cff]' : 'bg-white/5 text-[#6b7b8d] hover:bg-white/10'}`}>
+                    {c.symbol} {c.code}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <button onClick={handleSave} disabled={saving} className="w-full h-[52px] rounded-[16px] bg-gradient-to-r from-[#7c5cff] to-[#00d09c] text-white text-[14px] font-semibold flex items-center justify-center gap-1.5 active:scale-[0.98] transition-all disabled:opacity-50">
+              {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+              Save Changes
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    {/* Desktop version */}
+    <div className="hidden lg:block">
     <div className="p-4 sm:p-6 lg:p-8 space-y-6 animate-fade-in max-w-2xl">
       <div>
         <h1 className="text-2xl font-bold">Profile</h1>
@@ -115,5 +175,7 @@ export default function ProfilePage() {
         </CardContent>
       </Card>
     </div>
+    </div>
+    </>
   );
 }

@@ -7,7 +7,7 @@ import { Button, Card, CardContent, Badge, Skeleton, Table, TableBody, TableCell
 import { TransactionDialog } from '@/components/transactions/TransactionDialog';
 import { AnimatedContainer, AnimatedItem } from '@/components/shared';
 import {
-  Plus, TrendingUp, TrendingDown, Pencil, Trash2,
+  Plus, TrendingUp, TrendingDown, Pencil, Trash2, MoreVertical,
   Wallet, Calendar, ArrowUpDown, ArrowDown,
   Check, X, Download,
 } from 'lucide-react';
@@ -105,28 +105,33 @@ export default function IncomePage() {
     {/* Mobile version */}
     <div className="lg:hidden">
       <div className="px-5 space-y-6">
+        {/* Header */}
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-[18px] font-bold text-white">Income</h1>
             <p className="text-[12px] text-[#6b7b8d]">{incomes.length} entries</p>
           </div>
           <div className="text-right">
-            <p className="text-[14px] font-bold text-[#00D09C]">{formatCurrency(totalIncome, userData?.currency)}</p>
+            <p className="text-[14px] font-bold text-[#00d09c]">{formatCurrency(totalIncome, userData?.currency)}</p>
             <p className="text-[11px] text-[#6b7b8d]">Total income</p>
           </div>
         </div>
+
+        {/* Stat Cards */}
         <div className="grid grid-cols-2 gap-3">
           {[
-            { label: "Average", value: avgIncome, color: '#00D09C' },
-            { label: "Highest", value: highestIncome, color: '#7C5CFF' },
-            { label: "Recurring", value: recurringIncome, color: '#FBBF24' },
-            { label: "Sources", value: sourceBreakdown.length, color: '#FF5A6E' },
+            { label: "Average", value: avgIncome, color: '#00d09c' },
+            { label: "Highest", value: highestIncome, color: '#7c5cff' },
+            { label: "Recurring", value: recurringIncome, color: '#ffb020' },
+            { label: "Sources", value: sourceBreakdown.length, color: '#ff5a7a' },
           ].map((stat) => (
-            <div key={stat.label} className="bg-[#161a27] rounded-[16px] border border-white/[0.06] p-3">
-              {loading ? <><div className="h-5 w-16 bg-white/5 rounded animate-pulse" /><div className="h-3 w-12 bg-white/5 rounded animate-pulse mt-1" /></> : <><p className="text-[14px] font-bold text-white">{typeof stat.value === 'number' ? formatCurrency(stat.value, userData?.currency) : stat.value}</p><p className="text-[11px] text-[#6b7b8d] mt-0.5">{stat.label}</p></>}
+            <div key={stat.label} className="bg-[#161a27] rounded-[20px] border border-white/[0.06] p-4 card-shadow">
+              {loading ? <><div className="h-6 w-16 bg-white/5 rounded animate-pulse mb-1" /><div className="h-3 w-12 bg-white/5 rounded animate-pulse" /></> : <><p className="text-[17px] font-bold text-white">{typeof stat.value === 'number' ? formatCurrency(stat.value, userData?.currency) : stat.value}</p><p className="text-[11px] text-[#6b7b8d] mt-0.5">{stat.label}</p></>}
             </div>
           ))}
         </div>
+
+        {/* List */}
         {loading ? (
           <div className="space-y-2">{[...Array(5)].map((_, i) => <div key={i} className="h-[68px] bg-[#161a27] rounded-[16px] animate-pulse" />)}</div>
         ) : incomes.length === 0 ? (
@@ -134,30 +139,36 @@ export default function IncomePage() {
             <TrendingUp className="h-12 w-12 text-white/10 mb-3" />
             <p className="text-[14px] font-medium text-white mb-1">No income recorded</p>
             <p className="text-[12px] text-[#6b7b8d] mb-4">Start tracking your earnings</p>
-            <button onClick={() => setDialogOpen(true)} className="px-4 py-2 text-[13px] font-medium rounded-xl bg-[#00D09C]/20 text-[#00D09C]">Add Income</button>
+            <button onClick={() => setDialogOpen(true)} className="px-4 py-2 text-[13px] font-medium rounded-xl bg-[#00d09c]/20 text-[#00d09c]">Add Income</button>
           </div>
         ) : (
           <div className="space-y-2">
             {sorted.map((income) => (
-              <div key={income.id} className="bg-[#161a27] rounded-[16px] border border-white/[0.06] p-3">
+              <div key={income.id} className="bg-[#161a27] rounded-[16px] border border-white/[0.06] px-4 py-[14px] card-shadow active:scale-[0.98] transition-all">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3 min-w-0 flex-1">
-                    <div className="h-10 w-10 rounded-xl bg-[#00D09C]/15 flex items-center justify-center shrink-0"><TrendingUp className="h-4 w-4 text-[#00D09C]" /></div>
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl shrink-0 bg-[#00d09c]/15">
+                      <TrendingUp className="h-[18px] w-[18px] text-[#00d09c]" />
+                    </div>
                     <div className="min-w-0 flex-1">
-                      <p className="text-[14px] font-medium text-white truncate">{income.description}</p>
-                      <div className="flex items-center gap-2 text-[11px] text-[#6b7b8d]"><span>{income.source}</span><span>&middot;</span><span>{formatDate(income.incomeDate)}</span></div>
+                      <p className="text-[14px] font-semibold text-white truncate">{income.description}</p>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-white/5 text-[#6b7b8d]">{income.source}</span>
+                        <span className="text-[10px] text-[#6b7b8d] font-medium">{formatDate(income.incomeDate)}</span>
+                      </div>
                     </div>
                   </div>
                   <div className="flex items-center gap-1 shrink-0 ml-2">
-                    <span className="text-[14px] font-semibold text-[#00D09C]">+{formatCurrency(income.amount, userData?.currency)}</span>
-                    <button onClick={() => { if (confirm('Delete this income?')) handleDelete(income.id); }} className="p-1.5 rounded-lg hover:bg-white/5"><Trash2 className="h-3.5 w-3.5 text-[#6b7b8d]" /></button>
+                    <span className="text-[15px] font-bold text-[#00d09c]">+{formatCurrency(income.amount, userData?.currency)}</span>
+                    <button onClick={() => { setEditingId(income.id); }} className="flex h-9 w-9 items-center justify-center rounded-xl text-[#6b7b8d] hover:bg-white/5 active:scale-90 transition-all" aria-label="More actions">
+                      <MoreVertical className="h-[18px] w-[18px]" />
+                    </button>
                   </div>
                 </div>
               </div>
             ))}
           </div>
         )}
-        <button onClick={() => setDialogOpen(true)} className="fixed bottom-20 right-4 h-12 w-12 rounded-full bg-gradient-to-r from-[#7C5CFF] to-[#00D09C] flex items-center justify-center shadow-lg shadow-[#7C5CFF]/25 z-40"><Plus className="h-5 w-5 text-white" /></button>
       </div>
     </div>
     {/* Desktop version */}

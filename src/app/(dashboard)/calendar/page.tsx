@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, Button, Skeleton } from '@/components/ui';
-import { ChevronLeft, ChevronRight, Plus, Receipt, TrendingUp, TrendingDown } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, Receipt, TrendingUp, TrendingDown, Calendar as CalendarIcon } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useExpenses } from '@/hooks/useExpenses';
 import { useIncome } from '@/hooks/useIncome';
@@ -82,6 +82,31 @@ export default function CalendarPage() {
   for (let i = 1; i <= daysInMonth; i++) days.push(i);
 
   return (
+    <>
+    {/* Mobile version */}
+    <div className="lg:hidden">
+      <div className="px-5 space-y-6 min-h-dvh bg-[#09090b]" style={{ paddingBottom: 'calc(90px + env(safe-area-inset-bottom, 0px))' }}>
+        {/* Header */}
+        <div className="flex items-center justify-between pt-1">
+          <div>
+            <h1 className="text-[18px] font-bold text-white">Calendar</h1>
+            <p className="text-[12px] text-[#6b7b8d]">View your transactions by date</p>
+          </div>
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#7c5cff]/15">
+            <CalendarIcon className="h-[18px] w-[18px] text-[#7c5cff]" />
+          </div>
+        </div>
+
+        {/* Calendar grid will reuse desktop logic in mobile format */}
+        <div className="bg-[#161a27] rounded-[20px] border border-white/[0.06] p-5 card-shadow">
+          <div className="grid grid-cols-7 gap-1 text-center mb-3">
+            {['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(day => (
+              <span key={day} className="text-[10px] font-semibold text-[#6b7b8d] uppercase tracking-wider">{day.substring(0,3)}</span>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
     <div className="p-4 sm:p-6 lg:p-8 space-y-5 animate-fade-in max-w-[1200px] mx-auto">
       <TransactionDialog open={dialogOpen} onOpenChange={setDialogOpen} type="expense"
         onSubmit={async (data) => {
@@ -226,5 +251,6 @@ export default function CalendarPage() {
         </Card>
       </div>
     </div>
+    </>
   );
 }

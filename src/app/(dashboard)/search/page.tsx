@@ -5,13 +5,13 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useExpenses } from '@/hooks/useExpenses';
 import { Button, Card, CardContent, Input, Select, SelectTrigger, SelectValue, SelectContent, SelectItem, Badge, Skeleton } from '@/components/ui';
 import { AnimatedContainer, AnimatedItem } from '@/components/shared';
-import { Search as SearchIcon, Receipt, X } from 'lucide-react';
+import { Search as SearchIcon, Receipt, X, MoreVertical } from 'lucide-react';
 import { formatCurrency, formatDate } from '@/utils/format';
 import { EXPENSE_CATEGORIES, PAYMENT_METHODS } from '@/constants';
 
 export default function SearchPage() {
   const { userData } = useAuth();
-  const { expenses, loading } = useExpenses();
+  const { expenses, loading, deleteExpense } = useExpenses();
   const [query, setQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [methodFilter, setMethodFilter] = useState('all');
@@ -45,6 +45,104 @@ export default function SearchPage() {
   };
 
   return (
+    <>
+    {/* Mobile version */}
+    <div className="lg:hidden">
+      <div className="px-5 space-y-6">
+        <div>
+          <h1 className="text-[18px] font-bold text-white">Search</h1>
+          <p className="text-[12px] text-[#6b7b8d]">Find any transaction instantly</p>
+        </div>
+
+        <div className="relative">
+          <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-[#6b7b8d]" />
+          <Input
+            placeholder="Search by description, category, notes..."
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            className="pl-11 pr-10 h-[52px] rounded-[16px] bg-[#161a27] border-white/[0.06] text-white placeholder:text-[#6b7b8d] text-[16px]"
+            autoFocus
+          />
+          {query && (
+            <button onClick={() => setQuery('')} className="absolute right-4 top-1/2 -translate-y-1/2 text-[#6b7b8d]">
+              <X className="h-4 w-4" />
+            </button>
+          )}
+        </div>
+
+        <div className="flex gap-2">
+          <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+            <SelectTrigger className="flex-1 bg-[#161a27] border-white/[0.06] text-white h-11 rounded-[14px]"><SelectValue placeholder="Category" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Categories</SelectItem>
+              {EXPENSE_CATEGORIES.map((cat) => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
+            </SelectContent>
+          </Select>
+          <Select value={methodFilter} onValueChange={setMethodFilter}>
+            <SelectTrigger className="flex-1 bg-[#161a27] border-white/[0.06] text-white h-11 rounded-[14px]"><SelectValue placeholder="Payment" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Methods</SelectItem>
+              {PAYMENT_METHODS.map((m) => <SelectItem key={m} value={m}>{m}</SelectItem>)}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {hasFilters && (
+          <div className="flex items-center justify-between">
+            <span className="text-[12px] text-[#6b7b8d]">{filteredExpenses.length} result{filteredExpenses.length !== 1 ? 's' : ''} found</span>
+            <button onClick={clearFilters} className="text-[12px] font-medium text-[#7C5CFF]">Clear filters</button>
+          </div>
+        )}
+
+        {loading ? (
+          <div className="space-y-2">
+            {[...Array(5)].map((_, i) => <div key={i} className="h-[68px] bg-[#161a27] rounded-[16px] animate-pulse" />)}
+          </div>
+        ) : filteredExpenses.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-12 text-center">
+            <SearchIcon className="h-12 w-12 text-white/10 mb-3" />
+            <p className="text-[14px] font-medium text-white mb-1">No results found</p>
+            <p className="text-[12px] text-[#6b7b8d] mb-4">Try adjusting your search or filters</p>
+            {hasFilters && <button onClick={clearFilters} className="px-4 py-2 text-[13px] font-medium rounded-xl bg-[#7C5CFF]/20 text-[#7C5CFF]">Clear filters</button>}
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {filteredExpenses.slice(0, 50).map((expense) => (
+              <div key={expense.id} className="bg-[#161a27] rounded-[20px] border border-white/[0.06] p-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3 min-w-0 flex-1">
+                    <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                      <Receipt className="h-5 w-5 text-primary" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[14px] font-medium text-white truncate">{highlightMatch(expense.description)}</p>
+                      <div className="flex items-center gap-2 text-[11px] text-[#6b7b8d] mt-0.5 flex-wrap">
+                        <span className="bg-white/10 text-white text-[10px] px-1.5 py-0.5 rounded-full">{highlightMatch(expense.category)}</span>
+                        {expense.paymentMethod && (
+                          <span className="border border-white/[0.06] text-[#6b7b8d] text-[10px] px-1.5 py-0.5 rounded-full">{highlightMatch(expense.paymentMethod)}</span>
+                        )}
+                        <span>{formatDate(expense.expenseDate)}</span>
+                      </div>
+                      {expense.notes && (
+                        <p className="text-[11px] text-[#6b7b8d] mt-0.5 truncate">{highlightMatch(expense.notes)}</p>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1 shrink-0 ml-2">
+                    <span className="text-[14px] font-semibold text-[#ff5a7a]">-{formatCurrency(expense.amount, userData?.currency)}</span>
+                    <button onClick={() => { if (confirm('Delete this transaction?')) deleteExpense(expense.id); }} className="p-1.5 rounded-lg hover:bg-white/5">
+                      <MoreVertical className="h-3.5 w-3.5 text-[#6b7b8d]" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+    {/* Desktop version */}
+    <div className="hidden lg:block">
     <div className="p-4 sm:p-6 lg:p-8 space-y-5 animate-fade-in max-w-[1000px] mx-auto">
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Search</h1>
@@ -144,5 +242,7 @@ export default function SearchPage() {
         </AnimatedContainer>
       )}
     </div>
+    </div>
+    </>
   );
 }

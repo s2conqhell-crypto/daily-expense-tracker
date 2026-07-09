@@ -9,7 +9,7 @@ import { AnimatedContainer, AnimatedItem } from '@/components/shared';
 import {
   Plus, Search, Filter, Pencil, Trash2, Receipt,
   TrendingDown, CreditCard, ArrowUpDown, ArrowDown,
-  Check, X, Download, Clock,
+  Check, X, Download, Clock, MoreVertical,
 } from 'lucide-react';
 import { formatCurrency, formatDate } from '@/utils/format';
 import { toDate } from '@/utils/helpers';
@@ -148,6 +148,7 @@ export default function ExpensesPage() {
     {/* Mobile version */}
     <div className="lg:hidden">
       <div className="px-5 space-y-6">
+        {/* Header */}
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-[18px] font-bold text-white">Expenses</h1>
@@ -158,27 +159,35 @@ export default function ExpensesPage() {
             <p className="text-[11px] text-[#6b7b8d]">Total spent</p>
           </div>
         </div>
+
+        {/* Stat Cards */}
         <div className="grid grid-cols-2 gap-3">
           {[
-            { label: "Today", value: todayExpenses.reduce((s, e) => s + e.amount, 0) },
-            { label: "Month", value: monthlyExpenses.reduce((s, e) => s + e.amount, 0) },
-            { label: "Highest", value: highestExpense },
-            { label: "Average", value: avgExpense },
+            { label: "Today", value: todayExpenses.reduce((s, e) => s + e.amount, 0), color: '#ff5a7a' },
+            { label: "Month", value: monthlyExpenses.reduce((s, e) => s + e.amount, 0), color: '#7c5cff' },
+            { label: "Highest", value: highestExpense, color: '#ffb020' },
+            { label: "Average", value: avgExpense, color: '#00d09c' },
           ].map((stat) => (
-            <div key={stat.label} className="bg-[#161a27] rounded-[20px] border border-white/[0.06] p-3">
-              {loading ? <><div className="h-5 w-16 bg-white/5 rounded animate-pulse" /><div className="h-3 w-12 bg-white/5 rounded animate-pulse mt-1" /></> : <><p className="text-[14px] font-bold text-white">{formatCurrency(stat.value, userData?.currency)}</p><p className="text-[11px] text-[#6b7b8d] mt-0.5">{stat.label}</p></>}
+            <div key={stat.label} className="bg-[#161a27] rounded-[20px] border border-white/[0.06] p-4 card-shadow">
+              {loading ? <><div className="h-6 w-16 bg-white/5 rounded animate-pulse mb-1" /><div className="h-3 w-12 bg-white/5 rounded animate-pulse" /></> : <><p className="text-[17px] font-bold text-white">{formatCurrency(stat.value, userData?.currency)}</p><p className="text-[11px] text-[#6b7b8d] mt-0.5">{stat.label}</p></>}
             </div>
           ))}
         </div>
+
+        {/* Search */}
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#6b7b8d]" />
-          <Input placeholder="Search expenses..." value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} className="pl-9 h-10 text-[14px] bg-[#161a27] border-white/[0.06] text-white placeholder:text-[#6b7b8d]" />
+          <Input placeholder="Search expenses..." value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} className="pl-9 h-[52px] text-[14px] bg-[#161a27] border-white/[0.06] text-white rounded-[16px] placeholder:text-[#6b7b8d]" />
         </div>
+
+        {/* Filter Chips */}
         <div className="flex gap-1.5 overflow-x-auto -mx-4 px-4 scrollbar-hide">
           {(['all', 'today', 'week', 'month'] as const).map((f) => (
-            <button key={f} onClick={() => { setDateFilter(f); setPage(1); }} className={`shrink-0 px-3 py-1 text-[12px] font-medium rounded-full transition-all ${dateFilter === f ? 'bg-[#7C5CFF]/20 text-[#7C5CFF]' : 'bg-white/5 text-[#6b7b8d] hover:bg-white/10'}`}>{f === 'all' ? 'All Time' : f.charAt(0).toUpperCase() + f.slice(1)}</button>
+            <button key={f} onClick={() => { setDateFilter(f); setPage(1); }} className={`shrink-0 px-4 py-1.5 text-[12px] font-medium rounded-full transition-all ${dateFilter === f ? 'bg-[#7c5cff]/20 text-[#7c5cff]' : 'bg-white/5 text-[#6b7b8d] hover:bg-white/10'}`}>{f === 'all' ? 'All Time' : f.charAt(0).toUpperCase() + f.slice(1)}</button>
           ))}
         </div>
+
+        {/* List */}
         {loading ? (
           <div className="space-y-2">{[...Array(5)].map((_, i) => <div key={i} className="h-[68px] bg-[#161a27] rounded-[16px] animate-pulse" />)}</div>
         ) : filtered.length === 0 ? (
@@ -186,30 +195,47 @@ export default function ExpensesPage() {
             <Receipt className="h-12 w-12 text-white/10 mb-3" />
             <p className="text-[14px] font-medium text-white mb-1">No expenses found</p>
             <p className="text-[12px] text-[#6b7b8d] mb-4">{search || categoryFilter !== 'all' || dateFilter !== 'all' ? 'Try adjusting your filters' : 'Start tracking your spending'}</p>
-            <button onClick={() => setDialogOpen(true)} className="px-4 py-2 text-[13px] font-medium rounded-xl bg-[#7C5CFF]/20 text-[#7C5CFF]">Add Expense</button>
+            <button onClick={() => setDialogOpen(true)} className="px-4 py-2 text-[13px] font-medium rounded-xl bg-[#7c5cff]/20 text-[#7c5cff]">Add Expense</button>
           </div>
         ) : (
           <div className="space-y-2">
             {paged.map((expense) => (
-              <div key={expense.id} className="bg-[#161a27] rounded-[16px] border border-white/[0.06] p-3">
+              <div key={expense.id} className="bg-[#161a27] rounded-[16px] border border-white/[0.06] px-4 py-[14px] card-shadow active:scale-[0.98] transition-all">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3 min-w-0 flex-1">
-                    <div className="h-10 w-10 rounded-xl bg-[#ff5a7a]/15 flex items-center justify-center shrink-0"><Receipt className="h-4 w-4 text-[#ff5a7a]" /></div>
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl shrink-0 bg-[#ff5a7a]/15">
+                      <Receipt className="h-[18px] w-[18px] text-[#ff5a7a]" />
+                    </div>
                     <div className="min-w-0 flex-1">
-                      <p className="text-[14px] font-medium text-white truncate">{expense.description}</p>
-                      <div className="flex items-center gap-2 text-[11px] text-[#6b7b8d]"><span>{expense.category}</span><span>&middot;</span><span>{formatDate(expense.expenseDate)}</span></div>
+                      <p className="text-[14px] font-semibold text-white truncate">{expense.description}</p>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-white/5 text-[#6b7b8d]">{expense.category}</span>
+                        <span className="text-[10px] text-[#6b7b8d] font-medium">{formatDate(expense.expenseDate)}</span>
+                      </div>
                     </div>
                   </div>
                   <div className="flex items-center gap-1 shrink-0 ml-2">
-                    <span className="text-[14px] font-semibold text-[#ff5a7a]">-{formatCurrency(expense.amount, userData?.currency)}</span>
-                    <button onClick={() => { if (confirm('Delete this expense?')) handleDelete(expense.id); }} className="p-1.5 rounded-lg hover:bg-white/5"><Trash2 className="h-3.5 w-3.5 text-[#6b7b8d]" /></button>
+                    <span className="text-[15px] font-bold text-[#ff5a7a]">-{formatCurrency(expense.amount, userData?.currency)}</span>
+                    <button onClick={() => { setEditingId(expense.id); }} className="flex h-9 w-9 items-center justify-center rounded-xl text-[#6b7b8d] hover:bg-white/5 active:scale-90 transition-all" aria-label="More actions">
+                      <MoreVertical className="h-[18px] w-[18px]" />
+                    </button>
                   </div>
                 </div>
               </div>
             ))}
           </div>
         )}
-        <button onClick={() => setDialogOpen(true)} className="fixed bottom-20 right-4 h-12 w-12 rounded-full bg-gradient-to-r from-[#7C5CFF] to-[#00D09C] flex items-center justify-center shadow-lg shadow-[#7C5CFF]/25 z-40"><Plus className="h-5 w-5 text-white" /></button>
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between">
+            <p className="text-[11px] text-[#6b7b8d]">Page {page} of {totalPages}</p>
+            <div className="flex gap-1">
+              <button onClick={() => setPage(Math.max(1, page - 1))} disabled={page === 1} className="h-10 w-10 rounded-xl bg-white/5 text-white text-sm font-medium disabled:opacity-30 active:scale-90 transition-all">&lt;</button>
+              <button onClick={() => setPage(Math.min(totalPages, page + 1))} disabled={page === totalPages} className="h-10 w-10 rounded-xl bg-white/5 text-white text-sm font-medium disabled:opacity-30 active:scale-90 transition-all">&gt;</button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
     {/* Desktop version */}
