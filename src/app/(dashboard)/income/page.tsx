@@ -101,6 +101,67 @@ export default function IncomePage() {
   };
 
   return (
+    <>
+    {/* Mobile version */}
+    <div className="lg:hidden">
+      <div className="px-4 py-3 space-y-4 pb-24">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-[18px] font-bold text-white">Income</h1>
+            <p className="text-[12px] text-[#8899AA]">{incomes.length} entries</p>
+          </div>
+          <div className="text-right">
+            <p className="text-[14px] font-bold text-[#00D09C]">{formatCurrency(totalIncome, userData?.currency)}</p>
+            <p className="text-[11px] text-[#5A6B7D]">Total income</p>
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-2">
+          {[
+            { label: "Average", value: avgIncome, color: '#00D09C' },
+            { label: "Highest", value: highestIncome, color: '#7C5CFF' },
+            { label: "Recurring", value: recurringIncome, color: '#FBBF24' },
+            { label: "Sources", value: sourceBreakdown.length, color: '#FF5A6E' },
+          ].map((stat) => (
+            <div key={stat.label} className="bg-[#141822] rounded-xl border border-white/[0.08] p-3">
+              {loading ? <><div className="h-5 w-16 bg-white/5 rounded animate-pulse" /><div className="h-3 w-12 bg-white/5 rounded animate-pulse mt-1" /></> : <><p className="text-[14px] font-bold text-white">{typeof stat.value === 'number' ? formatCurrency(stat.value, userData?.currency) : stat.value}</p><p className="text-[11px] text-[#8899AA] mt-0.5">{stat.label}</p></>}
+            </div>
+          ))}
+        </div>
+        {loading ? (
+          <div className="space-y-2">{[...Array(5)].map((_, i) => <div key={i} className="h-[68px] bg-[#141822] rounded-xl animate-pulse" />)}</div>
+        ) : incomes.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-12 text-center">
+            <TrendingUp className="h-12 w-12 text-white/10 mb-3" />
+            <p className="text-[14px] font-medium text-white mb-1">No income recorded</p>
+            <p className="text-[12px] text-[#8899AA] mb-4">Start tracking your earnings</p>
+            <button onClick={() => setDialogOpen(true)} className="px-4 py-2 text-[13px] font-medium rounded-xl bg-[#00D09C]/20 text-[#00D09C]">Add Income</button>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {sorted.map((income) => (
+              <div key={income.id} className="bg-[#141822] rounded-xl border border-white/[0.08] p-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3 min-w-0 flex-1">
+                    <div className="h-9 w-9 rounded-lg bg-[#00D09C]/15 flex items-center justify-center shrink-0"><TrendingUp className="h-4 w-4 text-[#00D09C]" /></div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[14px] font-medium text-white truncate">{income.description}</p>
+                      <div className="flex items-center gap-2 text-[11px] text-[#8899AA]"><span>{income.source}</span><span>&middot;</span><span>{formatDate(income.incomeDate)}</span></div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1 shrink-0 ml-2">
+                    <span className="text-[14px] font-semibold text-[#00D09C]">+{formatCurrency(income.amount, userData?.currency)}</span>
+                    <button onClick={() => { if (confirm('Delete this income?')) handleDelete(income.id); }} className="p-1.5 rounded-lg hover:bg-white/5"><Trash2 className="h-3.5 w-3.5 text-[#5A6B7D]" /></button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+        <button onClick={() => setDialogOpen(true)} className="fixed bottom-20 right-4 h-12 w-12 rounded-full bg-gradient-to-r from-[#7C5CFF] to-[#00D09C] flex items-center justify-center shadow-lg shadow-[#7C5CFF]/25 z-40"><Plus className="h-5 w-5 text-white" /></button>
+      </div>
+    </div>
+    {/* Desktop version */}
+    <div className="hidden lg:block">
     <div className="page-container space-y-5 animate-fade-in pt-3 sm:pt-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
@@ -321,5 +382,7 @@ export default function IncomePage() {
         </div>
       )}
     </div>
+    </div>
+    </>
   );
 }

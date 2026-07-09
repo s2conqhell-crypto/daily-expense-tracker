@@ -8,6 +8,7 @@ import { firebaseService } from '@/firebase/services';
 import { Button, Badge } from '@/components/ui';
 import { TransactionDialog } from '@/components/transactions/TransactionDialog';
 import { AnimatedCounter } from '@/components/shared';
+import { MobileDashboard } from '@/components/mobile/MobileDashboard';
 import {
   Plus, TrendingUp, TrendingDown, Wallet, PiggyBank, CreditCard,
   Receipt, Target, Calendar, Repeat, Banknote, Clock,
@@ -91,6 +92,13 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-dvh bg-[#0A0C10]">
+      {/* Mobile Dashboard */}
+      <div className="lg:hidden">
+        <MobileDashboard />
+      </div>
+
+      {/* Desktop Dashboard - unchanged */}
+      <div className="hidden lg:block">
       <div className="page-container pb-24 space-y-4 pt-3">
         {/* Greeting + Quick Actions */}
         <div className="flex items-center justify-between gap-3">
@@ -479,16 +487,7 @@ export default function DashboardPage() {
           }}
         />
       )}
-
-      {isMobile && (
-        <button
-          className="fixed bottom-24 right-5 z-40 h-14 w-14 rounded-2xl bg-gradient-to-br from-[#8B6FFF] to-[#00D09C] shadow-xl shadow-[#8B6FFF]/30 flex items-center justify-center"
-          onClick={() => setDialogType('expense')}
-          aria-label="Add expense"
-        >
-          <Plus className="h-6 w-6 text-white" />
-        </button>
-      )}
+      </div>
     </div>
   );
 }

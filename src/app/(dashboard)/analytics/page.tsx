@@ -33,6 +33,92 @@ export default function AnalyticsPage() {
   }, [monthlyTrend]);
 
   return (
+    <>
+    {/* Mobile version */}
+    <div className="lg:hidden">
+      <div className="px-4 py-3 space-y-4 pb-24">
+        <div className="flex items-center justify-between">
+          <h1 className="text-[18px] font-bold text-white">Analytics</h1>
+          <span className="text-[12px] text-[#8899AA]">{loading ? '...' : summary.financialHealthScore + '/100'}</span>
+        </div>
+        {/* Summary Cards */}
+        <div className="grid grid-cols-2 gap-2">
+          <div className="bg-[#141822] rounded-xl border border-white/[0.08] p-3">
+            <p className="text-[11px] text-[#8899AA]">Income</p>
+            <p className="text-[14px] font-bold text-[#00D09C]">{loading ? '...' : formatCurrency(summary.totalIncome, userData?.currency)}</p>
+          </div>
+          <div className="bg-[#141822] rounded-xl border border-white/[0.08] p-3">
+            <p className="text-[11px] text-[#8899AA]">Expenses</p>
+            <p className="text-[14px] font-bold text-[#FF5A6E]">{loading ? '...' : formatCurrency(summary.totalExpenses, userData?.currency)}</p>
+          </div>
+          <div className="bg-[#141822] rounded-xl border border-white/[0.08] p-3">
+            <p className="text-[11px] text-[#8899AA]">Net Worth</p>
+            <p className="text-[14px] font-bold text-white">{loading ? '...' : formatCurrency(summary.netWorth, userData?.currency)}</p>
+          </div>
+          <div className="bg-[#141822] rounded-xl border border-white/[0.08] p-3">
+            <p className="text-[11px] text-[#8899AA]">Avg Monthly</p>
+            <p className="text-[14px] font-bold text-[#7C5CFF]">{loading ? '...' : formatCurrency(summary.monthlySpending, userData?.currency)}</p>
+          </div>
+        </div>
+        {/* Mini Chart */}
+        {!loading && monthlyTrend.length > 0 && (
+          <div className="bg-[#141822] rounded-xl border border-white/[0.08] p-3">
+            <p className="text-[12px] font-medium text-white mb-2">Monthly Income vs Expenses</p>
+            <div className="h-[140px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={monthlyTrend.slice(-6)}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
+                  <XAxis dataKey="month" stroke="#5A6B7D" tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
+                  <YAxis stroke="#5A6B7D" tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
+                  <Tooltip contentStyle={{ background: '#141822', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', fontSize: '12px' }} />
+                  <Bar dataKey="income" fill="#00D09C" radius={[4,4,0,0]} name="Income" />
+                  <Bar dataKey="expenses" fill="#FF5A6E" radius={[4,4,0,0]} name="Expenses" />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        )}
+        {/* Category Breakdown */}
+        {!loading && categoryBreakdown.length > 0 && (
+          <div className="bg-[#141822] rounded-xl border border-white/[0.08] p-3">
+            <p className="text-[12px] font-medium text-white mb-2">Category Breakdown</p>
+            <div className="space-y-1.5">
+              {categoryBreakdown.slice(0, 6).map((cat, i) => (
+                <div key={i} className="flex items-center justify-between py-1">
+                  <div className="flex items-center gap-2 min-w-0 flex-1">
+                    <div className="h-2.5 w-2.5 rounded-full shrink-0" style={{ background: COLORS[i % COLORS.length] }} />
+                    <span className="text-[12px] text-[#8899AA] truncate">{cat.category}</span>
+                  </div>
+                  <div className="text-right shrink-0 ml-2">
+                    <span className="text-[12px] font-medium text-white">{formatCurrency(cat.amount, userData?.currency)}</span>
+                    <span className="text-[10px] text-[#5A6B7D] ml-1">({cat.percentage.toFixed(0)}%)</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+        {/* Health Score */}
+        {!loading && (
+          <div className="bg-gradient-to-br from-[#7C5CFF]/10 to-purple-600/10 rounded-xl border border-[#7C5CFF]/20 p-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Heart className="h-4 w-4" style={{ color: health.color }} />
+                <span className="text-[12px] font-medium text-white">Financial Health</span>
+              </div>
+              <span className={`text-[11px] px-2 py-0.5 rounded-full font-medium ${health.bg}`}>{health.label}</span>
+            </div>
+            <p className="text-[20px] font-bold mt-1" style={{ color: health.color }}>{summary.financialHealthScore}/100</p>
+            <div className="mt-2 grid grid-cols-2 gap-2 text-[11px]">
+              <div><span className="text-[#8899AA]">Savings Rate: </span><span className="text-white">{summary.savingsPercentage.toFixed(1)}%</span></div>
+              <div><span className="text-[#8899AA]">Monthly: </span><span className="text-white">{formatCurrency(summary.monthlySpending, userData?.currency)}</span></div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+    {/* Desktop version */}
+    <div className="hidden lg:block">
     <div className="page-container space-y-5 animate-fade-in pt-3 sm:pt-6">
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Analytics</h1>
@@ -213,5 +299,7 @@ export default function AnalyticsPage() {
         </TabsContent>
       </Tabs>
     </div>
+    </div>
+    </>
   );
 }

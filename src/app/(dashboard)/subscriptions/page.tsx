@@ -47,6 +47,63 @@ export default function SubscriptionsPage() {
   };
 
   return (
+    <>
+    {/* Mobile version */}
+    <div className="lg:hidden">
+      <div className="px-4 py-3 space-y-4 pb-24">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-[18px] font-bold text-white">Subscriptions</h1>
+            <p className="text-[12px] text-[#8899AA]">{subscriptions.length} active</p>
+          </div>
+          <div className="text-right">
+            <p className="text-[14px] font-bold text-[#00D09C]">{formatCurrency(totalMonthlyCost, userData?.currency)}<span className="text-[11px] text-[#5A6B7D]">/mo</span></p>
+            <p className="text-[11px] text-[#5A6B7D]">{formatCurrency(totalYearlyCost, userData?.currency)}/yr</p>
+          </div>
+        </div>
+        {loading ? (
+          <div className="space-y-2">{[...Array(3)].map((_, i) => <div key={i} className="h-24 bg-[#141822] rounded-xl animate-pulse" />)}</div>
+        ) : subscriptions.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-12 text-center">
+            <Repeat className="h-12 w-12 text-white/10 mb-3" />
+            <p className="text-[14px] font-medium text-white mb-1">No subscriptions</p>
+            <p className="text-[12px] text-[#8899AA] mb-4">Add your Netflix, Spotify, bills and other subscriptions.</p>
+            <button onClick={() => { setEditing(null); setDialogOpen(true); }} className="px-4 py-2 text-[13px] font-medium rounded-xl bg-gradient-to-r from-[#7C5CFF] to-[#00D09C] text-white">Add Subscription</button>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {subscriptions.map((sub) => (
+              <div key={sub.id} className="bg-[#141822] rounded-xl border border-white/[0.08] p-3">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-3 min-w-0 flex-1">
+                    <div className="h-9 w-9 rounded-lg bg-[#7C5CFF]/15 flex items-center justify-center shrink-0"><Repeat className="h-4 w-4 text-[#7C5CFF]" /></div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[14px] font-medium text-white truncate">{sub.name}</p>
+                      <p className="text-[11px] text-[#8899AA]">{sub.category}{sub.customCategory ? ` (${sub.customCategory})` : ''}</p>
+                    </div>
+                  </div>
+                  <span className="text-[14px] font-semibold text-white shrink-0 ml-2">{formatCurrency(sub.monthlyCost, userData?.currency)}<span className="text-[10px] text-[#8899AA]">/mo</span></span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[11px] px-2 py-0.5 rounded-full font-medium" style={{ backgroundColor: (statusColors[sub.status] || '#8899AA') + '20', color: statusColors[sub.status] || '#8899AA' }}>
+                      {statusLabels[sub.status] || sub.status}
+                    </span>
+                    <span className="text-[10px] text-[#8899AA]">Renews {formatDate(toDate(sub.renewalDate))}</span>
+                  </div>
+                  <div className="flex gap-1">
+                    <button onClick={() => { setEditing(sub); setDialogOpen(true); }} className="p-1.5 rounded-lg hover:bg-white/5"><Repeat className="h-3 w-3 text-[#7C5CFF]" /></button>
+                    <button onClick={() => handleDelete(sub.id)} className="p-1.5 rounded-lg hover:bg-white/5"><Trash2 className="h-3 w-3 text-[#FF5A6E]" /></button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+    {/* Desktop version */}
+    <div className="hidden lg:block">
     <div className="min-h-dvh bg-[#09090B]">
       <div className="page-container space-y-5 pt-3 sm:pt-6">
         {/* Header */}
@@ -146,5 +203,7 @@ export default function SubscriptionsPage() {
         defaultValues={editing}
       />
     </div>
+    </div>
+    </>
   );
 }

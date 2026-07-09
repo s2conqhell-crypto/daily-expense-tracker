@@ -55,6 +55,71 @@ export default function RecurringPage() {
   };
 
   return (
+    <>
+    {/* Mobile version */}
+    <div className="lg:hidden">
+      <div className="px-4 py-3 space-y-4 pb-24">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-[18px] font-bold text-white">Recurring</h1>
+            <p className="text-[12px] text-[#8899AA]">{rules.length} rule{rules.length !== 1 ? 's' : ''}</p>
+          </div>
+          <div className="text-right">
+            <p className="text-[14px] font-bold text-white">{upcoming.length} upcoming</p>
+            <p className="text-[11px] text-[#5A6B7D]">Next 30 days</p>
+          </div>
+        </div>
+        {/* Filter Chips */}
+        <div className="flex gap-1.5">
+          {(['all', 'expense', 'income'] as const).map((f) => (
+            <button key={f} onClick={() => setFilter(f)} className={`px-3 py-1 text-[12px] font-medium rounded-full transition-all ${filter === f ? 'bg-[#7C5CFF]/20 text-[#7C5CFF]' : 'bg-white/5 text-[#8899AA] hover:bg-white/10'}`}>
+              {f === 'all' ? 'All' : f.charAt(0).toUpperCase() + f.slice(1)}
+            </button>
+          ))}
+        </div>
+        {loading ? (
+          <div className="space-y-2">{[...Array(3)].map((_, i) => <div key={i} className="h-20 bg-[#141822] rounded-xl animate-pulse" />)}</div>
+        ) : filtered.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-12 text-center">
+            <Repeat className="h-12 w-12 text-white/10 mb-3" />
+            <p className="text-[14px] font-medium text-white mb-1">No recurring rules</p>
+            <p className="text-[12px] text-[#8899AA] mb-4">Set up automatic transactions for bills, income, and more.</p>
+            <button onClick={() => { setEditing(null); setDialogOpen(true); }} className="px-4 py-2 text-[13px] font-medium rounded-xl bg-gradient-to-r from-[#7C5CFF] to-[#00D09C] text-white">Create Rule</button>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {filtered.map((rule) => (
+              <div key={rule.id} className="bg-[#141822] rounded-xl border border-white/[0.08] p-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3 min-w-0 flex-1">
+                    <div className={`h-9 w-9 rounded-lg flex items-center justify-center shrink-0 ${rule.type === 'expense' ? 'bg-[#FF5A6E]/15' : 'bg-[#00D09C]/15'}`}>
+                      <ArrowUpDown className={`h-4 w-4 ${rule.type === 'expense' ? 'text-[#FF5A6E]' : 'text-[#00D09C]'}`} />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[14px] font-medium text-white truncate">{rule.description}</p>
+                      <div className="flex items-center gap-2 text-[11px] text-[#8899AA]">
+                        <span>{intervalLabel(rule.interval)}</span>
+                        <span>&middot;</span>
+                        <span>Next: {formatDate(toDate(rule.nextExecution))}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1 shrink-0 ml-2">
+                    <span className={`text-[14px] font-semibold ${rule.type === 'expense' ? 'text-[#FF5A6E]' : 'text-[#00D09C]'}`}>
+                      {rule.type === 'expense' ? '-' : '+'}{formatCurrency(rule.amount, userData?.currency)}
+                    </span>
+                    <button onClick={() => { setEditing(rule); setDialogOpen(true); }} className="p-1.5 rounded-lg hover:bg-white/5"><Repeat className="h-3 w-3 text-[#7C5CFF]" /></button>
+                    <button onClick={() => handleDelete(rule.id)} className="p-1.5 rounded-lg hover:bg-white/5"><Trash2 className="h-3 w-3 text-[#FF5A6E]" /></button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+    {/* Desktop version */}
+    <div className="hidden lg:block">
     <div className="min-h-dvh bg-[#09090B]">
       <div className="page-container space-y-5 pt-3 sm:pt-6">
         {/* Header */}
@@ -169,5 +234,7 @@ export default function RecurringPage() {
         defaultValues={editing}
       />
     </div>
+    </div>
+    </>
   );
 }

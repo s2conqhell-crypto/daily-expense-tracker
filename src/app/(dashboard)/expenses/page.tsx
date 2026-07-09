@@ -144,6 +144,76 @@ export default function ExpensesPage() {
   };
 
   return (
+    <>
+    {/* Mobile version */}
+    <div className="lg:hidden">
+      <div className="px-4 py-3 space-y-4 pb-24">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-[18px] font-bold text-white">Expenses</h1>
+            <p className="text-[12px] text-[#8899AA]">{filtered.length} of {expenses.length} transactions</p>
+          </div>
+          <div className="text-right">
+            <p className="text-[14px] font-bold text-white">{formatCurrency(expenses.reduce((s, e) => s + e.amount, 0), userData?.currency)}</p>
+            <p className="text-[11px] text-[#5A6B7D]">Total spent</p>
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-2">
+          {[
+            { label: "Today", value: todayExpenses.reduce((s, e) => s + e.amount, 0) },
+            { label: "Month", value: monthlyExpenses.reduce((s, e) => s + e.amount, 0) },
+            { label: "Highest", value: highestExpense },
+            { label: "Average", value: avgExpense },
+          ].map((stat) => (
+            <div key={stat.label} className="bg-[#141822] rounded-xl border border-white/[0.08] p-3">
+              {loading ? <><div className="h-5 w-16 bg-white/5 rounded animate-pulse" /><div className="h-3 w-12 bg-white/5 rounded animate-pulse mt-1" /></> : <><p className="text-[14px] font-bold text-white">{formatCurrency(stat.value, userData?.currency)}</p><p className="text-[11px] text-[#8899AA] mt-0.5">{stat.label}</p></>}
+            </div>
+          ))}
+        </div>
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#5A6B7D]" />
+          <Input placeholder="Search expenses..." value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} className="pl-9 h-10 text-[14px] bg-[#141822] border-white/[0.08] text-white placeholder:text-[#5A6B7D]" />
+        </div>
+        <div className="flex gap-1.5 overflow-x-auto -mx-4 px-4 scrollbar-hide">
+          {(['all', 'today', 'week', 'month'] as const).map((f) => (
+            <button key={f} onClick={() => { setDateFilter(f); setPage(1); }} className={`shrink-0 px-3 py-1 text-[12px] font-medium rounded-full transition-all ${dateFilter === f ? 'bg-[#7C5CFF]/20 text-[#7C5CFF]' : 'bg-white/5 text-[#8899AA] hover:bg-white/10'}`}>{f === 'all' ? 'All Time' : f.charAt(0).toUpperCase() + f.slice(1)}</button>
+          ))}
+        </div>
+        {loading ? (
+          <div className="space-y-2">{[...Array(5)].map((_, i) => <div key={i} className="h-[68px] bg-[#141822] rounded-xl animate-pulse" />)}</div>
+        ) : filtered.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-12 text-center">
+            <Receipt className="h-12 w-12 text-white/10 mb-3" />
+            <p className="text-[14px] font-medium text-white mb-1">No expenses found</p>
+            <p className="text-[12px] text-[#8899AA] mb-4">{search || categoryFilter !== 'all' || dateFilter !== 'all' ? 'Try adjusting your filters' : 'Start tracking your spending'}</p>
+            <button onClick={() => setDialogOpen(true)} className="px-4 py-2 text-[13px] font-medium rounded-xl bg-[#7C5CFF]/20 text-[#7C5CFF]">Add Expense</button>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {paged.map((expense) => (
+              <div key={expense.id} className="bg-[#141822] rounded-xl border border-white/[0.08] p-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3 min-w-0 flex-1">
+                    <div className="h-9 w-9 rounded-lg bg-[#FF5A6E]/15 flex items-center justify-center shrink-0"><Receipt className="h-4 w-4 text-[#FF5A6E]" /></div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[14px] font-medium text-white truncate">{expense.description}</p>
+                      <div className="flex items-center gap-2 text-[11px] text-[#8899AA]"><span>{expense.category}</span><span>&middot;</span><span>{formatDate(expense.expenseDate)}</span></div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1 shrink-0 ml-2">
+                    <span className="text-[14px] font-semibold text-[#FF5A6E]">-{formatCurrency(expense.amount, userData?.currency)}</span>
+                    <button onClick={() => { if (confirm('Delete this expense?')) handleDelete(expense.id); }} className="p-1.5 rounded-lg hover:bg-white/5"><Trash2 className="h-3.5 w-3.5 text-[#5A6B7D]" /></button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+        <button onClick={() => setDialogOpen(true)} className="fixed bottom-20 right-4 h-12 w-12 rounded-full bg-gradient-to-r from-[#7C5CFF] to-[#00D09C] flex items-center justify-center shadow-lg shadow-[#7C5CFF]/25 z-40"><Plus className="h-5 w-5 text-white" /></button>
+      </div>
+    </div>
+    {/* Desktop version */}
+    <div className="hidden lg:block">
     <div className="page-container space-y-5 animate-fade-in pt-3 sm:pt-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -438,5 +508,7 @@ export default function ExpensesPage() {
         </div>
       )}
     </div>
+    </div>
+    </>
   );
 }

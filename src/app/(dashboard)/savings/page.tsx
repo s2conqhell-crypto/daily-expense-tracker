@@ -3,7 +3,8 @@
 import { useState, useMemo } from 'react';
 import { useSavingsGoals } from '@/hooks/useSavingsGoals';
 import { useAuth } from '@/contexts/AuthContext';
-import { Button, Card, CardContent, Progress, Skeleton, Input, Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, Label, Select, SelectTrigger, SelectValue, SelectContent, SelectItem, Badge } from '@/components/ui';
+import { Button, Card, CardContent, Progress, Skeleton, Input, Label, Select, SelectTrigger, SelectValue, SelectContent, SelectItem, Badge } from '@/components/ui';
+import { MobileFormSheet } from '@/components/mobile/MobileFormSheet';
 import { Plus, PiggyBank, Target, Trash2, TrendingUp, CheckCircle } from 'lucide-react';
 import { formatCurrency, formatDate } from '@/utils/format';
 import { toDate } from '@/utils/helpers';
@@ -73,6 +74,90 @@ export default function SavingsPage() {
   };
 
   return (
+    <>
+    {/* Mobile version */}
+    <div className="lg:hidden">
+      <div className="px-4 py-3 space-y-4 pb-24">
+        <div className="flex items-center justify-between">
+          <h1 className="text-[18px] font-bold text-white">Savings Goals</h1>
+          <span className="text-[12px] text-[#8899AA]">{goals.length} goal{goals.length !== 1 ? 's' : ''}</span>
+        </div>
+        {/* Overall Progress */}
+        <div className="bg-gradient-to-br from-[#7C5CFF]/10 to-purple-600/10 rounded-xl border border-[#7C5CFF]/20 p-4">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2">
+              <div className="h-8 w-8 rounded-lg bg-[#7C5CFF]/15 flex items-center justify-center"><PiggyBank className="h-4 w-4 text-[#7C5CFF]" /></div>
+              <span className="text-[13px] font-medium text-white">Total Savings</span>
+            </div>
+            <span className="text-[14px] font-bold text-[#7C5CFF]">{overallProgress.toFixed(1)}%</span>
+          </div>
+          <p className="text-[12px] text-[#8899AA] mb-2">{formatCurrency(totalSaved, userData?.currency)} / {formatCurrency(totalTarget, userData?.currency)}</p>
+          <div className="h-2 rounded-full bg-white/5 overflow-hidden"><div className="h-full rounded-full bg-[#7C5CFF] transition-all" style={{ width: `${Math.min(overallProgress, 100)}%` }} /></div>
+        </div>
+        {loading ? (
+          <div className="space-y-2">{[...Array(3)].map((_, i) => <div key={i} className="h-32 bg-[#141822] rounded-xl animate-pulse" />)}</div>
+        ) : goals.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-12 text-center">
+            <Target className="h-12 w-12 text-white/10 mb-3" />
+            <p className="text-[14px] font-medium text-white mb-1">No savings goals</p>
+            <p className="text-[12px] text-[#8899AA] mb-4">Set your first savings goal</p>
+            <button onClick={() => setShowCreate(true)} className="px-4 py-2 text-[13px] font-medium rounded-xl bg-[#7C5CFF]/20 text-[#7C5CFF]">Create Goal</button>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {goals.filter((g) => !g.isCompleted).map((goal) => {
+              const progress = goal.targetAmount > 0 ? (goal.currentAmount / goal.targetAmount) * 100 : 0;
+              const daysLeft = Math.max(0, Math.ceil((toDate(goal.targetDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24)));
+              return (
+                <div key={goal.id} className="bg-[#141822] rounded-xl border border-white/[0.08] p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <div className="h-8 w-8 rounded-lg bg-[#7C5CFF]/15 flex items-center justify-center"><PiggyBank className="h-4 w-4 text-[#7C5CFF]" /></div>
+                      <span className="text-[14px] font-medium text-white">{goal.name}</span>
+                    </div>
+                    <button onClick={() => setDeletingId(goal.id)} className="p-1.5 rounded-lg hover:bg-white/5"><Trash2 className="h-3.5 w-3.5 text-[#5A6B7D]" /></button>
+                  </div>
+                  <div className="flex justify-between mb-1.5">
+                    <span className="text-[12px] text-[#8899AA]">Saved</span>
+                    <span className="text-[12px] font-medium text-white">{formatCurrency(goal.currentAmount, userData?.currency)} / {formatCurrency(goal.targetAmount, userData?.currency)}</span>
+                  </div>
+                  <div className="h-2.5 rounded-full bg-white/5 overflow-hidden">
+                    <div className="h-full rounded-full bg-[#7C5CFF] transition-all" style={{ width: `${Math.min(progress, 100)}%` }} />
+                  </div>
+                  <div className="flex justify-between mt-1.5 text-[11px]">
+                    <span className="text-[#8899AA]">{progress.toFixed(0)}% complete</span>
+                    <span className={daysLeft <= 0 ? 'text-[#FF5A6E]' : 'text-[#8899AA]'}>{daysLeft > 0 ? `${daysLeft}d left` : 'Past due'}</span>
+                  </div>
+                  <div className="mt-2 pt-2 border-t border-white/[0.06] flex justify-between text-[11px]">
+                    <span className="text-[#8899AA]">Target: {formatCurrency(goal.targetAmount, userData?.currency)}</span>
+                    <span className="text-[#8899AA]">By: {formatDate(toDate(goal.targetDate))}</span>
+                  </div>
+                </div>
+              );
+            })}
+            {/* Completed */}
+            {goals.filter((g) => g.isCompleted).length > 0 && (
+              <div className="pt-2">
+                <p className="text-[13px] font-medium text-white mb-2">Completed</p>
+                {goals.filter((g) => g.isCompleted).map((goal) => (
+                  <div key={goal.id} className="bg-[#141822] rounded-xl border border-[#00D09C]/30 p-3 mb-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="h-8 w-8 rounded-lg bg-[#00D09C]/15 flex items-center justify-center"><TrendingUp className="h-4 w-4 text-[#00D09C]" /></div>
+                        <span className="text-[14px] font-medium text-white">{goal.name}</span>
+                      </div>
+                      <span className="text-[14px] font-bold text-[#00D09C]">{formatCurrency(goal.targetAmount, userData?.currency)}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+    {/* Desktop version */}
+    <div className="hidden lg:block">
     <div className="page-container space-y-5 animate-fade-in pt-3 sm:pt-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
@@ -251,77 +336,79 @@ export default function SavingsPage() {
         </>
       )}
 
-      {/* Create Goal Dialog */}
-      <Dialog open={showCreate} onOpenChange={setShowCreate}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>New Savings Goal</DialogTitle>
-            <DialogDescription>Set a new financial goal to save towards</DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-2">
-            {/* Presets */}
-            <div>
-              <Label className="mb-2 block">Quick Select</Label>
-              <div className="grid grid-cols-3 gap-2">
-                {PRESET_GOALS.map((preset) => (
-                  <button
-                    key={preset.name}
-                    type="button"
-                    onClick={() => selectPreset(preset)}
-                    className={`flex flex-col items-center gap-1 rounded-xl p-2.5 text-xs transition-all border ${
-                      newGoal.name === preset.name
-                        ? 'border-primary bg-primary/10 text-primary'
-                        : 'border-border hover:border-primary/30 hover:bg-accent/50'
-                    }`}
-                  >
-                    <span className="text-lg">{preset.icon}</span>
-                    <span className="font-medium leading-tight text-center">{preset.name}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label>Goal Name</Label>
-              <Input placeholder="e.g. Emergency Fund" value={newGoal.name} onChange={(e) => setNewGoal({ ...newGoal, name: e.target.value })} />
-            </div>
-            <div className="space-y-2">
-              <Label>Description (optional)</Label>
-              <Input placeholder="Why are you saving?" value={newGoal.description} onChange={(e) => setNewGoal({ ...newGoal, description: e.target.value })} />
-            </div>
-            <div className="space-y-2">
-              <Label>Target Amount</Label>
-              <Input type="number" placeholder="Amount" value={newGoal.targetAmount} onChange={(e) => setNewGoal({ ...newGoal, targetAmount: e.target.value })} />
-            </div>
-            <div className="space-y-2">
-              <Label>Target Date</Label>
-              <Input type="date" value={newGoal.targetDate} onChange={(e) => setNewGoal({ ...newGoal, targetDate: e.target.value })} />
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-2">
-                <Label>Monthly Contribution</Label>
-                <Input type="number" placeholder="Amount per month" value={newGoal.monthlyContribution} onChange={(e) => setNewGoal({ ...newGoal, monthlyContribution: e.target.value })} />
-              </div>
-              <div className="space-y-2">
-                <Label>Priority</Label>
-                <Select value={newGoal.priority} onValueChange={(v) => setNewGoal({ ...newGoal, priority: v })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="high">High</SelectItem>
-                    <SelectItem value="medium">Medium</SelectItem>
-                    <SelectItem value="low">Low</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowCreate(false)}>Cancel</Button>
-            <Button onClick={handleCreateGoal} disabled={creating || !newGoal.name || !newGoal.targetAmount || !newGoal.targetDate}>
+      {/* Create Goal Sheet */}
+      <MobileFormSheet
+        open={showCreate}
+        onOpenChange={setShowCreate}
+        title="New Savings Goal"
+        description="Set a new financial goal to save towards"
+        submitLabel={creating ? 'Creating...' : 'Create Goal'}
+        loading={creating}
+        asForm={false}
+        footer={
+          <div className="flex gap-2">
+            <Button variant="outline" className="flex-1 h-11 text-sm" onClick={() => setShowCreate(false)}>Cancel</Button>
+            <Button className="flex-1 h-11 text-sm" onClick={handleCreateGoal} disabled={creating || !newGoal.name || !newGoal.targetAmount || !newGoal.targetDate}>
               {creating ? 'Creating...' : 'Create Goal'}
             </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </div>
+        }
+      >
+        {/* Presets */}
+        <div>
+          <Label className="mb-2 block">Quick Select</Label>
+          <div className="grid grid-cols-3 gap-2">
+            {PRESET_GOALS.map((preset) => (
+              <button
+                key={preset.name}
+                type="button"
+                onClick={() => selectPreset(preset)}
+                className={`flex flex-col items-center gap-1 rounded-xl p-2.5 text-xs transition-all border ${
+                  newGoal.name === preset.name
+                    ? 'border-primary bg-primary/10 text-primary'
+                    : 'border-border hover:border-primary/30 hover:bg-accent/50'
+                }`}
+              >
+                <span className="text-lg">{preset.icon}</span>
+                <span className="font-medium leading-tight text-center">{preset.name}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className="space-y-2">
+          <Label>Goal Name</Label>
+          <Input placeholder="e.g. Emergency Fund" value={newGoal.name} onChange={(e) => setNewGoal({ ...newGoal, name: e.target.value })} />
+        </div>
+        <div className="space-y-2">
+          <Label>Description (optional)</Label>
+          <Input placeholder="Why are you saving?" value={newGoal.description} onChange={(e) => setNewGoal({ ...newGoal, description: e.target.value })} />
+        </div>
+        <div className="space-y-2">
+          <Label>Target Amount</Label>
+          <Input type="number" placeholder="Amount" value={newGoal.targetAmount} onChange={(e) => setNewGoal({ ...newGoal, targetAmount: e.target.value })} />
+        </div>
+        <div className="space-y-2">
+          <Label>Target Date</Label>
+          <Input type="date" value={newGoal.targetDate} onChange={(e) => setNewGoal({ ...newGoal, targetDate: e.target.value })} />
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-2">
+            <Label>Monthly Contribution</Label>
+            <Input type="number" placeholder="Amount per month" value={newGoal.monthlyContribution} onChange={(e) => setNewGoal({ ...newGoal, monthlyContribution: e.target.value })} />
+          </div>
+          <div className="space-y-2">
+            <Label>Priority</Label>
+            <Select value={newGoal.priority} onValueChange={(v) => setNewGoal({ ...newGoal, priority: v })}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="high">High</SelectItem>
+                <SelectItem value="medium">Medium</SelectItem>
+                <SelectItem value="low">Low</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+      </MobileFormSheet>
 
       {/* Delete Confirmation */}
       {deletingId && (
@@ -338,5 +425,7 @@ export default function SavingsPage() {
         </div>
       )}
     </div>
+    </div>
+    </>
   );
 }
