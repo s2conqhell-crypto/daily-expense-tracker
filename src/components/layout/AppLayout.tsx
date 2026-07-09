@@ -25,7 +25,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
       {isMobile && <MobileBottomNav />}
 
       <div className={`${!isMobile ? 'ml-[240px]' : ''} transition-all duration-300`}>
-        <main className={`${isMobile ? 'pt-0' : 'pt-6'} min-h-dvh`}>
+        <main className={`${isMobile ? 'pt-0' : 'pt-6'} min-h-dvh`} style={isMobile ? { paddingBottom: 'calc(90px + env(safe-area-inset-bottom, 0px))' } : {}}>
           <AnimatePresence mode="wait">
             <motion.div
               key={pathname}

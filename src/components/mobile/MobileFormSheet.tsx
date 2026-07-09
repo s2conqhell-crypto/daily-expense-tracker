@@ -29,26 +29,26 @@ export function MobileFormSheet({
   if (isMobile) {
     return (
       <Sheet open={open} onOpenChange={onOpenChange}>
-        <SheetContent side="bottom" className="bg-[#141822] border-t border-white/[0.08] rounded-t-2xl p-0 pb-[calc(env(safe-area-inset-bottom,0px)+16px)] shadow-2xl shadow-black/40 flex flex-col max-h-[90dvh]">
-          <SheetHeader className="flex flex-row items-center justify-between px-4 pt-4 pb-2 border-b border-white/[0.06] shrink-0">
-            <SheetTitle className="text-[16px] font-bold text-white">{title}</SheetTitle>
+        <SheetContent side="bottom" className="bg-[#0A0C10] border-t border-white/[0.06] rounded-t-3xl p-0 shadow-2xl shadow-black/40 flex flex-col max-h-[90dvh]" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 16px)' }}>
+          <SheetHeader className="flex flex-row items-center justify-between px-5 pt-5 pb-3 border-b border-white/[0.06] shrink-0">
+            <SheetTitle className="text-[17px] font-bold text-white">{title}</SheetTitle>
             <button
               onClick={() => onOpenChange(false)}
-              className="touch-target rounded-xl text-[#8899AA] hover:text-white hover:bg-white/5 h-9 w-9 flex items-center justify-center"
+              className="touch-target flex h-9 w-9 items-center justify-center rounded-xl text-[#8899AA] hover:bg-white/5 active:scale-90 transition-all"
             >
               <X className="h-5 w-5" />
             </button>
           </SheetHeader>
           {asForm ? (
             <form onSubmit={onSubmit} className="flex flex-col flex-1 overflow-hidden">
-              <div className="flex-1 overflow-y-auto px-4 py-3 space-y-4">
+              <div className="flex-1 overflow-y-auto px-5 py-4 space-y-4">
                 {children}
               </div>
-              <div className="shrink-0 px-4 pt-3 pb-2 border-t border-white/[0.06]">
+              <div className="shrink-0 px-5 pt-4 pb-3 border-t border-white/[0.06]">
                 {footer || (
-                  <div className="flex gap-2">
-                    <Button type="button" variant="outline" className="flex-1 h-11 text-sm" onClick={() => onOpenChange(false)}>Cancel</Button>
-                    <Button type="submit" disabled={loading} className="flex-1 h-11 text-sm">
+                  <div className="flex gap-3">
+                    <Button type="button" variant="outline" className="flex-1 h-[52px] text-[14px] font-semibold rounded-[16px]" onClick={() => onOpenChange(false)}>Cancel</Button>
+                    <Button type="submit" disabled={loading} className="flex-1 h-[52px] text-[14px] font-semibold rounded-[16px] gradient-primary text-white shadow-lg shadow-[#8B6FFF]/20">
                       {loading ? 'Saving...' : (submitLabel || 'Save')}
                     </Button>
                   </div>
@@ -57,11 +57,11 @@ export function MobileFormSheet({
             </form>
           ) : (
             <div className="flex flex-col flex-1 overflow-hidden">
-              <div className="flex-1 overflow-y-auto px-4 py-3 space-y-4">
+              <div className="flex-1 overflow-y-auto px-5 py-4 space-y-4">
                 {children}
               </div>
               {footer && (
-                <div className="shrink-0 px-4 pt-3 pb-2 border-t border-white/[0.06]">
+                <div className="shrink-0 px-5 pt-4 pb-3 border-t border-white/[0.06]">
                   {footer}
                 </div>
               )}

@@ -36,33 +36,33 @@ export default function AnalyticsPage() {
     <>
     {/* Mobile version */}
     <div className="lg:hidden">
-      <div className="px-4 py-3 space-y-4 pb-24">
+      <div className="px-5 space-y-6">
         <div className="flex items-center justify-between">
           <h1 className="text-[18px] font-bold text-white">Analytics</h1>
           <span className="text-[12px] text-[#8899AA]">{loading ? '...' : summary.financialHealthScore + '/100'}</span>
         </div>
         {/* Summary Cards */}
-        <div className="grid grid-cols-2 gap-2">
-          <div className="bg-[#141822] rounded-xl border border-white/[0.08] p-3">
+        <div className="grid grid-cols-2 gap-3">
+          <div className="bg-[#12142a] rounded-[20px] border border-white/[0.06] p-4">
             <p className="text-[11px] text-[#8899AA]">Income</p>
             <p className="text-[14px] font-bold text-[#00D09C]">{loading ? '...' : formatCurrency(summary.totalIncome, userData?.currency)}</p>
           </div>
-          <div className="bg-[#141822] rounded-xl border border-white/[0.08] p-3">
+          <div className="bg-[#12142a] rounded-[20px] border border-white/[0.06] p-4">
             <p className="text-[11px] text-[#8899AA]">Expenses</p>
             <p className="text-[14px] font-bold text-[#FF5A6E]">{loading ? '...' : formatCurrency(summary.totalExpenses, userData?.currency)}</p>
           </div>
-          <div className="bg-[#141822] rounded-xl border border-white/[0.08] p-3">
+          <div className="bg-[#12142a] rounded-[20px] border border-white/[0.06] p-4">
             <p className="text-[11px] text-[#8899AA]">Net Worth</p>
             <p className="text-[14px] font-bold text-white">{loading ? '...' : formatCurrency(summary.netWorth, userData?.currency)}</p>
           </div>
-          <div className="bg-[#141822] rounded-xl border border-white/[0.08] p-3">
+          <div className="bg-[#12142a] rounded-[20px] border border-white/[0.06] p-4">
             <p className="text-[11px] text-[#8899AA]">Avg Monthly</p>
             <p className="text-[14px] font-bold text-[#7C5CFF]">{loading ? '...' : formatCurrency(summary.monthlySpending, userData?.currency)}</p>
           </div>
         </div>
         {/* Mini Chart */}
         {!loading && monthlyTrend.length > 0 && (
-          <div className="bg-[#141822] rounded-xl border border-white/[0.08] p-3">
+          <div className="bg-[#12142a] rounded-[20px] border border-white/[0.06] p-4">
             <p className="text-[12px] font-medium text-white mb-2">Monthly Income vs Expenses</p>
             <div className="h-[140px]">
               <ResponsiveContainer width="100%" height="100%">
@@ -80,7 +80,7 @@ export default function AnalyticsPage() {
         )}
         {/* Category Breakdown */}
         {!loading && categoryBreakdown.length > 0 && (
-          <div className="bg-[#141822] rounded-xl border border-white/[0.08] p-3">
+          <div className="bg-[#12142a] rounded-[20px] border border-white/[0.06] p-4">
             <p className="text-[12px] font-medium text-white mb-2">Category Breakdown</p>
             <div className="space-y-1.5">
               {categoryBreakdown.slice(0, 6).map((cat, i) => (
@@ -100,16 +100,16 @@ export default function AnalyticsPage() {
         )}
         {/* Health Score */}
         {!loading && (
-          <div className="bg-gradient-to-br from-[#7C5CFF]/10 to-purple-600/10 rounded-xl border border-[#7C5CFF]/20 p-3">
-            <div className="flex items-center justify-between">
+          <div className="bg-[#12142a] rounded-[20px] border border-white/[0.06] p-4">
+            <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
                 <Heart className="h-4 w-4" style={{ color: health.color }} />
                 <span className="text-[12px] font-medium text-white">Financial Health</span>
               </div>
               <span className={`text-[11px] px-2 py-0.5 rounded-full font-medium ${health.bg}`}>{health.label}</span>
             </div>
-            <p className="text-[20px] font-bold mt-1" style={{ color: health.color }}>{summary.financialHealthScore}/100</p>
-            <div className="mt-2 grid grid-cols-2 gap-2 text-[11px]">
+            <p className="text-[22px] font-bold" style={{ color: health.color }}>{summary.financialHealthScore}/100</p>
+            <div className="mt-3 grid grid-cols-2 gap-3 text-[11px]">
               <div><span className="text-[#8899AA]">Savings Rate: </span><span className="text-white">{summary.savingsPercentage.toFixed(1)}%</span></div>
               <div><span className="text-[#8899AA]">Monthly: </span><span className="text-white">{formatCurrency(summary.monthlySpending, userData?.currency)}</span></div>
             </div>

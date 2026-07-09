@@ -147,7 +147,7 @@ export default function ExpensesPage() {
     <>
     {/* Mobile version */}
     <div className="lg:hidden">
-      <div className="px-4 py-3 space-y-4 pb-24">
+      <div className="px-5 space-y-6">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-[18px] font-bold text-white">Expenses</h1>
@@ -158,14 +158,14 @@ export default function ExpensesPage() {
             <p className="text-[11px] text-[#5A6B7D]">Total spent</p>
           </div>
         </div>
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-2 gap-3">
           {[
             { label: "Today", value: todayExpenses.reduce((s, e) => s + e.amount, 0) },
             { label: "Month", value: monthlyExpenses.reduce((s, e) => s + e.amount, 0) },
             { label: "Highest", value: highestExpense },
             { label: "Average", value: avgExpense },
           ].map((stat) => (
-            <div key={stat.label} className="bg-[#141822] rounded-xl border border-white/[0.08] p-3">
+            <div key={stat.label} className="bg-[#12142a] rounded-[20px] border border-white/[0.06] p-3">
               {loading ? <><div className="h-5 w-16 bg-white/5 rounded animate-pulse" /><div className="h-3 w-12 bg-white/5 rounded animate-pulse mt-1" /></> : <><p className="text-[14px] font-bold text-white">{formatCurrency(stat.value, userData?.currency)}</p><p className="text-[11px] text-[#8899AA] mt-0.5">{stat.label}</p></>}
             </div>
           ))}
@@ -180,7 +180,7 @@ export default function ExpensesPage() {
           ))}
         </div>
         {loading ? (
-          <div className="space-y-2">{[...Array(5)].map((_, i) => <div key={i} className="h-[68px] bg-[#141822] rounded-xl animate-pulse" />)}</div>
+          <div className="space-y-2">{[...Array(5)].map((_, i) => <div key={i} className="h-[68px] bg-[#12142a] rounded-[16px] animate-pulse" />)}</div>
         ) : filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 text-center">
             <Receipt className="h-12 w-12 text-white/10 mb-3" />
@@ -191,10 +191,10 @@ export default function ExpensesPage() {
         ) : (
           <div className="space-y-2">
             {paged.map((expense) => (
-              <div key={expense.id} className="bg-[#141822] rounded-xl border border-white/[0.08] p-3">
+              <div key={expense.id} className="bg-[#12142a] rounded-[16px] border border-white/[0.06] p-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3 min-w-0 flex-1">
-                    <div className="h-9 w-9 rounded-lg bg-[#FF5A6E]/15 flex items-center justify-center shrink-0"><Receipt className="h-4 w-4 text-[#FF5A6E]" /></div>
+                    <div className="h-10 w-10 rounded-xl bg-[#FF5A6E]/15 flex items-center justify-center shrink-0"><Receipt className="h-4 w-4 text-[#FF5A6E]" /></div>
                     <div className="min-w-0 flex-1">
                       <p className="text-[14px] font-medium text-white truncate">{expense.description}</p>
                       <div className="flex items-center gap-2 text-[11px] text-[#8899AA]"><span>{expense.category}</span><span>&middot;</span><span>{formatDate(expense.expenseDate)}</span></div>

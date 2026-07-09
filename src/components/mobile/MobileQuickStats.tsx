@@ -2,6 +2,7 @@
 
 import { TrendingUp, CreditCard, Landmark, Wallet } from 'lucide-react';
 import { formatCurrency } from '@/utils/format';
+import { AnimatedCounter } from '@/components/shared';
 
 interface MobileQuickStatsProps {
   totalIncome: number;
@@ -14,26 +15,35 @@ interface MobileQuickStatsProps {
 
 export function MobileQuickStats({ totalIncome, monthlySpending, savingsRate, currentBalance, currency, loading }: MobileQuickStatsProps) {
   const stats = [
-    { label: 'Income', value: formatCurrency(totalIncome, currency), icon: TrendingUp, color: '#00D09C' },
-    { label: 'Expenses', value: formatCurrency(monthlySpending, currency), icon: CreditCard, color: '#FF5A6E' },
-    { label: 'Savings Rate', value: savingsRate.toFixed(1) + '%', icon: Landmark, color: '#FBBF24' },
-    { label: 'Balance', value: formatCurrency(currentBalance, currency), icon: Wallet, color: '#8B6FFF' },
+    { label: 'Income', value: totalIncome, icon: TrendingUp, color: '#00D09C', isCurrency: true },
+    { label: 'Expenses', value: monthlySpending, icon: CreditCard, color: '#FF5A6E', isCurrency: true },
+    { label: 'Savings Rate', value: savingsRate, icon: Landmark, color: '#FBBF24', suffix: '%' as const, isCurrency: false },
+    { label: 'Balance', value: currentBalance, icon: Wallet, color: '#8B6FFF', isCurrency: true },
   ];
 
   return (
-    <div className="grid grid-cols-2 gap-2">
+    <div className="grid grid-cols-2 gap-3">
       {stats.map((stat) => (
-        <div key={stat.label} className="bg-[#141822] rounded-xl border border-white/[0.08] p-3 shadow-sm">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-[9px] font-semibold text-[#8899AA] uppercase tracking-wider">{stat.label}</span>
-            <div className="h-7 w-7 rounded-xl flex items-center justify-center" style={{ backgroundColor: stat.color + '15' }}>
-              <stat.icon className="h-3.5 w-3.5" style={{ color: stat.color }} />
+        <div
+          key={stat.label}
+          className="relative overflow-hidden rounded-[20px] bg-[#12142a] border border-white/[0.06] p-4 card-shadow active:scale-[0.98] transition-all"
+        >
+          <div className="flex items-start justify-between mb-3">
+            <span className="text-[10px] font-semibold text-[#8899AA] uppercase tracking-widest">{stat.label}</span>
+            <div className="flex h-8 w-8 items-center justify-center rounded-xl shrink-0" style={{ backgroundColor: stat.color + '15' }}>
+              <stat.icon className="h-4 w-4" style={{ color: stat.color }} />
             </div>
           </div>
           {loading ? (
-            <div className="h-5 w-20 bg-white/5 rounded animate-pulse" />
+            <div className="h-7 w-24 bg-white/5 rounded-lg animate-pulse" />
           ) : (
-            <p className="text-[15px] font-extrabold text-white">{stat.value}</p>
+            <p className="num-md text-white" style={{ color: stat.isCurrency ? '#fff' : stat.color }}>
+              {stat.isCurrency ? (
+                <AnimatedCounter value={stat.value} formatter={(v) => formatCurrency(v, currency)} />
+              ) : (
+                <span>{stat.value.toFixed(1)}<span className="text-[13px] font-medium text-white/60">%</span></span>
+              )}
+            </p>
           )}
         </div>
       ))}

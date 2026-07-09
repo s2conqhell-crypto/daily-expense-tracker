@@ -1,13 +1,14 @@
 import type { Metadata, Viewport } from 'next';
-import { Plus_Jakarta_Sans } from 'next/font/google';
+import { Inter } from 'next/font/google';
 import './globals.css';
 import { Providers } from '@/providers';
 import { PWARegistration } from '@/components/shared/PWARegistration';
 
-const plusJakartaSans = Plus_Jakarta_Sans({
+const inter = Inter({
   subsets: ['latin'],
-  variable: '--font-plus-jakarta',
+  variable: '--font-inter',
   display: 'swap',
+  weight: ['400', '500', '600', '700', '800'],
 });
 
 export const metadata: Metadata = {
@@ -63,7 +64,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning className={plusJakartaSans.variable}>
+    <html lang="en" suppressHydrationWarning className={inter.variable}>
       <head>
         <link rel="icon" href="/icons/icon-192.svg" />
         <link rel="apple-touch-icon" sizes="120x120" href="/icons/apple-touch-icon-120.png" />

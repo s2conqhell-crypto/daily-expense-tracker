@@ -140,6 +140,84 @@ All dashboard pages had dialog components rendered **inside** the `hidden lg:blo
 - `savings/page.tsx` — MobileFormSheet + delete modal
 - `dashboard/page.tsx` — Verified already correct
 
+### Mobile UI Redesign (Premium Native iOS Look)
+Complete mobile UI overhaul to match premium fintech apps (Monarch Money, Copilot, Rocket Money). Desktop unchanged.
+
+#### Typography
+- Switched `Plus Jakarta Sans` → `Inter` with weights 400/500/600/700/800
+- New scale: `heading-xl` (36px), `heading-lg` (24px), `title-card` (15px), `body-base` (14px), `caption` (11px)
+- Number display: `num-xl` (32px), `num-lg` (22px), `num-md` (17px)
+
+#### Spacing System
+- Horizontal padding: 20px (`px-5`)
+- Between sections: 24px (`space-y-6`)
+- Between cards: 16px (`gap-3`)
+- Safe area support via `env(safe-area-inset-*)`
+
+#### MobileHeader (`src/components/mobile/MobileHeader.tsx`)
+- 72px height with safe-area-top awareness
+- Hamburger menu (SVG icon) → opens slide-in drawer from left
+- Purple gradient ExpenseFlow logo + title (centered)
+- NotificationBell component + Avatar (right side)
+- Slide drawer: user profile card (avatar, name, email), 10 nav items with colored icons, Settings, Sign Out
+
+#### MobileBottomNav (`src/components/mobile/MobileBottomNav.tsx`)
+- 90px height, fixed at bottom with safe-area-bottom
+- Glassmorphism background (`bg-[#0A0C10]/92 backdrop-blur-2xl`)
+- 5 tabs: Home, Expenses, Income, Budget, More
+- Active tab with colored dot indicator above icon
+- 11px labels, 22px icons, active state colored per tab
+- "More" drawer: 3-column grid (Savings, Subscriptions, Loans, Recurring, Analytics, Calendar, Reports, Settings) + Sign Out
+
+#### MobileFAB (`src/components/mobile/MobileFAB.tsx`)
+- 64×64px, 20px border radius
+- Positioned: `calc(100px + env(safe-area-inset-bottom))` from bottom
+- Purple→Cyan gradient with soft shadow
+- Framer Motion hover/tap animations
+- Bottom sheet with 7 quick actions in 4-column grid
+
+#### MobileBalanceCard (`src/components/mobile/MobileBalanceCard.tsx`)
+- 24px border radius, gradient-balance (purple→cyan)
+- `shadow-2xl` with purple tint, decorative blur circles
+- Large `num-xl` amount with AnimatedCounter
+- 3 mini stats (Income/Expenses/Savings) in emerald/rose/amber with evenly spaced columns
+
+#### MobileQuickStats (`src/components/mobile/MobileQuickStats.tsx`)
+- 2-column grid with `gap-3`
+- 20px rounded cards with `bg-[#12142a]` and `border-white/[0.06]`
+- Icon top-right in tinted 32px circle
+- Large `num-md` values, savings rate in amber
+
+#### MobileTransactionItem (`src/components/mobile/MobileTransactionItem.tsx`)
+- 16px rounded containers with proper `card-shadow`
+- 10×40px icon container, 14px description, 15px amount
+- 2.5px gap between items
+- Framer Motion swipe (left=delete, right=edit)
+
+#### MobileFormSheet (`src/components/mobile/MobileFormSheet.tsx`)
+- Rounded-t-3xl (24px) top corners
+- 52px buttons with 16px radius, gradient-primary on submit
+- 20px horizontal padding in form content
+- Proper keyboard avoidance via overflow scroll
+
+#### Input Component (`src/components/ui/input.tsx`)
+- Height increased: 11→12 (48px)
+- Radius: `rounded-lg` → `rounded-xl`
+
+#### Page Updates (9 pages)
+All mobile sections updated with consistent:
+- `px-5 space-y-6` (20px padding, 24px section spacing)
+- `bg-[#12142a]` card backgrounds, `border-white/[0.06]`
+- `rounded-[20px]` for cards, `rounded-[16px]` for items
+- `h-10 w-10 rounded-xl` icon containers
+- `gap-3` for grids
+
+#### Animations
+- Framer Motion stagger children on MobileDashboard (0.08s delay)
+- Individual item animations with cubic-bezier `[0.16, 1, 0.3, 1]`
+- `active:scale-95/98` touch feedback on all interactive elements
+- CSS keyframes: fadeIn, slideUp, scaleIn, shimmer, slideLeft/Right
+
 ### Key Decisions
 - **`toDate()` helper** (`src/utils/helpers.ts`): Universal date converter that handles: `null`/`undefined` → `new Date()`, `Date` → return as-is, object with `toDate()` method (Firestore Timestamp) → call `.toDate()`, everything else → `new Date(value)`.
 - **Undefined stripping safety net**: `Object.fromEntries(Object.entries(data).filter(([_, v]) => v !== undefined))` applied to: `loans.add`, `loans.update`, `recurringTransactions.add`, `recurringTransactions.update`, `subscriptions.add`, `subscriptions.update`, and `notifications.add`.
@@ -173,14 +251,14 @@ All dashboard pages had dialog components rendered **inside** the `hidden lg:blo
 - `src/components/mobile/MobileFormSheet.tsx` — Responsive bottom sheet wrapper — Dialog on desktop, Sheet on mobile with sticky save
 - `src/components/mobile/index.ts` — Exports all mobile components
 - `src/app/(dashboard)/dashboard/page.tsx` — min-h-dvh, page-container, visual redesign, MobileDashboard
-- `src/app/(dashboard)/expenses/page.tsx` — Hidden buttons fix, page-container, pagination touch targets, dialog portal fix
-- `src/app/(dashboard)/income/page.tsx` — Hidden buttons fix, page-container, dialog portal fix
-- `src/app/(dashboard)/budgets/page.tsx` — Hidden buttons fix, page-container, dialog portal fix
-- `src/app/(dashboard)/savings/page.tsx` — Hidden buttons fix, page-container, dialog portal fix
-- `src/app/(dashboard)/loans/page.tsx` — Hidden buttons fix, page-container, currency fix, dialog portal fix
-- `src/app/(dashboard)/subscriptions/page.tsx` — Hidden buttons fix, page-container, currency fix, dialog portal fix
-- `src/app/(dashboard)/recurring/page.tsx` — Currency fix, always-visible buttons, page-container, dialog portal fix
-- `src/app/(dashboard)/analytics/page.tsx` — page-container
+- `src/app/(dashboard)/expenses/page.tsx` — Hidden buttons fix, page-container, pagination touch targets, dialog portal fix, mobile styling pass
+- `src/app/(dashboard)/income/page.tsx` — Hidden buttons fix, page-container, dialog portal fix, mobile styling pass
+- `src/app/(dashboard)/budgets/page.tsx` — Hidden buttons fix, page-container, dialog portal fix, mobile styling pass
+- `src/app/(dashboard)/savings/page.tsx` — Hidden buttons fix, page-container, dialog portal fix, mobile styling pass
+- `src/app/(dashboard)/loans/page.tsx` — Hidden buttons fix, page-container, currency fix, dialog portal fix, mobile styling pass
+- `src/app/(dashboard)/subscriptions/page.tsx` — Hidden buttons fix, page-container, currency fix, dialog portal fix, mobile styling pass
+- `src/app/(dashboard)/recurring/page.tsx` — Currency fix, always-visible buttons, page-container, dialog portal fix, mobile styling pass
+- `src/app/(dashboard)/analytics/page.tsx` — page-container, mobile styling pass
 - `src/app/(auth)/login/page.tsx` — iOS zoom fix, autoComplete
 - `src/app/(auth)/register/page.tsx` — iOS zoom fix, autoComplete
 - `src/app/(auth)/forgot-password/page.tsx` — iOS zoom fix

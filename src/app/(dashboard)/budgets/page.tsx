@@ -64,13 +64,13 @@ export default function BudgetsPage() {
     <>
     {/* Mobile version */}
     <div className="lg:hidden">
-      <div className="px-4 py-3 space-y-4 pb-24">
+      <div className="px-5 space-y-6">
         <div className="flex items-center justify-between">
           <h1 className="text-[18px] font-bold text-white">Budgets</h1>
           <span className="text-[12px] text-[#8899AA]">{totalBudget > 0 ? `${((totalSpent / totalBudget) * 100).toFixed(0)}% used` : 'No budget set'}</span>
         </div>
         {loading ? (
-          <div className="space-y-2">{[...Array(3)].map((_, i) => <div key={i} className="h-28 bg-[#141822] rounded-xl animate-pulse" />)}</div>
+          <div className="space-y-2">{[...Array(3)].map((_, i) => <div key={i} className="h-28 bg-[#12142a] rounded-[20px] animate-pulse" />)}</div>
         ) : budgets.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 text-center">
             <Target className="h-12 w-12 text-white/10 mb-3" />
@@ -84,10 +84,10 @@ export default function BudgetsPage() {
               const util = budget.amount > 0 ? (budget.spent / budget.amount) * 100 : 0;
               const remaining = budget.amount - budget.spent;
               return (
-                <div key={budget.id} className="bg-[#141822] rounded-xl border border-white/[0.08] p-4">
+                <div key={budget.id} className="bg-[#12142a] rounded-[20px] border border-white/[0.06] p-4">
                   <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-2">
-                      <div className="h-8 w-8 rounded-lg bg-[#7C5CFF]/15 flex items-center justify-center"><Wallet className="h-4 w-4 text-[#7C5CFF]" /></div>
+                    <div className="flex items-center gap-3">
+                      <div className="h-10 w-10 rounded-xl bg-[#7C5CFF]/15 flex items-center justify-center"><Wallet className="h-4 w-4 text-[#7C5CFF]" /></div>
                       <span className="text-[14px] font-medium text-white">{budget.category}</span>
                     </div>
                     <div className="relative">
@@ -209,7 +209,7 @@ export default function BudgetsPage() {
                           <Wallet className={`h-5 w-5 ${status.text}`} />
                         </div>
                         <div>
-                          <div className="flex items-center gap-2">
+<div className="flex items-center gap-3">
                             <Badge variant="secondary" className="text-sm px-3 py-1">{budget.category}</Badge>
                             {utilization > 100 && <AlertTriangle className="h-4 w-4 text-rose-500" />}
                           </div>

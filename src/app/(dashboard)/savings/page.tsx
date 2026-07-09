@@ -77,17 +77,17 @@ export default function SavingsPage() {
     <>
     {/* Mobile version */}
     <div className="lg:hidden">
-      <div className="px-4 py-3 space-y-4 pb-24">
+      <div className="px-5 space-y-6">
         <div className="flex items-center justify-between">
           <h1 className="text-[18px] font-bold text-white">Savings Goals</h1>
           <span className="text-[12px] text-[#8899AA]">{goals.length} goal{goals.length !== 1 ? 's' : ''}</span>
         </div>
         {/* Overall Progress */}
-        <div className="bg-gradient-to-br from-[#7C5CFF]/10 to-purple-600/10 rounded-xl border border-[#7C5CFF]/20 p-4">
+        <div className="bg-gradient-to-br from-[#7C5CFF]/10 to-purple-600/10 rounded-[20px] border border-[#7C5CFF]/20 p-4">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
-              <div className="h-8 w-8 rounded-lg bg-[#7C5CFF]/15 flex items-center justify-center"><PiggyBank className="h-4 w-4 text-[#7C5CFF]" /></div>
-              <span className="text-[13px] font-medium text-white">Total Savings</span>
+               <div className="h-10 w-10 rounded-xl bg-[#7C5CFF]/15 flex items-center justify-center"><PiggyBank className="h-4 w-4 text-[#7C5CFF]" /></div>
+               <span className="text-[13px] font-medium text-white">Total Savings</span>
             </div>
             <span className="text-[14px] font-bold text-[#7C5CFF]">{overallProgress.toFixed(1)}%</span>
           </div>
@@ -95,7 +95,7 @@ export default function SavingsPage() {
           <div className="h-2 rounded-full bg-white/5 overflow-hidden"><div className="h-full rounded-full bg-[#7C5CFF] transition-all" style={{ width: `${Math.min(overallProgress, 100)}%` }} /></div>
         </div>
         {loading ? (
-          <div className="space-y-2">{[...Array(3)].map((_, i) => <div key={i} className="h-32 bg-[#141822] rounded-xl animate-pulse" />)}</div>
+          <div className="space-y-2">{[...Array(3)].map((_, i) => <div key={i} className="h-32 bg-[#12142a] rounded-[16px] animate-pulse" />)}</div>
         ) : goals.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 text-center">
             <Target className="h-12 w-12 text-white/10 mb-3" />
@@ -109,10 +109,10 @@ export default function SavingsPage() {
               const progress = goal.targetAmount > 0 ? (goal.currentAmount / goal.targetAmount) * 100 : 0;
               const daysLeft = Math.max(0, Math.ceil((toDate(goal.targetDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24)));
               return (
-                <div key={goal.id} className="bg-[#141822] rounded-xl border border-white/[0.08] p-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-2">
-                      <div className="h-8 w-8 rounded-lg bg-[#7C5CFF]/15 flex items-center justify-center"><PiggyBank className="h-4 w-4 text-[#7C5CFF]" /></div>
+                <div key={goal.id} className="bg-[#12142a] rounded-[20px] border border-white/[0.06] p-4">
+                   <div className="flex items-center justify-between mb-2">
+                     <div className="flex items-center gap-3">
+                       <div className="h-10 w-10 rounded-xl bg-[#7C5CFF]/15 flex items-center justify-center"><PiggyBank className="h-4 w-4 text-[#7C5CFF]" /></div>
                       <span className="text-[14px] font-medium text-white">{goal.name}</span>
                     </div>
                     <button onClick={() => setDeletingId(goal.id)} className="p-1.5 rounded-lg hover:bg-white/5"><Trash2 className="h-3.5 w-3.5 text-[#5A6B7D]" /></button>
@@ -140,10 +140,10 @@ export default function SavingsPage() {
               <div className="pt-2">
                 <p className="text-[13px] font-medium text-white mb-2">Completed</p>
                 {goals.filter((g) => g.isCompleted).map((goal) => (
-                  <div key={goal.id} className="bg-[#141822] rounded-xl border border-[#00D09C]/30 p-3 mb-2">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <div className="h-8 w-8 rounded-lg bg-[#00D09C]/15 flex items-center justify-center"><TrendingUp className="h-4 w-4 text-[#00D09C]" /></div>
+                  <div key={goal.id} className="bg-[#12142a] rounded-[20px] border border-[#00D09C]/30 p-3 mb-2">
+                     <div className="flex items-center justify-between">
+                       <div className="flex items-center gap-3">
+                         <div className="h-10 w-10 rounded-xl bg-[#00D09C]/15 flex items-center justify-center"><TrendingUp className="h-4 w-4 text-[#00D09C]" /></div>
                         <span className="text-[14px] font-medium text-white">{goal.name}</span>
                       </div>
                       <span className="text-[14px] font-bold text-[#00D09C]">{formatCurrency(goal.targetAmount, userData?.currency)}</span>

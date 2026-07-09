@@ -57,7 +57,7 @@ export default function LoansPage() {
     <>
     {/* Mobile version */}
     <div className="lg:hidden">
-      <div className="px-4 py-3 space-y-4 pb-24">
+      <div className="px-5 space-y-6">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-[18px] font-bold text-white">Loans & EMI</h1>
@@ -68,18 +68,18 @@ export default function LoansPage() {
             <p className="text-[11px] text-[#5A6B7D]">Outstanding</p>
           </div>
         </div>
-        <div className="grid grid-cols-2 gap-2">
-          <div className="bg-[#141822] rounded-xl border border-white/[0.08] p-3">
+        <div className="grid grid-cols-2 gap-3">
+          <div className="bg-[#12142a] rounded-[20px] border border-white/[0.06] p-3">
             <p className="text-[11px] text-[#8899AA]">Active</p>
             <p className="text-[14px] font-bold text-white">{loading ? '...' : activeLoans.length}</p>
           </div>
-          <div className="bg-[#141822] rounded-xl border border-white/[0.08] p-3">
+          <div className="bg-[#12142a] rounded-[20px] border border-white/[0.06] p-3">
             <p className="text-[11px] text-[#8899AA]">Monthly EMI</p>
             <p className="text-[14px] font-bold text-[#FBBF24]">{loading ? '...' : formatCurrency(totalEmiPerMonth, userData?.currency)}</p>
           </div>
         </div>
         {loading ? (
-          <div className="space-y-2">{[...Array(3)].map((_, i) => <div key={i} className="h-28 bg-[#141822] rounded-xl animate-pulse" />)}</div>
+          <div className="space-y-2">{[...Array(3)].map((_, i) => <div key={i} className="h-28 bg-[#12142a] rounded-[16px] animate-pulse" />)}</div>
         ) : loans.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 text-center">
             <Banknote className="h-12 w-12 text-white/10 mb-3" />
@@ -92,10 +92,10 @@ export default function LoansPage() {
             {loans.map((loan) => {
               const progress = loan.totalEmi > 0 ? (loan.paidEmi / loan.totalEmi) * 100 : 0;
               return (
-                <div key={loan.id} className="bg-[#141822] rounded-xl border border-white/[0.08] p-4">
+                <div key={loan.id} className="bg-[#12142a] rounded-[20px] border border-white/[0.06] p-4">
                   <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-2">
-                      <div className="h-8 w-8 rounded-lg bg-[#7C5CFF]/15 flex items-center justify-center"><Banknote className="h-4 w-4 text-[#7C5CFF]" /></div>
+                    <div className="flex items-center gap-3">
+                      <div className="h-10 w-10 rounded-xl bg-[#7C5CFF]/15 flex items-center justify-center"><Banknote className="h-4 w-4 text-[#7C5CFF]" /></div>
                       <div>
                         <p className="text-[14px] font-medium text-white">{loan.name}</p>
                         <p className="text-[11px] text-[#8899AA]">{loan.paidEmi}/{loan.totalEmi} EMIs paid</p>
@@ -107,7 +107,7 @@ export default function LoansPage() {
                       </span>
                     </div>
                   </div>
-                  <div className="grid grid-cols-3 gap-2 mb-2">
+                  <div className="grid grid-cols-3 gap-3 mb-2">
                     <div><p className="text-[10px] text-[#5A6B7D]">Principal</p><p className="text-[12px] font-semibold text-white">{formatCurrency(loan.principalAmount, userData?.currency)}</p></div>
                     <div><p className="text-[10px] text-[#5A6B7D]">Outstanding</p><p className="text-[12px] font-semibold text-[#FF5A6E]">{formatCurrency(loan.outstandingBalance, userData?.currency)}</p></div>
                     <div><p className="text-[10px] text-[#5A6B7D]">EMI</p><p className="text-[12px] font-semibold text-white">{formatCurrency(loan.emiAmount, userData?.currency)}</p></div>
