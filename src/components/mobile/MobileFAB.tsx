@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Plus, TrendingDown, ArrowUpFromLine, PiggyBank, Repeat, Target, Wallet, Landmark } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 
 interface FABAction {
@@ -23,11 +23,11 @@ export function MobileFAB({ actions }: MobileFABProps) {
   return (
     <>
       <motion.button
-        className="fixed z-50 flex h-16 w-16 items-center justify-center rounded-[20px] gradient-primary text-white shadow-2xl active:scale-90"
+        className="fixed z-50 flex h-16 w-16 items-center justify-center rounded-[20px] gradient-primary text-white active:scale-90"
         style={{
-          bottom: 'calc(100px + env(safe-area-inset-bottom, 0px))',
+          bottom: 'calc(96px + env(safe-area-inset-bottom, 0px))',
           right: '20px',
-          boxShadow: '0 8px 32px rgba(139, 111, 255, 0.35), 0 2px 8px rgba(0, 0, 0, 0.2)',
+          boxShadow: '0 8px 32px rgba(124, 92, 255, 0.35), 0 2px 8px rgba(0, 0, 0, 0.2)',
         }}
         onClick={() => setOpen(true)}
         whileHover={{ scale: 1.05 }}
@@ -38,7 +38,18 @@ export function MobileFAB({ actions }: MobileFABProps) {
       </motion.button>
 
       <Sheet open={open} onOpenChange={setOpen}>
-        <SheetContent side="bottom" className="bg-[#0A0C10] border-t border-white/[0.06] rounded-t-3xl px-4 pt-5 pb-0 shadow-2xl shadow-black/40" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 16px)' }}>
+        <SheetContent
+          side="bottom"
+          className="px-4 pt-5 shadow-2xl shadow-black/40"
+          style={{
+            backgroundColor: 'rgba(9, 9, 11, 0.95)',
+            backdropFilter: 'blur(32px)',
+            WebkitBackdropFilter: 'blur(32px)',
+            borderTop: '1px solid rgba(255, 255, 255, 0.06)',
+            borderRadius: '28px 28px 0 0',
+            paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 16px)',
+          }}
+        >
           <SheetHeader className="mb-4">
             <SheetTitle className="text-[17px] font-bold text-white text-center">Quick Actions</SheetTitle>
           </SheetHeader>
@@ -54,7 +65,7 @@ export function MobileFAB({ actions }: MobileFABProps) {
                   <div className="flex h-11 w-11 items-center justify-center rounded-xl mx-auto" style={{ backgroundColor: action.color + '18' }}>
                     <Icon className="h-5 w-5" style={{ color: action.color }} />
                   </div>
-                  <span className="text-[10px] font-medium text-[#8899AA] text-center leading-tight">{action.label}</span>
+                  <span className="text-[10px] font-medium text-[#6b7b8d] text-center leading-tight">{action.label}</span>
                 </button>
               );
             })}

@@ -1,10 +1,14 @@
 'use client';
 
-import { useState, useRef } from 'react';
-import { TrendingUp, TrendingDown, Trash2, Pencil } from 'lucide-react';
+import { useState } from 'react';
+import {
+  TrendingUp, TrendingDown, MoreVertical,
+  Pencil, Trash2, Copy, Star, Share2,
+} from 'lucide-react';
 import { formatCurrency, formatDate } from '@/utils/format';
 import { toDate } from '@/utils/helpers';
-import { motion, useMotionValue, useTransform, AnimatePresence } from 'framer-motion';
+import { Sheet, SheetContent } from '@/components/ui/sheet';
+import { motion } from 'framer-motion';
 
 interface MobileTransactionItemProps {
   description: string;
@@ -20,44 +24,16 @@ interface MobileTransactionItemProps {
 export function MobileTransactionItem({
   description, amount, date, type, category, currency, onEdit, onDelete,
 }: MobileTransactionItemProps) {
-  const [swiped, setSwiped] = useState<'left' | 'right' | null>(null);
-  const x = useMotionValue(0);
+  const [menuOpen, setMenuOpen] = useState(false);
   const isIncome = type === 'income';
-  const color = isIncome ? '#00D09C' : '#FF5A6E';
-
-  const handleDragEnd = (_: any, info: any) => {
-    if (info.offset.x < -80 && onDelete) {
-      setSwiped('left');
-      setTimeout(() => onDelete(), 200);
-    } else if (info.offset.x > 80 && onEdit) {
-      setSwiped('right');
-      setTimeout(() => onEdit(), 200);
-    }
-  };
+  const color = isIncome ? '#00d09c' : '#ff5a7a';
 
   return (
-    <div className="relative overflow-hidden rounded-[16px]">
-      <div className="absolute inset-0 flex">
-        {onEdit && (
-          <div className="flex-1 bg-[#8B6FFF] flex items-center justify-center rounded-l-[16px]">
-            <Pencil className="h-5 w-5 text-white" />
-          </div>
-        )}
-        {onDelete && (
-          <div className="flex-1 bg-[#FF5A6E] flex items-center justify-center rounded-r-[16px]">
-            <Trash2 className="h-5 w-5 text-white" />
-          </div>
-        )}
-      </div>
-
+    <>
       <motion.div
-        className="relative bg-[#12142a] border border-white/[0.06] rounded-[16px] px-4 py-[14px] card-shadow"
-        style={{ x }}
-        drag="x"
-        dragConstraints={{ left: -100, right: 100 }}
-        dragElastic={0.2}
-        onDragEnd={handleDragEnd}
-        whileTap={{ scale: 0.98 }}
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="bg-[#161a27] rounded-[16px] border border-white/[0.06] px-4 py-[14px] card-shadow active:scale-[0.98] transition-all"
       >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3 min-w-0 flex-1">
@@ -68,17 +44,67 @@ export function MobileTransactionItem({
               <p className="text-[14px] font-semibold text-white truncate">{description}</p>
               <div className="flex items-center gap-2 mt-0.5">
                 {category && (
-                  <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-white/5 text-[#8899AA]">{category}</span>
+                  <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-white/5 text-[#6b7b8d]">{category}</span>
                 )}
-                <span className="text-[11px] text-[#5A6B7D]">{formatDate(toDate(date))}</span>
+                <span className="text-[10px] text-[#6b7b8d] font-medium">{formatDate(toDate(date))}</span>
               </div>
             </div>
           </div>
-          <span className={`text-[15px] font-bold shrink-0 ml-3 ${isIncome ? 'text-[#00D09C]' : 'text-[#FF5A6E]'}`}>
-            {isIncome ? '+' : '-'}{formatCurrency(amount, currency)}
-          </span>
+          <div className="flex items-center gap-1 shrink-0 ml-2">
+            <span className={`text-[15px] font-bold ${isIncome ? 'text-[#00d09c]' : 'text-[#ff5a7a]'}`}>
+              {isIncome ? '+' : '-'}{formatCurrency(amount, currency)}
+            </span>
+            <button
+              onClick={() => setMenuOpen(true)}
+              className="flex h-9 w-9 items-center justify-center rounded-xl text-[#6b7b8d] hover:bg-white/5 active:scale-90 transition-all"
+              aria-label="More actions"
+            >
+              <MoreVertical className="h-[18px] w-[18px]" />
+            </button>
+          </div>
         </div>
       </motion.div>
-    </div>
+
+      <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
+        <SheetContent
+          side="bottom"
+          className="bg-[#09090b] border-t border-white/[0.06] rounded-t-[28px] px-4 pt-5 shadow-2xl shadow-black/40"
+          style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 16px)' }}
+        >
+          <div className="flex items-center gap-3.5 mb-4 pb-4 border-b border-white/[0.06]">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl shrink-0" style={{ backgroundColor: color + '15' }}>
+              {isIncome ? <TrendingUp className="h-5 w-5" style={{ color }} /> : <TrendingDown className="h-5 w-5" style={{ color }} />}
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-[15px] font-bold text-white truncate">{description}</p>
+              <p className="text-[12px] text-[#6b7b8d]">{category} &middot; {formatDate(toDate(date))}</p>
+            </div>
+            <span className={`text-[17px] font-bold shrink-0 ${isIncome ? 'text-[#00d09c]' : 'text-[#ff5a7a]'}`}>
+              {isIncome ? '+' : '-'}{formatCurrency(amount, currency)}
+            </span>
+          </div>
+          <div className="space-y-1">
+            {[
+              { icon: Pencil, label: 'Edit', action: () => { setMenuOpen(false); setTimeout(() => onEdit?.(), 200); }, color: '#7c5cff' },
+              { icon: Copy, label: 'Duplicate', action: () => setMenuOpen(false), color: '#3b82f6' },
+              { icon: Star, label: 'Mark as Favorite', action: () => setMenuOpen(false), color: '#ffb020' },
+              { icon: Share2, label: 'Share', action: () => setMenuOpen(false), color: '#00d09c' },
+              { icon: Trash2, label: 'Delete', action: () => { setMenuOpen(false); setTimeout(() => onDelete?.(), 200); }, color: '#ff5a7a' },
+            ].map(({ icon: Icon, label, action, color: iconColor }) => (
+              <button
+                key={label}
+                onClick={action}
+                className="flex w-full items-center gap-3.5 rounded-[14px] px-3.5 py-3.5 text-white hover:bg-white/5 active:scale-[0.98] transition-all"
+              >
+                <div className="flex h-10 w-10 items-center justify-center rounded-[12px] shrink-0" style={{ backgroundColor: iconColor + '15' }}>
+                  <Icon className="h-[18px] w-[18px]" style={{ color: iconColor }} />
+                </div>
+                <span className="text-[14px] font-medium">{label}</span>
+              </button>
+            ))}
+          </div>
+        </SheetContent>
+      </Sheet>
+    </>
   );
 }

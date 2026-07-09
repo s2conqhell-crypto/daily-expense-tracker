@@ -143,6 +143,15 @@ All dashboard pages had dialog components rendered **inside** the `hidden lg:blo
 ### Mobile UI Redesign (Premium Native iOS Look)
 Complete mobile UI overhaul to match premium fintech apps (Monarch Money, Copilot, Rocket Money). Desktop unchanged.
 
+#### Color System
+- Background: `#09090B` (was `#0A0C10`)
+- Cards: `#161A27` (was `#141822`/`#12142a`)
+- Primary: `#7c5cff` (was `#8B6FFF`)
+- Success: `#00d09c` (was `#00D09C`)
+- Danger: `#ff5a7a` (was `#FF5A6E`)
+- Warning: `#ffb020` (was `#FBBF24`)
+- Muted text: `#6b7b8d` (was `#8899AA`/`#5A6B7D`)
+
 #### Typography
 - Switched `Plus Jakarta Sans` → `Inter` with weights 400/500/600/700/800
 - New scale: `heading-xl` (36px), `heading-lg` (24px), `title-card` (15px), `body-base` (14px), `caption` (11px)
@@ -163,15 +172,15 @@ Complete mobile UI overhaul to match premium fintech apps (Monarch Money, Copilo
 
 #### MobileBottomNav (`src/components/mobile/MobileBottomNav.tsx`)
 - 90px height, fixed at bottom with safe-area-bottom
-- Glassmorphism background (`bg-[#0A0C10]/92 backdrop-blur-2xl`)
+- Glassmorphism background (`bg-[#09090B]/92 backdrop-blur-2xl`)
 - 5 tabs: Home, Expenses, Income, Budget, More
 - Active tab with colored dot indicator above icon
 - 11px labels, 22px icons, active state colored per tab
-- "More" drawer: 3-column grid (Savings, Subscriptions, Loans, Recurring, Analytics, Calendar, Reports, Settings) + Sign Out
+- "More" drawer: 3-column grid (Savings, Subscriptions, Loans, Recurring, Analytics, Calendar, Reports, Settings, Profile) + Sign Out
 
 #### MobileFAB (`src/components/mobile/MobileFAB.tsx`)
 - 64×64px, 20px border radius
-- Positioned: `calc(100px + env(safe-area-inset-bottom))` from bottom
+- Positioned: `calc(96px + env(safe-area-inset-bottom))` from bottom
 - Purple→Cyan gradient with soft shadow
 - Framer Motion hover/tap animations
 - Bottom sheet with 7 quick actions in 4-column grid
@@ -184,36 +193,42 @@ Complete mobile UI overhaul to match premium fintech apps (Monarch Money, Copilo
 
 #### MobileQuickStats (`src/components/mobile/MobileQuickStats.tsx`)
 - 2-column grid with `gap-3`
-- 20px rounded cards with `bg-[#12142a]` and `border-white/[0.06]`
+- 20px rounded cards with `bg-[#161a27]` and `border-white/[0.06]`
 - Icon top-right in tinted 32px circle
 - Large `num-md` values, savings rate in amber
 
 #### MobileTransactionItem (`src/components/mobile/MobileTransactionItem.tsx`)
 - 16px rounded containers with proper `card-shadow`
 - 10×40px icon container, 14px description, 15px amount
-- 2.5px gap between items
-- Framer Motion swipe (left=delete, right=edit)
+- ⋮ overflow menu button → opens iOS bottom sheet with:
+  - Edit, Duplicate, Mark as Favorite, Share, Delete
+- Delete and Edit are no longer visible on the card directly
 
 #### MobileFormSheet (`src/components/mobile/MobileFormSheet.tsx`)
-- Rounded-t-3xl (24px) top corners
+- Rounded-t-[28px] (28px) top corners with blur background
 - 52px buttons with 16px radius, gradient-primary on submit
 - 20px horizontal padding in form content
 - Proper keyboard avoidance via overflow scroll
 
 #### Input Component (`src/components/ui/input.tsx`)
-- Height increased: 11→12 (48px)
-- Radius: `rounded-lg` → `rounded-xl`
+- Height increased: 48px → 52px
+- Radius: `rounded-xl` → `rounded-[16px]`
+
+#### Home Screen Quick Actions
+- Row of pill buttons below greeting: Expense, Income, Transfer, Reports
+- Each pill has tinted icon + white label
+- Horizontally scrollable if needed
 
 #### Page Updates (9 pages)
 All mobile sections updated with consistent:
 - `px-5 space-y-6` (20px padding, 24px section spacing)
-- `bg-[#12142a]` card backgrounds, `border-white/[0.06]`
+- `bg-[#161a27]` card backgrounds, `border-white/[0.06]`
 - `rounded-[20px]` for cards, `rounded-[16px]` for items
 - `h-10 w-10 rounded-xl` icon containers
 - `gap-3` for grids
 
 #### Animations
-- Framer Motion stagger children on MobileDashboard (0.08s delay)
+- Framer Motion stagger children on MobileDashboard (0.06s delay)
 - Individual item animations with cubic-bezier `[0.16, 1, 0.3, 1]`
 - `active:scale-95/98` touch feedback on all interactive elements
 - CSS keyframes: fadeIn, slideUp, scaleIn, shimmer, slideLeft/Right

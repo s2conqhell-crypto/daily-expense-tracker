@@ -108,11 +108,11 @@ export default function IncomePage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-[18px] font-bold text-white">Income</h1>
-            <p className="text-[12px] text-[#8899AA]">{incomes.length} entries</p>
+            <p className="text-[12px] text-[#6b7b8d]">{incomes.length} entries</p>
           </div>
           <div className="text-right">
             <p className="text-[14px] font-bold text-[#00D09C]">{formatCurrency(totalIncome, userData?.currency)}</p>
-            <p className="text-[11px] text-[#5A6B7D]">Total income</p>
+            <p className="text-[11px] text-[#6b7b8d]">Total income</p>
           </div>
         </div>
         <div className="grid grid-cols-2 gap-3">
@@ -122,35 +122,35 @@ export default function IncomePage() {
             { label: "Recurring", value: recurringIncome, color: '#FBBF24' },
             { label: "Sources", value: sourceBreakdown.length, color: '#FF5A6E' },
           ].map((stat) => (
-            <div key={stat.label} className="bg-[#12142a] rounded-[16px] border border-white/[0.06] p-3">
-              {loading ? <><div className="h-5 w-16 bg-white/5 rounded animate-pulse" /><div className="h-3 w-12 bg-white/5 rounded animate-pulse mt-1" /></> : <><p className="text-[14px] font-bold text-white">{typeof stat.value === 'number' ? formatCurrency(stat.value, userData?.currency) : stat.value}</p><p className="text-[11px] text-[#8899AA] mt-0.5">{stat.label}</p></>}
+            <div key={stat.label} className="bg-[#161a27] rounded-[16px] border border-white/[0.06] p-3">
+              {loading ? <><div className="h-5 w-16 bg-white/5 rounded animate-pulse" /><div className="h-3 w-12 bg-white/5 rounded animate-pulse mt-1" /></> : <><p className="text-[14px] font-bold text-white">{typeof stat.value === 'number' ? formatCurrency(stat.value, userData?.currency) : stat.value}</p><p className="text-[11px] text-[#6b7b8d] mt-0.5">{stat.label}</p></>}
             </div>
           ))}
         </div>
         {loading ? (
-          <div className="space-y-2">{[...Array(5)].map((_, i) => <div key={i} className="h-[68px] bg-[#12142a] rounded-[16px] animate-pulse" />)}</div>
+          <div className="space-y-2">{[...Array(5)].map((_, i) => <div key={i} className="h-[68px] bg-[#161a27] rounded-[16px] animate-pulse" />)}</div>
         ) : incomes.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 text-center">
             <TrendingUp className="h-12 w-12 text-white/10 mb-3" />
             <p className="text-[14px] font-medium text-white mb-1">No income recorded</p>
-            <p className="text-[12px] text-[#8899AA] mb-4">Start tracking your earnings</p>
+            <p className="text-[12px] text-[#6b7b8d] mb-4">Start tracking your earnings</p>
             <button onClick={() => setDialogOpen(true)} className="px-4 py-2 text-[13px] font-medium rounded-xl bg-[#00D09C]/20 text-[#00D09C]">Add Income</button>
           </div>
         ) : (
           <div className="space-y-2">
             {sorted.map((income) => (
-              <div key={income.id} className="bg-[#12142a] rounded-[16px] border border-white/[0.06] p-3">
+              <div key={income.id} className="bg-[#161a27] rounded-[16px] border border-white/[0.06] p-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3 min-w-0 flex-1">
                     <div className="h-10 w-10 rounded-xl bg-[#00D09C]/15 flex items-center justify-center shrink-0"><TrendingUp className="h-4 w-4 text-[#00D09C]" /></div>
                     <div className="min-w-0 flex-1">
                       <p className="text-[14px] font-medium text-white truncate">{income.description}</p>
-                      <div className="flex items-center gap-2 text-[11px] text-[#8899AA]"><span>{income.source}</span><span>&middot;</span><span>{formatDate(income.incomeDate)}</span></div>
+                      <div className="flex items-center gap-2 text-[11px] text-[#6b7b8d]"><span>{income.source}</span><span>&middot;</span><span>{formatDate(income.incomeDate)}</span></div>
                     </div>
                   </div>
                   <div className="flex items-center gap-1 shrink-0 ml-2">
                     <span className="text-[14px] font-semibold text-[#00D09C]">+{formatCurrency(income.amount, userData?.currency)}</span>
-                    <button onClick={() => { if (confirm('Delete this income?')) handleDelete(income.id); }} className="p-1.5 rounded-lg hover:bg-white/5"><Trash2 className="h-3.5 w-3.5 text-[#5A6B7D]" /></button>
+                    <button onClick={() => { if (confirm('Delete this income?')) handleDelete(income.id); }} className="p-1.5 rounded-lg hover:bg-white/5"><Trash2 className="h-3.5 w-3.5 text-[#6b7b8d]" /></button>
                   </div>
                 </div>
               </div>

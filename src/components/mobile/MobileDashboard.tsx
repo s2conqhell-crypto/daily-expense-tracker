@@ -7,7 +7,8 @@ import { firebaseService } from '@/firebase/services';
 import { useRouter } from 'next/navigation';
 import {
   TrendingUp, Target, Repeat, Banknote, Clock, PiggyBank,
-  Receipt, BarChart3, ChevronRight, Calendar,
+  Receipt, BarChart3, ChevronRight, Plus,
+  TrendingDown, ArrowUpFromLine, ArrowLeftRight, FileText,
 } from 'lucide-react';
 import { formatCurrency, formatDate } from '@/utils/format';
 import { toDate } from '@/utils/helpers';
@@ -32,14 +33,21 @@ const container = {
   hidden: { opacity: 0 },
   show: {
     opacity: 1,
-    transition: { staggerChildren: 0.08, delayChildren: 0.1 },
+    transition: { staggerChildren: 0.06, delayChildren: 0.08 },
   },
 };
 
 const itemAnim = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] } },
+  hidden: { opacity: 0, y: 16 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.35, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] } },
 };
+
+const quickActions = [
+  { id: 'expense', label: 'Expense', icon: TrendingDown, color: '#ff5a7a', route: '/expenses?add=true' },
+  { id: 'income', label: 'Income', icon: ArrowUpFromLine, color: '#00d09c', route: '/income?add=true' },
+  { id: 'transfer', label: 'Transfer', icon: ArrowLeftRight, color: '#7c5cff', route: '/transfer' },
+  { id: 'reports', label: 'Reports', icon: FileText, color: '#ffb020', route: '/reports' },
+];
 
 export function MobileDashboard() {
   const { summary, monthlyTrend, loading } = useDashboard();
@@ -81,26 +89,44 @@ export function MobileDashboard() {
   [summary.recentTransactions, txCount]);
 
   const fabActions = [
-    { id: 'expense', label: 'Expense', icon: TrendingUp, color: '#FF5A6E', onClick: () => router.push('/expenses?add=true') },
-    { id: 'income', label: 'Income', icon: TrendingUp, color: '#00D09C', onClick: () => router.push('/income?add=true') },
-    { id: 'budget', label: 'Budget', icon: Target, color: '#8B6FFF', onClick: () => router.push('/budgets?add=true') },
-    { id: 'savings', label: 'Goal', icon: PiggyBank, color: '#FBBF24', onClick: () => router.push('/savings?add=true') },
-    { id: 'subscription', label: 'Subscription', icon: Repeat, color: '#3B82F6', onClick: () => router.push('/subscriptions?add=true') },
-    { id: 'loan', label: 'Loan', icon: Banknote, color: '#FF5A6E', onClick: () => router.push('/loans?add=true') },
-    { id: 'recurring', label: 'Recurring', icon: Clock, color: '#00D09C', onClick: () => router.push('/recurring?add=true') },
+    { id: 'expense', label: 'Expense', icon: TrendingUp, color: '#ff5a7a', onClick: () => router.push('/expenses?add=true') },
+    { id: 'income', label: 'Income', icon: TrendingUp, color: '#00d09c', onClick: () => router.push('/income?add=true') },
+    { id: 'budget', label: 'Budget', icon: Target, color: '#7c5cff', onClick: () => router.push('/budgets?add=true') },
+    { id: 'savings', label: 'Goal', icon: PiggyBank, color: '#ffb020', onClick: () => router.push('/savings?add=true') },
+    { id: 'subscription', label: 'Subscription', icon: Repeat, color: '#3b82f6', onClick: () => router.push('/subscriptions?add=true') },
+    { id: 'loan', label: 'Loan', icon: Banknote, color: '#ff5a7a', onClick: () => router.push('/loans?add=true') },
+    { id: 'recurring', label: 'Recurring', icon: Clock, color: '#00d09c', onClick: () => router.push('/recurring?add=true') },
   ];
 
   return (
-    <div className="min-h-dvh bg-[#0A0C10]" style={{ paddingBottom: 'calc(90px + env(safe-area-inset-bottom, 0px))' }}>
+    <div className="min-h-dvh bg-[#09090b]" style={{ paddingBottom: 'calc(90px + env(safe-area-inset-bottom, 0px))' }}>
       <motion.div className="px-5 space-y-6 pt-3" variants={container} initial="hidden" animate="show">
         {/* Greeting */}
         <motion.div variants={itemAnim}>
-          <h1 className="heading-xl text-white text-balance">
-            {greeting()} <span className="text-[#8B6FFF]">👋</span>
+          <h1 className="text-[32px] font-bold text-white tracking-tight text-balance">
+            {greeting()} <span className="text-[#7c5cff]">👋</span>
           </h1>
-          <div className="mt-1.5">
-            <p className="text-[15px] font-semibold text-white">{userName}</p>
-            <p className="text-[12px] text-[#8899AA] font-medium mt-0.5">{todayStr}</p>
+          <div className="mt-1">
+            <p className="text-[17px] font-semibold text-white">{userName}</p>
+            <p className="text-[12px] text-[#6b7b8d] font-medium mt-0.5">{todayStr}</p>
+          </div>
+        </motion.div>
+
+        {/* Quick Actions */}
+        <motion.div variants={itemAnim}>
+          <div className="flex items-center gap-2.5 overflow-x-auto pb-1 no-scrollbar">
+            {quickActions.map(({ id, label, icon: Icon, color, route }) => (
+              <button
+                key={id}
+                onClick={() => router.push(route)}
+                className="flex items-center gap-2.5 px-4 py-2.5 rounded-[14px] bg-[#161a27] border border-white/[0.06] active:scale-95 transition-all shrink-0"
+              >
+                <div className="flex h-8 w-8 items-center justify-center rounded-[10px]" style={{ backgroundColor: color + '15' }}>
+                  <Icon className="h-[16px] w-[16px]" style={{ color }} />
+                </div>
+                <span className="text-[13px] font-semibold text-white whitespace-nowrap">{label}</span>
+              </button>
+            ))}
           </div>
         </motion.div>
 
@@ -128,18 +154,18 @@ export function MobileDashboard() {
           />
         </motion.div>
 
-        {/* Mini Chart */}
+        {/* Trend Card */}
         <motion.div variants={itemAnim}>
-          <div className="bg-[#12142a] rounded-[20px] border border-white/[0.06] p-5 card-shadow">
+          <div className="bg-[#161a27] rounded-[20px] border border-white/[0.06] p-5 card-shadow">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
-                <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#8B6FFF]/15">
-                  <BarChart3 className="h-[18px] w-[18px] text-[#8B6FFF]" />
+                <div className="flex h-8 w-8 items-center justify-center rounded-[10px] bg-[#7c5cff]/15">
+                  <BarChart3 className="h-[18px] w-[18px] text-[#7c5cff]" />
                 </div>
-                <span className="title-card text-white">Spending Trend</span>
+                <span className="text-[15px] font-semibold text-white">Spending Trend</span>
               </div>
               {monthlyTrend.length > 0 && (
-                <button onClick={() => router.push('/analytics')} className="text-[12px] font-semibold text-[#8B6FFF] flex items-center gap-1 active:opacity-70 transition-opacity">
+                <button onClick={() => router.push('/analytics')} className="text-[12px] font-semibold text-[#7c5cff] flex items-center gap-1 active:opacity-70 transition-opacity">
                   Analytics <ChevronRight className="h-4 w-4" />
                 </button>
               )}
@@ -149,20 +175,20 @@ export function MobileDashboard() {
             ) : monthlyTrend.length === 0 ? (
               <div className="h-[140px] flex flex-col items-center justify-center rounded-xl bg-white/[0.02] border border-dashed border-white/[0.06]">
                 <BarChart3 className="h-8 w-8 text-white/10 mb-2" />
-                <p className="body-sm text-[#8899AA]">No data yet</p>
+                <p className="text-[12px] text-[#6b7b8d] font-medium">No data yet</p>
               </div>
             ) : (
               <ResponsiveContainer width="100%" height={140}>
                 <BarChart data={monthlyTrend} barGap={4}>
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
-                  <XAxis dataKey="month" tick={{ fontSize: 10, fill: '#8899AA', fontWeight: 500 }} axisLine={false} tickLine={false} dy={4} />
+                  <XAxis dataKey="month" tick={{ fontSize: 10, fill: '#6b7b8d', fontWeight: 500 }} axisLine={false} tickLine={false} dy={4} />
                   <YAxis hide />
                   <Tooltip
-                    contentStyle={{ background: '#1A1D2E', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', fontSize: '12px', color: '#fff', boxShadow: '0 8px 32px rgba(0,0,0,0.5)' }}
+                    contentStyle={{ background: '#161a27', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '14px', fontSize: '12px', color: '#fff', boxShadow: '0 8px 32px rgba(0,0,0,0.5)' }}
                     cursor={{ fill: 'rgba(255,255,255,0.03)' }}
                   />
-                  <Bar dataKey="income" fill="#00D09C" radius={[4, 4, 0, 0]} maxBarSize={20} name="Income" />
-                  <Bar dataKey="expenses" fill="#FF5A6E" radius={[4, 4, 0, 0]} maxBarSize={20} name="Expenses" />
+                  <Bar dataKey="income" fill="#00d09c" radius={[4, 4, 0, 0]} maxBarSize={20} name="Income" />
+                  <Bar dataKey="expenses" fill="#ff5a7a" radius={[4, 4, 0, 0]} maxBarSize={20} name="Expenses" />
                 </BarChart>
               </ResponsiveContainer>
             )}
@@ -172,8 +198,8 @@ export function MobileDashboard() {
         {/* Recent Transactions */}
         <motion.div variants={itemAnim}>
           <div className="flex items-center justify-between mb-3">
-            <span className="title-section text-white">Recent Transactions</span>
-            <button onClick={() => router.push('/expenses')} className="text-[12px] font-semibold text-[#8B6FFF] flex items-center gap-1 active:opacity-70 transition-opacity">
+            <span className="text-[15px] font-semibold text-white">Recent Transactions</span>
+            <button onClick={() => router.push('/expenses')} className="text-[12px] font-semibold text-[#7c5cff] flex items-center gap-1 active:opacity-70 transition-opacity">
               View All <ChevronRight className="h-4 w-4" />
             </button>
           </div>
@@ -181,9 +207,9 @@ export function MobileDashboard() {
             {loading ? (
               [...Array(4)].map((_, i) => <div key={i} className="h-[64px] rounded-[16px] bg-white/5 animate-pulse" />)
             ) : filteredTx.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-10 bg-[#12142a] rounded-[20px] border border-white/[0.06]">
+              <div className="flex flex-col items-center justify-center py-10 bg-[#161a27] rounded-[20px] border border-white/[0.06]">
                 <Receipt className="h-10 w-10 text-white/10 mb-2" />
-                <p className="body-sm text-[#8899AA] font-medium">No transactions yet</p>
+                <p className="text-[12px] text-[#6b7b8d] font-medium">No transactions yet</p>
               </div>
             ) : (
               filteredTx.map((tx, i) => (
@@ -201,7 +227,7 @@ export function MobileDashboard() {
             {filteredTx.length >= 5 && summary.recentTransactions.length > 5 && (
               <button
                 onClick={() => setTxCount((c) => c + 5)}
-                className="w-full py-3 text-[12px] font-semibold text-[#8B6FFF] bg-white/5 rounded-[16px] hover:bg-white/10 active:scale-[0.98] transition-all"
+                className="w-full py-3 text-[12px] font-semibold text-[#7c5cff] bg-[#161a27] rounded-[16px] border border-white/[0.06] hover:bg-white/5 active:scale-[0.98] transition-all"
               >
                 Show More
               </button>
@@ -211,15 +237,15 @@ export function MobileDashboard() {
 
         {/* Budget Preview */}
         <motion.div variants={itemAnim}>
-          <div className="bg-[#12142a] rounded-[20px] border border-white/[0.06] p-5 card-shadow">
+          <div className="bg-[#161a27] rounded-[20px] border border-white/[0.06] p-5 card-shadow">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
-                <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#8B6FFF]/15">
-                  <Target className="h-[18px] w-[18px] text-[#8B6FFF]" />
+                <div className="flex h-8 w-8 items-center justify-center rounded-[10px] bg-[#7c5cff]/15">
+                  <Target className="h-[18px] w-[18px] text-[#7c5cff]" />
                 </div>
-                <span className="title-card text-white">Monthly Budget</span>
+                <span className="text-[15px] font-semibold text-white">Monthly Budget</span>
               </div>
-              <button onClick={() => router.push('/budgets')} className="text-[12px] font-semibold text-[#8B6FFF] active:opacity-70 transition-opacity">Manage</button>
+              <button onClick={() => router.push('/budgets')} className="text-[12px] font-semibold text-[#7c5cff] active:opacity-70 transition-opacity">Manage</button>
             </div>
             {loading ? (
               <div className="space-y-3">
@@ -229,11 +255,11 @@ export function MobileDashboard() {
             ) : summary.totalBudget > 0 ? (
               <>
                 <div className="flex items-center justify-between mb-3">
-                  <span className="num-lg text-white">
+                  <span className="text-[22px] font-bold text-white">
                     <AnimatedCounter value={summary.totalBudget} formatter={(v) => formatCurrency(v, userData?.currency)} />
                   </span>
                   <span className={`text-[12px] font-bold px-3 py-1 rounded-full ${
-                    budgetUtil > 100 ? 'bg-[#FF5A6E]/15 text-[#FF5A6E]' : budgetUtil > 80 ? 'bg-[#FBBF24]/15 text-[#FBBF24]' : 'bg-[#00D09C]/15 text-[#00D09C]'
+                    budgetUtil > 100 ? 'bg-[#ff5a7a]/15 text-[#ff5a7a]' : budgetUtil > 80 ? 'bg-[#ffb020]/15 text-[#ffb020]' : 'bg-[#00d09c]/15 text-[#00d09c]'
                   }`}>
                     {budgetUtil.toFixed(0)}%
                   </span>
@@ -243,15 +269,15 @@ export function MobileDashboard() {
                     className="h-full rounded-full transition-all duration-700"
                     style={{
                       width: `${Math.min(budgetUtil, 100)}%`,
-                      backgroundColor: budgetUtil > 100 ? '#FF5A6E' : budgetUtil > 80 ? '#FBBF24' : '#8B6FFF',
+                      backgroundColor: budgetUtil > 100 ? '#ff5a7a' : budgetUtil > 80 ? '#ffb020' : '#7c5cff',
                     }}
                   />
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-medium text-[#8899AA]">
+                  <span className="text-[11px] font-medium text-[#6b7b8d]">
                     Spent <span className="text-white">{formatCurrency(summary.totalBudgetSpent, userData?.currency)}</span>
                   </span>
-                  <span className="text-[11px] font-medium text-[#8899AA]">
+                  <span className="text-[11px] font-medium text-[#6b7b8d]">
                     Left <span className="text-white">{formatCurrency(summary.budgetRemaining, userData?.currency)}</span>
                   </span>
                 </div>
@@ -259,8 +285,8 @@ export function MobileDashboard() {
             ) : (
               <div className="flex flex-col items-center justify-center py-5">
                 <Target className="h-8 w-8 text-white/10 mb-2" />
-                <p className="body-sm text-[#8899AA] font-medium">No budget set</p>
-                <button onClick={() => router.push('/budgets')} className="text-[12px] font-semibold text-[#8B6FFF] mt-2 active:opacity-70">Create budget</button>
+                <p className="text-[12px] text-[#6b7b8d] font-medium">No budget set</p>
+                <button onClick={() => router.push('/budgets')} className="text-[12px] font-semibold text-[#7c5cff] mt-2 active:opacity-70">Create budget</button>
               </div>
             )}
           </div>
@@ -269,30 +295,30 @@ export function MobileDashboard() {
         {/* Overview Grid */}
         <motion.div variants={itemAnim}>
           <div className="grid grid-cols-3 gap-3">
-            <button onClick={() => router.push('/subscriptions')} className="bg-[#12142a] rounded-[20px] border border-white/[0.06] p-4 card-shadow text-left active:scale-[0.97] transition-transform">
-              <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#8B6FFF]/15 mb-2">
-                <Repeat className="h-[18px] w-[18px] text-[#8B6FFF]" />
+            <button onClick={() => router.push('/subscriptions')} className="bg-[#161a27] rounded-[20px] border border-white/[0.06] p-4 card-shadow text-left active:scale-[0.97] transition-transform">
+              <div className="flex h-9 w-9 items-center justify-center rounded-[10px] bg-[#7c5cff]/15 mb-2">
+                <Repeat className="h-[18px] w-[18px] text-[#7c5cff]" />
               </div>
-              <p className="caption text-[#8899AA] font-semibold mb-0.5">Subscriptions</p>
-              <p className="num-md text-white">
+              <p className="text-[11px] font-semibold text-[#6b7b8d] mb-0.5">Subscriptions</p>
+              <p className="text-[17px] font-bold text-white">
                 <AnimatedCounter value={extraData.subTotal} formatter={(v) => formatCurrency(v, userData?.currency)} />
               </p>
               <p className="text-[9px] text-white/40 mt-0.5">/mo</p>
             </button>
-            <button onClick={() => router.push('/recurring')} className="bg-[#12142a] rounded-[20px] border border-white/[0.06] p-4 card-shadow text-left active:scale-[0.97] transition-transform">
-              <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#00D09C]/15 mb-2">
-                <Clock className="h-[18px] w-[18px] text-[#00D09C]" />
+            <button onClick={() => router.push('/recurring')} className="bg-[#161a27] rounded-[20px] border border-white/[0.06] p-4 card-shadow text-left active:scale-[0.97] transition-transform">
+              <div className="flex h-9 w-9 items-center justify-center rounded-[10px] bg-[#00d09c]/15 mb-2">
+                <Clock className="h-[18px] w-[18px] text-[#00d09c]" />
               </div>
-              <p className="caption text-[#8899AA] font-semibold mb-0.5">Recurring</p>
-              <p className="num-md text-white">{extraData.upcomingRules.length}</p>
+              <p className="text-[11px] font-semibold text-[#6b7b8d] mb-0.5">Recurring</p>
+              <p className="text-[17px] font-bold text-white">{extraData.upcomingRules.length}</p>
               <p className="text-[9px] text-white/40 mt-0.5">active</p>
             </button>
-            <button onClick={() => router.push('/loans')} className="bg-[#12142a] rounded-[20px] border border-white/[0.06] p-4 card-shadow text-left active:scale-[0.97] transition-transform">
-              <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#FF5A6E]/15 mb-2">
-                <Banknote className="h-[18px] w-[18px] text-[#FF5A6E]" />
+            <button onClick={() => router.push('/loans')} className="bg-[#161a27] rounded-[20px] border border-white/[0.06] p-4 card-shadow text-left active:scale-[0.97] transition-transform">
+              <div className="flex h-9 w-9 items-center justify-center rounded-[10px] bg-[#ff5a7a]/15 mb-2">
+                <Banknote className="h-[18px] w-[18px] text-[#ff5a7a]" />
               </div>
-              <p className="caption text-[#8899AA] font-semibold mb-0.5">Loans</p>
-              <p className="num-md text-white">{extraData.upcomingEmis.length}</p>
+              <p className="text-[11px] font-semibold text-[#6b7b8d] mb-0.5">Loans</p>
+              <p className="text-[17px] font-bold text-white">{extraData.upcomingEmis.length}</p>
               <p className="text-[9px] text-white/40 mt-0.5">due soon</p>
             </button>
           </div>
@@ -300,17 +326,17 @@ export function MobileDashboard() {
 
         {/* Goals Preview */}
         <motion.div variants={itemAnim}>
-          <button onClick={() => router.push('/savings')} className="w-full bg-[#12142a] rounded-[20px] border border-white/[0.06] p-5 card-shadow text-left active:scale-[0.97] transition-transform">
+          <button onClick={() => router.push('/savings')} className="w-full bg-[#161a27] rounded-[20px] border border-white/[0.06] p-5 card-shadow text-left active:scale-[0.97] transition-transform">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#FBBF24]/15">
-                  <PiggyBank className="h-[18px] w-[18px] text-[#FBBF24]" />
+                <div className="flex h-9 w-9 items-center justify-center rounded-[10px] bg-[#ffb020]/15">
+                  <PiggyBank className="h-[18px] w-[18px] text-[#ffb020]" />
                 </div>
-                <span className="title-card text-white">Savings Goals</span>
+                <span className="text-[15px] font-semibold text-white">Savings Goals</span>
               </div>
-              <ChevronRight className="h-5 w-5 text-[#5A6B7D]" />
+              <ChevronRight className="h-5 w-5 text-[#6b7b8d]" />
             </div>
-            <p className="body-sm text-[#8899AA] mt-1.5">Track your savings progress and build wealth</p>
+            <p className="text-[12px] text-[#6b7b8d] mt-1.5">Track your savings progress and build wealth</p>
           </button>
         </motion.div>
       </motion.div>

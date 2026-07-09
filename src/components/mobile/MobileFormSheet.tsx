@@ -2,7 +2,7 @@
 
 import { useIsMobile } from '@/hooks/useMediaQuery';
 import {
-  Dialog, DialogContent, DialogHeader, DialogFooter, DialogTitle, DialogDescription, DialogClose,
+  Dialog, DialogContent, DialogHeader, DialogFooter, DialogTitle, DialogDescription,
   Sheet, SheetContent, SheetHeader, SheetTitle,
 } from '@/components/ui';
 import { Button } from '@/components/ui';
@@ -29,12 +29,26 @@ export function MobileFormSheet({
   if (isMobile) {
     return (
       <Sheet open={open} onOpenChange={onOpenChange}>
-        <SheetContent side="bottom" className="bg-[#0A0C10] border-t border-white/[0.06] rounded-t-3xl p-0 shadow-2xl shadow-black/40 flex flex-col max-h-[90dvh]" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 16px)' }}>
+        <SheetContent
+          side="bottom"
+          className="flex flex-col p-0 shadow-2xl shadow-black/40 max-h-[90dvh]"
+          style={{
+            backgroundColor: 'rgba(22, 26, 39, 0.95)',
+            backdropFilter: 'blur(32px)',
+            WebkitBackdropFilter: 'blur(32px)',
+            borderTop: '1px solid rgba(255, 255, 255, 0.06)',
+            borderRadius: '28px 28px 0 0',
+            paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 16px)',
+          }}
+        >
           <SheetHeader className="flex flex-row items-center justify-between px-5 pt-5 pb-3 border-b border-white/[0.06] shrink-0">
-            <SheetTitle className="text-[17px] font-bold text-white">{title}</SheetTitle>
+            <div>
+              <SheetTitle className="text-[17px] font-bold text-white">{title}</SheetTitle>
+              {description && <p className="text-[12px] text-[#6b7b8d] mt-0.5">{description}</p>}
+            </div>
             <button
               onClick={() => onOpenChange(false)}
-              className="touch-target flex h-9 w-9 items-center justify-center rounded-xl text-[#8899AA] hover:bg-white/5 active:scale-90 transition-all"
+              className="touch-target flex h-9 w-9 items-center justify-center rounded-xl text-[#6b7b8d] hover:bg-white/5 active:scale-90 transition-all"
             >
               <X className="h-5 w-5" />
             </button>
@@ -48,7 +62,7 @@ export function MobileFormSheet({
                 {footer || (
                   <div className="flex gap-3">
                     <Button type="button" variant="outline" className="flex-1 h-[52px] text-[14px] font-semibold rounded-[16px]" onClick={() => onOpenChange(false)}>Cancel</Button>
-                    <Button type="submit" disabled={loading} className="flex-1 h-[52px] text-[14px] font-semibold rounded-[16px] gradient-primary text-white shadow-lg shadow-[#8B6FFF]/20">
+                    <Button type="submit" disabled={loading} className="flex-1 h-[52px] text-[14px] font-semibold rounded-[16px] gradient-primary text-white shadow-lg shadow-[#7c5cff]/20">
                       {loading ? 'Saving...' : (submitLabel || 'Save')}
                     </Button>
                   </div>

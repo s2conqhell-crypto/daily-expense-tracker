@@ -80,7 +80,7 @@ export default function SavingsPage() {
       <div className="px-5 space-y-6">
         <div className="flex items-center justify-between">
           <h1 className="text-[18px] font-bold text-white">Savings Goals</h1>
-          <span className="text-[12px] text-[#8899AA]">{goals.length} goal{goals.length !== 1 ? 's' : ''}</span>
+          <span className="text-[12px] text-[#6b7b8d]">{goals.length} goal{goals.length !== 1 ? 's' : ''}</span>
         </div>
         {/* Overall Progress */}
         <div className="bg-gradient-to-br from-[#7C5CFF]/10 to-purple-600/10 rounded-[20px] border border-[#7C5CFF]/20 p-4">
@@ -91,16 +91,16 @@ export default function SavingsPage() {
             </div>
             <span className="text-[14px] font-bold text-[#7C5CFF]">{overallProgress.toFixed(1)}%</span>
           </div>
-          <p className="text-[12px] text-[#8899AA] mb-2">{formatCurrency(totalSaved, userData?.currency)} / {formatCurrency(totalTarget, userData?.currency)}</p>
+          <p className="text-[12px] text-[#6b7b8d] mb-2">{formatCurrency(totalSaved, userData?.currency)} / {formatCurrency(totalTarget, userData?.currency)}</p>
           <div className="h-2 rounded-full bg-white/5 overflow-hidden"><div className="h-full rounded-full bg-[#7C5CFF] transition-all" style={{ width: `${Math.min(overallProgress, 100)}%` }} /></div>
         </div>
         {loading ? (
-          <div className="space-y-2">{[...Array(3)].map((_, i) => <div key={i} className="h-32 bg-[#12142a] rounded-[16px] animate-pulse" />)}</div>
+          <div className="space-y-2">{[...Array(3)].map((_, i) => <div key={i} className="h-32 bg-[#161a27] rounded-[16px] animate-pulse" />)}</div>
         ) : goals.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 text-center">
             <Target className="h-12 w-12 text-white/10 mb-3" />
             <p className="text-[14px] font-medium text-white mb-1">No savings goals</p>
-            <p className="text-[12px] text-[#8899AA] mb-4">Set your first savings goal</p>
+            <p className="text-[12px] text-[#6b7b8d] mb-4">Set your first savings goal</p>
             <button onClick={() => setShowCreate(true)} className="px-4 py-2 text-[13px] font-medium rounded-xl bg-[#7C5CFF]/20 text-[#7C5CFF]">Create Goal</button>
           </div>
         ) : (
@@ -109,28 +109,28 @@ export default function SavingsPage() {
               const progress = goal.targetAmount > 0 ? (goal.currentAmount / goal.targetAmount) * 100 : 0;
               const daysLeft = Math.max(0, Math.ceil((toDate(goal.targetDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24)));
               return (
-                <div key={goal.id} className="bg-[#12142a] rounded-[20px] border border-white/[0.06] p-4">
+                <div key={goal.id} className="bg-[#161a27] rounded-[20px] border border-white/[0.06] p-4">
                    <div className="flex items-center justify-between mb-2">
                      <div className="flex items-center gap-3">
                        <div className="h-10 w-10 rounded-xl bg-[#7C5CFF]/15 flex items-center justify-center"><PiggyBank className="h-4 w-4 text-[#7C5CFF]" /></div>
                       <span className="text-[14px] font-medium text-white">{goal.name}</span>
                     </div>
-                    <button onClick={() => setDeletingId(goal.id)} className="p-1.5 rounded-lg hover:bg-white/5"><Trash2 className="h-3.5 w-3.5 text-[#5A6B7D]" /></button>
+                    <button onClick={() => setDeletingId(goal.id)} className="p-1.5 rounded-lg hover:bg-white/5"><Trash2 className="h-3.5 w-3.5 text-[#6b7b8d]" /></button>
                   </div>
                   <div className="flex justify-between mb-1.5">
-                    <span className="text-[12px] text-[#8899AA]">Saved</span>
+                    <span className="text-[12px] text-[#6b7b8d]">Saved</span>
                     <span className="text-[12px] font-medium text-white">{formatCurrency(goal.currentAmount, userData?.currency)} / {formatCurrency(goal.targetAmount, userData?.currency)}</span>
                   </div>
                   <div className="h-2.5 rounded-full bg-white/5 overflow-hidden">
                     <div className="h-full rounded-full bg-[#7C5CFF] transition-all" style={{ width: `${Math.min(progress, 100)}%` }} />
                   </div>
                   <div className="flex justify-between mt-1.5 text-[11px]">
-                    <span className="text-[#8899AA]">{progress.toFixed(0)}% complete</span>
-                    <span className={daysLeft <= 0 ? 'text-[#FF5A6E]' : 'text-[#8899AA]'}>{daysLeft > 0 ? `${daysLeft}d left` : 'Past due'}</span>
+                    <span className="text-[#6b7b8d]">{progress.toFixed(0)}% complete</span>
+                    <span className={daysLeft <= 0 ? 'text-[#FF5A6E]' : 'text-[#6b7b8d]'}>{daysLeft > 0 ? `${daysLeft}d left` : 'Past due'}</span>
                   </div>
                   <div className="mt-2 pt-2 border-t border-white/[0.06] flex justify-between text-[11px]">
-                    <span className="text-[#8899AA]">Target: {formatCurrency(goal.targetAmount, userData?.currency)}</span>
-                    <span className="text-[#8899AA]">By: {formatDate(toDate(goal.targetDate))}</span>
+                    <span className="text-[#6b7b8d]">Target: {formatCurrency(goal.targetAmount, userData?.currency)}</span>
+                    <span className="text-[#6b7b8d]">By: {formatDate(toDate(goal.targetDate))}</span>
                   </div>
                 </div>
               );
@@ -140,7 +140,7 @@ export default function SavingsPage() {
               <div className="pt-2">
                 <p className="text-[13px] font-medium text-white mb-2">Completed</p>
                 {goals.filter((g) => g.isCompleted).map((goal) => (
-                  <div key={goal.id} className="bg-[#12142a] rounded-[20px] border border-[#00D09C]/30 p-3 mb-2">
+                  <div key={goal.id} className="bg-[#161a27] rounded-[20px] border border-[#00D09C]/30 p-3 mb-2">
                      <div className="flex items-center justify-between">
                        <div className="flex items-center gap-3">
                          <div className="h-10 w-10 rounded-xl bg-[#00D09C]/15 flex items-center justify-center"><TrendingUp className="h-4 w-4 text-[#00D09C]" /></div>

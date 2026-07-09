@@ -61,30 +61,30 @@ export default function LoansPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-[18px] font-bold text-white">Loans & EMI</h1>
-            <p className="text-[12px] text-[#8899AA]">{loans.length} loan{loans.length !== 1 ? 's' : ''}</p>
+            <p className="text-[12px] text-[#6b7b8d]">{loans.length} loan{loans.length !== 1 ? 's' : ''}</p>
           </div>
           <div className="text-right">
             <p className="text-[14px] font-bold text-[#FF5A6E]">{formatCurrency(totalOutstanding, userData?.currency)}</p>
-            <p className="text-[11px] text-[#5A6B7D]">Outstanding</p>
+            <p className="text-[11px] text-[#6b7b8d]">Outstanding</p>
           </div>
         </div>
         <div className="grid grid-cols-2 gap-3">
-          <div className="bg-[#12142a] rounded-[20px] border border-white/[0.06] p-3">
-            <p className="text-[11px] text-[#8899AA]">Active</p>
+          <div className="bg-[#161a27] rounded-[20px] border border-white/[0.06] p-3">
+            <p className="text-[11px] text-[#6b7b8d]">Active</p>
             <p className="text-[14px] font-bold text-white">{loading ? '...' : activeLoans.length}</p>
           </div>
-          <div className="bg-[#12142a] rounded-[20px] border border-white/[0.06] p-3">
-            <p className="text-[11px] text-[#8899AA]">Monthly EMI</p>
+          <div className="bg-[#161a27] rounded-[20px] border border-white/[0.06] p-3">
+            <p className="text-[11px] text-[#6b7b8d]">Monthly EMI</p>
             <p className="text-[14px] font-bold text-[#FBBF24]">{loading ? '...' : formatCurrency(totalEmiPerMonth, userData?.currency)}</p>
           </div>
         </div>
         {loading ? (
-          <div className="space-y-2">{[...Array(3)].map((_, i) => <div key={i} className="h-28 bg-[#12142a] rounded-[16px] animate-pulse" />)}</div>
+          <div className="space-y-2">{[...Array(3)].map((_, i) => <div key={i} className="h-28 bg-[#161a27] rounded-[16px] animate-pulse" />)}</div>
         ) : loans.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 text-center">
             <Banknote className="h-12 w-12 text-white/10 mb-3" />
             <p className="text-[14px] font-medium text-white mb-1">No loans</p>
-            <p className="text-[12px] text-[#8899AA] mb-4">Add your home loan, car loan, personal loan EMIs here.</p>
+            <p className="text-[12px] text-[#6b7b8d] mb-4">Add your home loan, car loan, personal loan EMIs here.</p>
             <button onClick={() => { setEditing(null); setDialogOpen(true); }} className="px-4 py-2 text-[13px] font-medium rounded-xl bg-gradient-to-r from-[#7C5CFF] to-[#00D09C] text-white">Add Loan</button>
           </div>
         ) : (
@@ -92,35 +92,35 @@ export default function LoansPage() {
             {loans.map((loan) => {
               const progress = loan.totalEmi > 0 ? (loan.paidEmi / loan.totalEmi) * 100 : 0;
               return (
-                <div key={loan.id} className="bg-[#12142a] rounded-[20px] border border-white/[0.06] p-4">
+                <div key={loan.id} className="bg-[#161a27] rounded-[20px] border border-white/[0.06] p-4">
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-3">
                       <div className="h-10 w-10 rounded-xl bg-[#7C5CFF]/15 flex items-center justify-center"><Banknote className="h-4 w-4 text-[#7C5CFF]" /></div>
                       <div>
                         <p className="text-[14px] font-medium text-white">{loan.name}</p>
-                        <p className="text-[11px] text-[#8899AA]">{loan.paidEmi}/{loan.totalEmi} EMIs paid</p>
+                        <p className="text-[11px] text-[#6b7b8d]">{loan.paidEmi}/{loan.totalEmi} EMIs paid</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-1">
-                      <span className={`text-[11px] px-2 py-0.5 rounded-full font-medium ${loan.status === 'active' ? 'bg-[#00D09C]/15 text-[#00D09C]' : 'bg-[#8899AA]/15 text-[#8899AA]'}`}>
+                      <span className={`text-[11px] px-2 py-0.5 rounded-full font-medium ${loan.status === 'active' ? 'bg-[#00D09C]/15 text-[#00D09C]' : 'bg-[#6b7b8d]/15 text-[#6b7b8d]'}`}>
                         {loan.status === 'active' ? 'Active' : loan.status === 'completed' ? 'Paid' : 'Defaulted'}
                       </span>
                     </div>
                   </div>
                   <div className="grid grid-cols-3 gap-3 mb-2">
-                    <div><p className="text-[10px] text-[#5A6B7D]">Principal</p><p className="text-[12px] font-semibold text-white">{formatCurrency(loan.principalAmount, userData?.currency)}</p></div>
-                    <div><p className="text-[10px] text-[#5A6B7D]">Outstanding</p><p className="text-[12px] font-semibold text-[#FF5A6E]">{formatCurrency(loan.outstandingBalance, userData?.currency)}</p></div>
-                    <div><p className="text-[10px] text-[#5A6B7D]">EMI</p><p className="text-[12px] font-semibold text-white">{formatCurrency(loan.emiAmount, userData?.currency)}</p></div>
+                    <div><p className="text-[10px] text-[#6b7b8d]">Principal</p><p className="text-[12px] font-semibold text-white">{formatCurrency(loan.principalAmount, userData?.currency)}</p></div>
+                    <div><p className="text-[10px] text-[#6b7b8d]">Outstanding</p><p className="text-[12px] font-semibold text-[#FF5A6E]">{formatCurrency(loan.outstandingBalance, userData?.currency)}</p></div>
+                    <div><p className="text-[10px] text-[#6b7b8d]">EMI</p><p className="text-[12px] font-semibold text-white">{formatCurrency(loan.emiAmount, userData?.currency)}</p></div>
                   </div>
                   <div className="h-2 rounded-full bg-white/5 overflow-hidden mb-1">
                     <div className="h-full rounded-full transition-all" style={{ width: `${Math.min(progress, 100)}%`, backgroundColor: loan.status === 'completed' ? '#00D09C' : progress > 50 ? '#7C5CFF' : '#FBBF24' }} />
                   </div>
                   <div className="flex justify-between text-[11px]">
-                    <span className="text-[#8899AA]">{progress.toFixed(0)}%</span>
+                    <span className="text-[#6b7b8d]">{progress.toFixed(0)}%</span>
                     {loan.status === 'active' && loan.nextEmiDate && <span className="text-[#FBBF24]">Next: {formatDate(toDate(loan.nextEmiDate))}</span>}
                   </div>
                   <div className="mt-2 pt-2 border-t border-white/[0.06] flex justify-end gap-1">
-                    <button onClick={() => { setEditing(loan); setDialogOpen(true); }} className="px-2 py-1 text-[11px] rounded-lg bg-white/5 text-[#8899AA]">Edit</button>
+                    <button onClick={() => { setEditing(loan); setDialogOpen(true); }} className="px-2 py-1 text-[11px] rounded-lg bg-white/5 text-[#6b7b8d]">Edit</button>
                     <button onClick={() => handleDelete(loan.id)} className="px-2 py-1 text-[11px] rounded-lg bg-white/5 text-[#FF5A6E]">Delete</button>
                   </div>
                 </div>
