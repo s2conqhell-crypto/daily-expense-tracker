@@ -144,7 +144,7 @@ export default function ExpensesPage() {
   };
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 space-y-5 animate-fade-in max-w-[1400px] mx-auto">
+    <div className="page-container space-y-5 animate-fade-in pt-3 sm:pt-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>

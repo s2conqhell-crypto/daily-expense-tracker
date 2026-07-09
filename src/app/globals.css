@@ -125,6 +125,37 @@ input, textarea, select {
   .glass { background: color-mix(in srgb, var(--card) 70%, transparent); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border: 1px solid color-mix(in srgb, var(--border) 50%, transparent); }
   .glass-strong { background: color-mix(in srgb, var(--card) 85%, transparent); backdrop-filter: blur(32px); -webkit-backdrop-filter: blur(32px); border: 1px solid color-mix(in srgb, var(--border) 60%, transparent); }
 
+  /* iPhone-native typography scale */
+  .txt-h1 { font-size: 28px; font-weight: 700; letter-spacing: -0.02em; }
+  .txt-h2 { font-size: 22px; font-weight: 700; letter-spacing: -0.02em; }
+  .txt-h3 { font-size: 16px; font-weight: 600; letter-spacing: -0.01em; }
+  .txt-body { font-size: 15px; }
+  .txt-body-sm { font-size: 14px; }
+  .txt-caption { font-size: 12px; }
+  .txt-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+
+  @media (min-width: 640px) {
+    .txt-h1 { font-size: 40px; }
+    .txt-h2 { font-size: 28px; }
+    .txt-h3 { font-size: 18px; }
+    .txt-body { font-size: 16px; }
+    .txt-body-sm { font-size: 15px; }
+    .txt-caption { font-size: 13px; }
+  }
+
+  /* iPhone native spacing */
+  .page-padding, .page-container { padding-left: 1rem; padding-right: 1rem; }
+  .page-container { max-width: 1400px; margin-left: auto; margin-right: auto; }
+  .page-space > * + * { margin-top: 1rem; }
+
+  @media (min-width: 640px) {
+    .page-padding, .page-container { padding-left: 1.5rem; padding-right: 1.5rem; }
+    .page-space > * + * { margin-top: 1.25rem; }
+  }
+  @media (min-width: 1024px) {
+    .page-padding, .page-container { padding-left: 2rem; padding-right: 2rem; }
+  }
+
   .bento-tall { grid-row: span 2; }
   .bento-wide { grid-column: span 2; }
   .bento-full { grid-column: 1 / -1; }
@@ -145,20 +176,29 @@ input, textarea, select {
   .card-gradient-subtle-3 { background: linear-gradient(135deg, color-mix(in srgb, #f59e0b 8%, transparent), color-mix(in srgb, #fbbf24 5%, transparent)); }
   .card-gradient-subtle-4 { background: linear-gradient(135deg, color-mix(in srgb, #ef4444 8%, transparent), color-mix(in srgb, #f87171 5%, transparent)); }
 
-  .heading-xl { @apply text-3xl sm:text-4xl font-bold tracking-tight; }
-  .heading-lg { @apply text-2xl sm:text-3xl font-bold tracking-tight; }
-  .heading-md { @apply text-xl font-semibold tracking-tight; }
-  .label-sm { @apply text-xs font-medium uppercase tracking-wider text-muted-foreground; }
+  .heading-xl { font-size: 1.875rem; font-weight: 700; letter-spacing: -0.02em; }
+  .heading-lg { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.02em; }
+  .heading-md { font-size: 1.25rem; font-weight: 600; letter-spacing: -0.02em; }
+  .label-sm { font-size: 0.75rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted-foreground); }
 
-  .num-xl { @apply text-4xl sm:text-5xl font-bold tracking-tight; }
-  .num-lg { @apply text-2xl sm:text-3xl font-bold tracking-tight; }
-  .num-md { @apply text-xl font-bold; }
+  .num-xl { font-size: 2.25rem; font-weight: 700; letter-spacing: -0.02em; }
+  .num-lg { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.02em; }
+  .num-md { font-size: 1.25rem; font-weight: 700; }
+
+  @media (min-width: 640px) {
+    .heading-xl { font-size: 2.25rem; }
+    .heading-lg { font-size: 1.875rem; }
+    .num-xl { font-size: 3rem; }
+    .num-lg { font-size: 1.875rem; }
+  }
 
   .card-hover { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
   .card-hover:hover { transform: translateY(-3px); box-shadow: 0 12px 40px color-mix(in srgb, var(--primary) 15%, transparent); }
 
   .fab {
-    @apply fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-2xl shadow-xl transition-all duration-300;
+    position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 50; display: flex;
+    height: 3.5rem; width: 3.5rem; align-items: center; justify-content: center;
+    border-radius: 1rem; transition: all 0.3s;
     background: linear-gradient(135deg, var(--primary), #a78bfa);
     color: var(--primary-foreground);
     box-shadow: 0 8px 32px color-mix(in srgb, var(--primary) 40%, transparent);

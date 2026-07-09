@@ -47,8 +47,8 @@ export default function SubscriptionsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#09090B]">
-      <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 pb-28 space-y-5 pt-5">
+    <div className="min-h-dvh bg-[#09090B]">
+      <div className="page-container space-y-5 pt-3 sm:pt-6">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>

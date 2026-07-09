@@ -12,11 +12,11 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   const isMobile = useIsMobile();
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-dvh bg-background">
       <Sidebar />
       <Header />
       <div className={`${!isMobile ? 'ml-[240px]' : ''} transition-all duration-300`}>
-        <main className={`${isMobile ? 'pb-24 pt-16 safe-area-bottom' : 'pt-6'} min-h-screen`}>
+        <main className={`${isMobile ? 'pb-[calc(64px+env(safe-area-inset-bottom,0px))] pt-[calc(56px+env(safe-area-inset-top,0px))]' : 'pt-6'} min-h-dvh`}>
           <AnimatePresence mode="wait">
             <motion.div
               key={pathname}

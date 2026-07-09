@@ -33,7 +33,7 @@ export default function AnalyticsPage() {
   }, [monthlyTrend]);
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 space-y-5 animate-fade-in max-w-[1400px] mx-auto">
+    <div className="page-container space-y-5 animate-fade-in pt-3 sm:pt-6">
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Analytics</h1>
         <p className="text-sm text-muted-foreground">Deep insights into your finances</p>

@@ -90,8 +90,8 @@ export default function DashboardPage() {
   const showUpcoming = extraData.upcomingRules.length > 0 || extraData.upcomingSubs.length > 0 || extraData.upcomingEmis.length > 0;
 
   return (
-    <div className="min-h-screen bg-[#0A0C10]">
-      <div className="max-w-[1400px] mx-auto px-3 sm:px-5 lg:px-6 pb-20 space-y-4 pt-3">
+    <div className="min-h-dvh bg-[#0A0C10]">
+      <div className="page-container pb-24 space-y-4 pt-3">
         {/* Greeting + Quick Actions */}
         <div className="flex items-center justify-between gap-3">
           <div className="min-w-0">

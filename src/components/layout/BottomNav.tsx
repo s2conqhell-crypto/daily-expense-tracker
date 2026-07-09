@@ -1,115 +1,113 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useState } from 'react';
 import {
-  LayoutDashboard, Receipt, TrendingUp, PiggyBank,
-  Wallet, BarChart3, Calendar, FileText, Search, Settings,
-  ChevronUp, X, LogOut, Repeat, Banknote, Clock,
+  LayoutDashboard, ArrowUpFromLine, TrendingDown, Wallet, PiggyBank,
+  BarChart3, Calendar, FileText, Settings, ChevronRight, LogOut, X,
 } from 'lucide-react';
-import { cn } from '@/utils/helpers';
-import { ROUTES } from '@/constants';
 import { useAuth } from '@/contexts/AuthContext';
+import { Button } from '@/components/ui/button';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { ROUTES } from '@/constants';
 
 const mainNav = [
   { href: ROUTES.DASHBOARD, label: 'Home', icon: LayoutDashboard },
-  { href: ROUTES.EXPENSES, label: 'Expenses', icon: Receipt },
-  { href: ROUTES.INCOME, label: 'Income', icon: TrendingUp },
-  { href: ROUTES.BUDGETS, label: 'Budget', icon: Wallet },
-  { href: ROUTES.SAVINGS, label: 'Savings', icon: PiggyBank },
+  { href: ROUTES.EXPENSES, label: 'Expenses', icon: TrendingDown },
+  { href: ROUTES.INCOME, label: 'Income', icon: ArrowUpFromLine },
+  { href: ROUTES.BUDGETS, label: 'Budgets', icon: Wallet },
 ];
 
-const moreNav = [
+const moreItems = [
+  { href: ROUTES.SAVINGS, label: 'Savings', icon: PiggyBank },
   { href: ROUTES.ANALYTICS, label: 'Analytics', icon: BarChart3 },
   { href: ROUTES.CALENDAR, label: 'Calendar', icon: Calendar },
   { href: ROUTES.REPORTS, label: 'Reports', icon: FileText },
-  { href: ROUTES.SUBSCRIPTIONS, label: 'Subscriptions', icon: Repeat },
-  { href: ROUTES.LOANS, label: 'Loans', icon: Banknote },
-  { href: ROUTES.RECURRING, label: 'Recurring', icon: Clock },
-  { href: ROUTES.SEARCH, label: 'Search', icon: Search },
   { href: ROUTES.SETTINGS, label: 'Settings', icon: Settings },
 ];
 
 export function BottomNav() {
   const pathname = usePathname();
-  const [showMore, setShowMore] = useState(false);
   const { logOut } = useAuth();
+  const [moreOpen, setMoreOpen] = useState(false);
+
+  const isActive = (href: string) => pathname === href || pathname.startsWith(href + '/');
 
   return (
     <>
-      <nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-white/[0.06] bg-[#0E1116]/95 backdrop-blur-2xl md:hidden safe-area-bottom">
-        <div className="flex items-center justify-around px-1 py-0.5">
-          {mainNav.map((item) => {
-            const isActive = pathname === item.href;
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={cn(
-                  'flex flex-col items-center gap-0.5 rounded-xl px-2 py-1 text-[10px] font-medium transition-all duration-200 relative min-w-0 flex-1',
-                  isActive ? 'text-[#8B6FFF]' : 'text-[#8899AA]'
-                )}
-              >
-                <div className={cn(
-                  'relative p-1.5 rounded-lg transition-all duration-200',
-                  isActive && 'bg-[#8B6FFF]/15'
-                )}>
-                  <item.icon className={cn('h-5 w-5 transition-transform', isActive && 'scale-110')} />
-                </div>
-                <span className="text-[9px] leading-tight">{item.label}</span>
-              </Link>
-            );
-          })}
-          <button
-            onClick={() => setShowMore(true)}
-            className="flex flex-col items-center gap-0.5 rounded-xl px-2 py-1 text-[10px] font-medium text-[#8899AA] transition-all duration-200 min-w-0 flex-1"
+      <nav className="fixed bottom-0 left-0 right-0 z-50 flex h-14 items-center justify-around border-t border-white/[0.06] bg-[#0E1116]/95 backdrop-blur-2xl safe-area-bottom shadow-[0_-4px_20px_rgba(0,0,0,0.3)]">
+        {mainNav.map(({ href, label, icon: Icon }) => (
+          <Link
+            key={href}
+            href={href}
+            className={`touch-target flex-col gap-0.5 rounded-xl px-2 py-1 transition-colors relative ${
+              isActive(href)
+                ? 'text-white'
+                : 'text-[#5A6B7D] hover:text-[#8899AA]'
+            }`}
           >
-            <div className="p-1.5 rounded-lg">
-              <ChevronUp className="h-5 w-5" />
+            <div className={`absolute -top-2 left-1/2 -translate-x-1/2 w-6 h-[2px] rounded-full transition-opacity ${
+              isActive(href) ? 'bg-[#8B6FFF] opacity-100' : 'opacity-0'
+            }`} />
+            <Icon className={`h-[22px] w-[22px] ${isActive(href) ? 'drop-shadow-[0_0_8px_rgba(139,111,255,0.3)]' : ''}`} />
+            <span className="text-[10px] font-medium leading-none">{label}</span>
+          </Link>
+        ))}
+        <Sheet open={moreOpen} onOpenChange={setMoreOpen}>
+          <SheetTrigger asChild>
+            <button className="touch-target flex-col gap-0.5 rounded-xl px-2 py-1 text-[#5A6B7D] hover:text-[#8899AA] transition-colors relative">
+              <div className="h-[22px] w-[22px] flex items-center justify-center">
+                <div className="flex flex-col gap-[3px]">
+                  <span className="block w-[4px] h-[4px] rounded-full bg-current" />
+                  <span className="block w-[4px] h-[4px] rounded-full bg-current" />
+                  <span className="block w-[4px] h-[4px] rounded-full bg-current" />
+                </div>
+              </div>
+              <span className="text-[10px] font-medium leading-none">More</span>
+            </button>
+          </SheetTrigger>
+          <SheetContent side="bottom" className="bg-[#0E1116] border-t border-white/[0.06] rounded-t-2xl px-3 pb-[calc(env(safe-area-inset-bottom,0px)+12px)] pt-4 shadow-2xl shadow-black/40">
+            <SheetHeader className="mb-2">
+              <SheetTitle className="flex items-center justify-between text-white px-1">
+                <span className="text-base font-bold">Menu</span>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="rounded-xl text-[#8899AA] hover:text-white hover:bg-white/5 h-9 w-9 touch-target"
+                  onClick={() => setMoreOpen(false)}
+                >
+                  <X className="h-5 w-5" />
+                </Button>
+              </SheetTitle>
+            </SheetHeader>
+            <div className="grid grid-cols-3 gap-2 mb-3">
+              {moreItems.map(({ href, label, icon: Icon }) => (
+                <Link
+                  key={href}
+                  href={href}
+                  onClick={() => setMoreOpen(false)}
+                  className={`touch-target flex-col gap-1.5 rounded-xl py-3 px-2 transition-all ${
+                    isActive(href)
+                      ? 'bg-white/10 text-white'
+                      : 'bg-white/5 text-[#8899AA] hover:bg-white/10 hover:text-white'
+                  }`}
+                >
+                  <Icon className="h-5 w-5" />
+                  <span className="text-[11px] font-medium">{label}</span>
+                </Link>
+              ))}
             </div>
-            <span className="text-[9px] leading-tight">More</span>
-          </button>
-        </div>
+            <button
+              onClick={() => { setMoreOpen(false); logOut(); }}
+              className="touch-target w-full gap-3 rounded-xl bg-[#FF5A6E]/10 py-3 text-sm font-medium text-[#FF5A6E] hover:bg-[#FF5A6E]/20 transition-colors"
+            >
+              <LogOut className="h-4 w-4" />
+              Sign Out
+            </button>
+          </SheetContent>
+        </Sheet>
       </nav>
-
-      {showMore && (
-        <div className="fixed inset-0 z-50 md:hidden">
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowMore(false)} />
-          <div className="absolute bottom-0 left-0 right-0 rounded-t-2xl border-t border-white/[0.06] bg-[#0E1116]/95 backdrop-blur-2xl p-5 pb-10 animate-slide-up safe-area-bottom">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-semibold tracking-tight text-white">All Sections</h3>
-              <button onClick={() => setShowMore(false)} className="p-2 rounded-xl hover:bg-white/5 transition-colors touch-target">
-                <X className="h-5 w-5 text-[#8899AA]" />
-              </button>
-            </div>
-            <div className="grid grid-cols-4 gap-2">
-              {moreNav.map((item) => {
-                const isActive = pathname === item.href;
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    onClick={() => setShowMore(false)}
-                    className={cn(
-                      'flex flex-col items-center gap-1.5 rounded-xl p-3 text-xs font-medium transition-all duration-200',
-                      isActive ? 'bg-[#8B6FFF]/15 text-[#8B6FFF]' : 'hover:bg-white/5 text-[#8899AA]'
-                    )}
-                  >
-                    <item.icon className={cn('h-6 w-6', isActive && 'text-[#8B6FFF]')} />
-                    <span className="text-[10px] leading-tight text-center">{item.label}</span>
-                  </Link>
-                );
-              })}
-            </div>
-            <div className="mt-4 pt-4 border-t border-white/[0.06]">
-              <button onClick={logOut} className="flex w-full items-center justify-center gap-2 rounded-xl p-3 text-sm font-medium text-[#8899AA] hover:bg-[#FF5A6E]/10 hover:text-[#FF5A6E] transition-colors">
-                <LogOut className="h-5 w-5" /> Logout
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </>
   );
 }
