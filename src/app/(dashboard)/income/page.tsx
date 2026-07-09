@@ -160,7 +160,7 @@ export default function IncomePage() {
                   </div>
                   <div className="flex items-center gap-1 shrink-0 ml-2">
                     <span className="text-[15px] font-bold text-[#00d09c]">+{formatCurrency(income.amount, userData?.currency)}</span>
-                    <button onClick={() => { setEditingId(income.id); }} className="flex h-9 w-9 items-center justify-center rounded-xl text-[#6b7b8d] hover:bg-white/5 active:scale-90 transition-all" aria-label="More actions">
+                    <button onClick={() => { setEditingId(income.id); }} className="flex h-11 w-11 items-center justify-center rounded-xl text-[#6b7b8d] hover:bg-white/5 active:scale-90 transition-all" aria-label="More actions">
                       <MoreVertical className="h-[18px] w-[18px]" />
                     </button>
                   </div>

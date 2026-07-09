@@ -8,7 +8,7 @@ import { useRouter } from 'next/navigation';
 import {
   TrendingUp, Target, Repeat, Banknote, Clock, PiggyBank,
   Receipt, BarChart3, ChevronRight, Plus,
-  TrendingDown, ArrowUpFromLine, FileText,
+  
 } from 'lucide-react';
 import { formatCurrency, formatDate } from '@/utils/format';
 import { toDate } from '@/utils/helpers';
@@ -42,12 +42,7 @@ const itemAnim = {
   show: { opacity: 1, y: 0, transition: { duration: 0.35, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] } },
 };
 
-const quickActions = [
-  { id: 'expense', label: 'Expense', icon: TrendingDown, color: '#ff5a7a', route: '/expenses?add=true' },
-  { id: 'income', label: 'Income', icon: ArrowUpFromLine, color: '#00d09c', route: '/income?add=true' },
-  { id: 'budget', label: 'Budget', icon: Target, color: '#7c5cff', route: '/budgets' },
-  { id: 'reports', label: 'Reports', icon: FileText, color: '#ffb020', route: '/reports' },
-];
+
 
 export function MobileDashboard() {
   const { summary, monthlyTrend, loading } = useDashboard();
@@ -100,31 +95,13 @@ export function MobileDashboard() {
 
   return (
     <div className="min-h-dvh bg-[#09090b]" style={{ paddingBottom: 'calc(90px + env(safe-area-inset-bottom, 0px))' }}>
-      <motion.div className="px-5 space-y-6 pt-3" variants={container} initial="hidden" animate="show">
+      <motion.div className="px-5 space-y-6 pt-4" variants={container} initial="hidden" animate="show">
         {/* Greeting */}
         <motion.div variants={itemAnim}>
           <p className="text-[11px] text-[#6b7b8d] font-semibold uppercase tracking-widest">{todayStr}</p>
           <h1 className="text-[30px] font-bold text-white tracking-tight mt-0.5">
             {greeting()}, {userName}
           </h1>
-        </motion.div>
-
-        {/* Quick Actions */}
-        <motion.div variants={itemAnim}>
-          <div className="flex items-center gap-2.5 overflow-x-auto pb-1 no-scrollbar">
-            {quickActions.map(({ id, label, icon: Icon, color, route }) => (
-              <button
-                key={id}
-                onClick={() => router.push(route)}
-                className="flex items-center gap-2.5 px-4 py-2.5 rounded-[14px] bg-[#161a27] border border-white/[0.06] active:scale-95 transition-all shrink-0"
-              >
-                <div className="flex h-8 w-8 items-center justify-center rounded-[10px]" style={{ backgroundColor: color + '15' }}>
-                  <Icon className="h-[16px] w-[16px]" style={{ color }} />
-                </div>
-                <span className="text-[13px] font-semibold text-white whitespace-nowrap">{label}</span>
-              </button>
-            ))}
-          </div>
         </motion.div>
 
         {/* Balance Card */}
@@ -293,7 +270,7 @@ export function MobileDashboard() {
         <motion.div variants={itemAnim}>
           <div className="grid grid-cols-3 gap-3">
             <button onClick={() => router.push('/subscriptions')} className="bg-[#161a27] rounded-[20px] border border-white/[0.06] p-4 card-shadow text-left active:scale-[0.97] transition-transform">
-              <div className="flex h-9 w-9 items-center justify-center rounded-[10px] bg-[#7c5cff]/15 mb-2">
+              <div className="flex h-10 w-10 items-center justify-center rounded-[10px] bg-[#7c5cff]/15 mb-2">
                 <Repeat className="h-[18px] w-[18px] text-[#7c5cff]" />
               </div>
               <p className="text-[11px] font-semibold text-[#6b7b8d] mb-0.5">Subscriptions</p>
@@ -303,7 +280,7 @@ export function MobileDashboard() {
               <p className="text-[9px] text-white/40 mt-0.5">/mo</p>
             </button>
             <button onClick={() => router.push('/recurring')} className="bg-[#161a27] rounded-[20px] border border-white/[0.06] p-4 card-shadow text-left active:scale-[0.97] transition-transform">
-              <div className="flex h-9 w-9 items-center justify-center rounded-[10px] bg-[#00d09c]/15 mb-2">
+              <div className="flex h-10 w-10 items-center justify-center rounded-[10px] bg-[#00d09c]/15 mb-2">
                 <Clock className="h-[18px] w-[18px] text-[#00d09c]" />
               </div>
               <p className="text-[11px] font-semibold text-[#6b7b8d] mb-0.5">Recurring</p>
@@ -311,7 +288,7 @@ export function MobileDashboard() {
               <p className="text-[9px] text-white/40 mt-0.5">active</p>
             </button>
             <button onClick={() => router.push('/loans')} className="bg-[#161a27] rounded-[20px] border border-white/[0.06] p-4 card-shadow text-left active:scale-[0.97] transition-transform">
-              <div className="flex h-9 w-9 items-center justify-center rounded-[10px] bg-[#ff5a7a]/15 mb-2">
+              <div className="flex h-10 w-10 items-center justify-center rounded-[10px] bg-[#ff5a7a]/15 mb-2">
                 <Banknote className="h-[18px] w-[18px] text-[#ff5a7a]" />
               </div>
               <p className="text-[11px] font-semibold text-[#6b7b8d] mb-0.5">Loans</p>
@@ -326,7 +303,7 @@ export function MobileDashboard() {
           <button onClick={() => router.push('/savings')} className="w-full bg-[#161a27] rounded-[20px] border border-white/[0.06] p-5 card-shadow text-left active:scale-[0.97] transition-transform">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <div className="flex h-9 w-9 items-center justify-center rounded-[10px] bg-[#ffb020]/15">
+                <div className="flex h-10 w-10 items-center justify-center rounded-[10px] bg-[#ffb020]/15">
                   <PiggyBank className="h-[18px] w-[18px] text-[#ffb020]" />
                 </div>
                 <span className="text-[15px] font-semibold text-white">Savings Goals</span>

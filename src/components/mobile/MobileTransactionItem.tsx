@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import {
   TrendingUp, TrendingDown, MoreVertical,
   Pencil, Trash2, Copy, Star, Share2,
@@ -27,43 +27,73 @@ export function MobileTransactionItem({
   const [menuOpen, setMenuOpen] = useState(false);
   const isIncome = type === 'income';
   const color = isIncome ? '#00d09c' : '#ff5a7a';
+  const constraintsRef = useRef<HTMLDivElement>(null);
 
   return (
     <>
-      <motion.div
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="bg-[#161a27] rounded-[16px] border border-white/[0.06] px-4 py-[14px] card-shadow active:scale-[0.98] transition-all"
-      >
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3 min-w-0 flex-1">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl shrink-0" style={{ backgroundColor: color + '15' }}>
-              {isIncome ? <TrendingUp className="h-[18px] w-[18px]" style={{ color }} /> : <TrendingDown className="h-[18px] w-[18px]" style={{ color }} />}
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="text-[14px] font-semibold text-white truncate">{description}</p>
-              <div className="flex items-center gap-2 mt-0.5">
-                {category && (
-                  <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-white/5 text-[#6b7b8d]">{category}</span>
-                )}
-                <span className="text-[10px] text-[#6b7b8d] font-medium">{formatDate(toDate(date))}</span>
-              </div>
-            </div>
-          </div>
-          <div className="flex items-center gap-1 shrink-0 ml-2">
-            <span className={`text-[15px] font-bold ${isIncome ? 'text-[#00d09c]' : 'text-[#ff5a7a]'}`}>
-              {isIncome ? '+' : '-'}{formatCurrency(amount, currency)}
-            </span>
-            <button
-              onClick={() => setMenuOpen(true)}
-              className="flex h-9 w-9 items-center justify-center rounded-xl text-[#6b7b8d] hover:bg-white/5 active:scale-90 transition-all"
-              aria-label="More actions"
-            >
-              <MoreVertical className="h-[18px] w-[18px]" />
-            </button>
+      <div ref={constraintsRef} className="relative overflow-hidden rounded-[16px]">
+        {/* Swipe action backgrounds */}
+        <div className="absolute inset-y-0 left-0 flex items-center justify-start pl-5 w-full bg-[#7c5cff] rounded-[16px]">
+          <div className="flex items-center gap-2">
+            <Pencil className="h-5 w-5 text-white" />
+            <span className="text-[13px] font-semibold text-white">Edit</span>
           </div>
         </div>
-      </motion.div>
+        <div className="absolute inset-y-0 right-0 flex items-center justify-end pr-5 w-full bg-[#ff5a7a] rounded-[16px]">
+          <div className="flex items-center gap-2">
+            <span className="text-[13px] font-semibold text-white">Delete</span>
+            <Trash2 className="h-5 w-5 text-white" />
+          </div>
+        </div>
+
+        {/* Card */}
+        <motion.div
+          drag="x"
+          dragConstraints={constraintsRef}
+          dragElastic={{ left: 0.3, right: 0.3 }}
+          dragDirectionLock
+          whileDrag={{ scale: 0.98 }}
+          onDragEnd={(_, info) => {
+            const offset = info.offset.x;
+            if (offset > 50) {
+              onEdit?.();
+            } else if (offset < -50) {
+              onDelete?.();
+            }
+          }}
+          className="relative bg-[#161a27] border border-white/[0.06] px-4 py-[14px] card-shadow active:scale-[0.98] transition-all rounded-[16px]"
+          style={{ touchAction: 'pan-y' }}
+        >
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3 min-w-0 flex-1">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl shrink-0" style={{ backgroundColor: color + '15' }}>
+                {isIncome ? <TrendingUp className="h-[18px] w-[18px]" style={{ color }} /> : <TrendingDown className="h-[18px] w-[18px]" style={{ color }} />}
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-[14px] font-semibold text-white truncate">{description}</p>
+                <div className="flex items-center gap-2 mt-0.5">
+                  {category && (
+                    <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-white/5 text-[#6b7b8d]">{category}</span>
+                  )}
+                  <span className="text-[10px] text-[#6b7b8d] font-medium">{formatDate(toDate(date))}</span>
+                </div>
+              </div>
+            </div>
+            <div className="flex items-center gap-1 shrink-0 ml-2">
+              <span className={`text-[15px] font-bold ${isIncome ? 'text-[#00d09c]' : 'text-[#ff5a7a]'}`}>
+                {isIncome ? '+' : '-'}{formatCurrency(amount, currency)}
+              </span>
+              <button
+                onClick={() => setMenuOpen(true)}
+                className="flex h-11 w-11 items-center justify-center rounded-xl text-[#6b7b8d] hover:bg-white/5 active:scale-90 transition-all"
+                aria-label="More actions"
+              >
+                <MoreVertical className="h-[18px] w-[18px]" />
+              </button>
+            </div>
+          </div>
+        </motion.div>
+      </div>
 
       <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
         <SheetContent

@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Plus, TrendingDown, ArrowUpFromLine, PiggyBank, Repeat, Target, Wallet, Landmark } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 
 interface FABAction {
@@ -19,23 +19,48 @@ interface MobileFABProps {
 
 export function MobileFAB({ actions }: MobileFABProps) {
   const [open, setOpen] = useState(false);
+  const [visible, setVisible] = useState(true);
+  const lastScrollY = useRef(0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      if (currentScrollY > lastScrollY.current && currentScrollY > 50) {
+        setVisible(false);
+      } else {
+        setVisible(true);
+      }
+      lastScrollY.current = currentScrollY;
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   return (
     <>
-      <motion.button
-        className="fixed z-50 flex h-16 w-16 items-center justify-center rounded-[20px] gradient-primary text-white active:scale-90"
-        style={{
-          bottom: 'calc(96px + env(safe-area-inset-bottom, 0px))',
-          right: '20px',
-          boxShadow: '0 8px 32px rgba(124, 92, 255, 0.35), 0 2px 8px rgba(0, 0, 0, 0.2)',
-        }}
-        onClick={() => setOpen(true)}
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.9 }}
-        aria-label="Quick actions"
-      >
-        <Plus className="h-7 w-7 text-white" />
-      </motion.button>
+      <AnimatePresence>
+        {visible && (
+          <motion.button
+            key="fab"
+            className="fixed z-50 flex h-16 w-16 items-center justify-center rounded-full gradient-primary text-white active:scale-90"
+            style={{
+              bottom: 'calc(96px + env(safe-area-inset-bottom, 0px))',
+              right: '20px',
+              boxShadow: '0 8px 32px rgba(124, 92, 255, 0.35), 0 2px 8px rgba(0, 0, 0, 0.2)',
+            }}
+            onClick={() => setOpen(true)}
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.8, y: 20 }}
+            transition={{ duration: 0.2, ease: 'easeInOut' }}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.9 }}
+            aria-label="Quick actions"
+          >
+            <Plus className="h-7 w-7 text-white" />
+          </motion.button>
+        )}
+      </AnimatePresence>
 
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetContent

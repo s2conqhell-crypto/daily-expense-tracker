@@ -48,7 +48,7 @@ export function MobileFormSheet({
             </div>
             <button
               onClick={() => onOpenChange(false)}
-              className="touch-target flex h-9 w-9 items-center justify-center rounded-xl text-[#6b7b8d] hover:bg-white/5 active:scale-90 transition-all"
+              className="touch-target flex h-11 w-11 items-center justify-center rounded-xl text-[#6b7b8d] hover:bg-white/5 active:scale-90 transition-all"
             >
               <X className="h-5 w-5" />
             </button>
