@@ -164,7 +164,7 @@ export default function SavingsPage() {
                             {goal.description && <p className="text-xs text-muted-foreground">{goal.description}</p>}
                           </div>
                         </div>
-                        <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-all">
+                        <div className="flex gap-1 md:opacity-0 md:group-hover:opacity-100 transition-all">
                           {!goal.isCompleted && (
                             <button onClick={async () => { try { await updateGoal(goal.id, { isCompleted: true } as any); toast.success('Goal completed!'); } catch { toast.error('Failed'); } }}
                               className="p-1.5 rounded-lg hover:bg-emerald-500/10" title="Mark complete">

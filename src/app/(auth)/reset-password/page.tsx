@@ -67,7 +67,7 @@ function ResetPasswordForm() {
               <div className="space-y-2">
                 <Label htmlFor="password">New Password</Label>
                 <div className="relative">
-                  <Input id="password" type={showPassword ? 'text' : 'password'} placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} />
+                  <Input id="password" type={showPassword ? 'text' : 'password'} placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} className="text-[16px]" autoComplete="new-password" />
                   <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
@@ -75,7 +75,7 @@ function ResetPasswordForm() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="confirmPassword">Confirm New Password</Label>
-                <Input id="confirmPassword" type="password" placeholder="••••••••" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
+                <Input id="confirmPassword" type="password" placeholder="••••••••" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} className="text-[16px]" autoComplete="new-password" />
               </div>
               {error && <div className="rounded-lg bg-destructive/10 p-3 text-sm text-destructive">{error}</div>}
               <Button type="submit" className="w-full h-11" disabled={loading}>

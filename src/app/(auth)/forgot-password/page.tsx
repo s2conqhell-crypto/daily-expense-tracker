@@ -73,7 +73,7 @@ export default function ForgotPasswordPage() {
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
-                <Input id="email" type="email" placeholder="you@example.com" value={email}
+                <Input id="email" type="email" placeholder="you@example.com" value={email} className="text-[16px]" autoComplete="email"
                   onChange={(e) => setEmail(e.target.value)} />
               </div>
               {error && <div className="rounded-lg bg-destructive/10 p-3 text-sm text-destructive">{error}</div>}

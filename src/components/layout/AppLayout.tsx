@@ -16,7 +16,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
       <Sidebar />
       <Header />
       <div className={`${!isMobile ? 'ml-[240px]' : ''} transition-all duration-300`}>
-        <main className={`${isMobile ? 'pb-20 pt-16' : 'pt-6'} min-h-screen`}>
+        <main className={`${isMobile ? 'pb-24 pt-16 safe-area-bottom' : 'pt-6'} min-h-screen`}>
           <AnimatePresence mode="wait">
             <motion.div
               key={pathname}

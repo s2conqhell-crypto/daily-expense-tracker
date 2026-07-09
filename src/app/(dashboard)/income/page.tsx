@@ -275,7 +275,7 @@ export default function IncomePage() {
                       +{formatCurrency(income.amount, userData?.currency)}
                     </TableCell>
                     <TableCell>
-                      <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="flex items-center gap-0.5 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                         <button onClick={() => setEditingId(income.id)} className="p-1.5 rounded-lg hover:bg-accent/50" title="Edit">
                           <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
                         </button>

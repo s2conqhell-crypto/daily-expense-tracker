@@ -131,7 +131,7 @@ export default function LoansPage() {
                         <p className="text-xs text-[#94A3B8]">{loan.status === 'completed' ? 'Completed' : `${loan.paidEmi}/${loan.totalEmi} EMIs paid`}</p>
                       </div>
                     </div>
-                    <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="flex gap-1 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                       {loan.status === 'active' && <button onClick={() => handlePayEMI(loan.id)} disabled={payingLoan === loan.id} className="p-1.5 rounded-lg hover:bg-[#00D09C]/10" title="Pay EMI"><CheckCircle className="h-3.5 w-3.5 text-[#00D09C]" /></button>}
                       <button onClick={() => { setEditing(loan); setDialogOpen(true); }} className="p-1.5 rounded-lg hover:bg-white/5" title="Edit"><TrendingUp className="h-3.5 w-3.5 text-[#7C5CFF]" /></button>
                       <button onClick={() => handleDelete(loan.id)} className="p-1.5 rounded-lg hover:bg-white/5" title="Delete"><Trash2 className="h-3.5 w-3.5 text-[#FF5A6E]" /></button>

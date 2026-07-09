@@ -114,7 +114,7 @@ export default function SubscriptionsPage() {
                       <p className="text-xs text-[#94A3B8]">{sub.category}{sub.customCategory ? ` (${sub.customCategory})` : ''}</p>
                     </div>
                   </div>
-                  <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="flex gap-1 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                     {sub.status === 'active' && <button onClick={() => toggleStatus(sub.id, 'paused')} className="p-1.5 rounded-lg hover:bg-white/5" title="Pause"><Pause className="h-3.5 w-3.5 text-[#FBBF24]" /></button>}
                     {sub.status === 'paused' && <button onClick={() => toggleStatus(sub.id, 'active')} className="p-1.5 rounded-lg hover:bg-white/5" title="Resume"><Play className="h-3.5 w-3.5 text-[#00D09C]" /></button>}
                     <button onClick={() => { setEditing(sub); setDialogOpen(true); }} className="p-1.5 rounded-lg hover:bg-white/5" title="Edit"><Repeat className="h-3.5 w-3.5 text-[#7C5CFF]" /></button>

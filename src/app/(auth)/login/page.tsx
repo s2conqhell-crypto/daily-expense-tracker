@@ -96,6 +96,8 @@ export default function LoginPage() {
                     placeholder="you@example.com"
                     value={form.email}
                     onChange={(e) => setForm({ ...form, email: e.target.value })}
+                    className="text-[16px]"
+                    autoComplete="email"
                   />
                   {errors.email && <p className="text-xs text-destructive">{errors.email}</p>}
                 </div>
@@ -109,6 +111,8 @@ export default function LoginPage() {
                       placeholder="••••••••"
                       value={form.password}
                       onChange={(e) => setForm({ ...form, password: e.target.value })}
+                      className="text-[16px]"
+                      autoComplete="current-password"
                     />
                     <button
                       type="button"

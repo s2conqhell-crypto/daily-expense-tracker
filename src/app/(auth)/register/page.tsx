@@ -70,14 +70,14 @@ export default function RegisterPage() {
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="name">Full Name</Label>
-                <Input id="name" placeholder="John Doe" value={form.name}
+                <Input id="name" placeholder="John Doe" value={form.name} className="text-[16px]" autoComplete="name"
                   onChange={(e) => setForm({ ...form, name: e.target.value })} />
                 {errors.name && <p className="text-xs text-destructive">{errors.name}</p>}
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
-                <Input id="email" type="email" placeholder="you@example.com" value={form.email}
+                <Input id="email" type="email" placeholder="you@example.com" value={form.email} className="text-[16px]" autoComplete="email"
                   onChange={(e) => setForm({ ...form, email: e.target.value })} />
                 {errors.email && <p className="text-xs text-destructive">{errors.email}</p>}
               </div>
@@ -86,7 +86,7 @@ export default function RegisterPage() {
                 <Label htmlFor="password">Password</Label>
                 <div className="relative">
                   <Input id="password" type={showPassword ? 'text' : 'password'} placeholder="••••••••"
-                    value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} />
+                    value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} className="text-[16px]" autoComplete="new-password" />
                   <button type="button" onClick={() => setShowPassword(!showPassword)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -98,7 +98,7 @@ export default function RegisterPage() {
               <div className="space-y-2">
                 <Label htmlFor="confirmPassword">Confirm Password</Label>
                 <Input id="confirmPassword" type="password" placeholder="••••••••"
-                  value={form.confirmPassword} onChange={(e) => setForm({ ...form, confirmPassword: e.target.value })} />
+                  value={form.confirmPassword} onChange={(e) => setForm({ ...form, confirmPassword: e.target.value })} className="text-[16px]" autoComplete="new-password" />
                 {errors.confirmPassword && <p className="text-xs text-destructive">{errors.confirmPassword}</p>}
               </div>
 

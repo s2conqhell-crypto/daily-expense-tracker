@@ -4,9 +4,10 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "node tools/generate-pwa-icons.js && next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "generate-icons": "node tools/generate-pwa-icons.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.4.0",
@@ -45,6 +46,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.2.10",
+    "sharp": "^0.35.3",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

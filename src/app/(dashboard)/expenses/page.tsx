@@ -360,7 +360,7 @@ export default function ExpensesPage() {
                       -{formatCurrency(expense.amount, userData?.currency)}
                     </TableCell>
                     <TableCell>
-                      <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="flex items-center gap-0.5 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                         <button onClick={() => setEditingId(expense.id)} className="p-1.5 rounded-lg hover:bg-accent/50" title="Edit">
                           <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
                         </button>
@@ -390,7 +390,7 @@ export default function ExpensesPage() {
                 <button
                   key={p}
                   onClick={() => setPage(p)}
-                  className={`h-8 w-8 rounded-lg text-xs font-medium transition-all ${
+                  className={`h-9 w-9 sm:h-8 sm:w-8 rounded-lg text-xs font-medium transition-all touch-target ${
                     page === p ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-accent'
                   }`}
                 >

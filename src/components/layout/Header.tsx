@@ -39,8 +39,8 @@ export function Header() {
 
   return (
     <>{!isMobile && <div className="h-16" />}
-      <header className="fixed right-0 top-0 z-20 flex h-16 items-center justify-between border-b border-white/[0.06] bg-[#0E1116] shadow-sm px-4 lg:px-6 transition-all duration-300"
-        style={{ left: isMobile ? 0 : '240px' }}
+      <header className="fixed right-0 top-0 z-20 flex h-16 items-center justify-between border-b border-white/[0.06] bg-[#0E1116] shadow-sm px-4 lg:px-6 transition-all duration-300 safe-area-top"
+        style={{ left: isMobile ? 'env(safe-area-inset-left, 0px)' : '240px', right: 'env(safe-area-inset-right, 0px)' }}
       >
         <div className="flex items-center gap-3">
           {isMobile && (
