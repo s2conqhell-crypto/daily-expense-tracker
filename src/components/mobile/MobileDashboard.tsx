@@ -24,15 +24,6 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { motion } from 'framer-motion';
 import type { Expense, Income } from '@/types';
 
-const greeting = () => {
-  const h = new Date().getHours();
-  if (h < 12) return 'Good Morning';
-  if (h < 17) return 'Good Afternoon';
-  return 'Good Evening';
-};
-
-const todayStr = new Date().toLocaleDateString('en-US', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
-
 const container = {
   hidden: { opacity: 0 },
   show: {
@@ -52,6 +43,8 @@ export function MobileDashboard() {
   const { summary, monthlyTrend, loading } = useDashboard();
   const { user, userData } = useAuth();
   const router = useRouter();
+  const [todayStr, setTodayStr] = useState('');
+  const [greeting, setGreeting] = useState('');
   const [txCount, setTxCount] = useState(5);
   const [extraData, setExtraData] = useState<any>({ upcomingRules: [], upcomingSubs: [], upcomingEmis: [], subTotal: 0, budgetData: null });
   const [editingTx, setEditingTx] = useState<Expense | Income | null>(null);
@@ -83,6 +76,15 @@ export function MobileDashboard() {
     load();
   }, [user]);
 
+  useEffect(() => {
+    const h = new Date().getHours();
+    let g = 'Good Evening';
+    if (h < 12) g = 'Good Morning';
+    else if (h < 17) g = 'Good Afternoon';
+    setGreeting(g);
+    setTodayStr(new Date().toLocaleDateString('en-US', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }));
+  }, []);
+
   const userName = (userData?.name?.split(' ') || [])[0] || 'User';
   const savingsRate = summary.totalIncome > 0 ? (summary.savings / summary.totalIncome) * 100 : 0;
   const budgetUtil = summary.totalBudget > 0 ? (summary.totalBudgetSpent / summary.totalBudget) * 100 : 0;
@@ -108,7 +110,7 @@ export function MobileDashboard() {
         <motion.div variants={itemAnim}>
           <p className="text-[11px] text-[#6b7b8d] font-semibold uppercase tracking-widest">{todayStr}</p>
           <h1 className="text-[30px] font-bold text-white tracking-tight mt-0.5">
-            {greeting()}, {userName}
+            {greeting}, {userName}
           </h1>
         </motion.div>
 

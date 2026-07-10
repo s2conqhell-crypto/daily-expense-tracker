@@ -38,7 +38,7 @@ export function ConfirmDeleteDialog({
         </DialogHeader>
         <DialogFooter className="flex gap-3 sm:gap-2">
           <DialogClose asChild>
-            <Button variant="outline" disabled={loading} className="flex-1 h-[44px] touch-target" onClick={(e) => { (e.currentTarget as HTMLButtonElement).blur(); }}>
+            <Button variant="outline" disabled={loading} className="flex-1 h-[44px] touch-target">
               Cancel
             </Button>
           </DialogClose>

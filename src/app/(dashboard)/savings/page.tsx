@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useSavingsGoals } from '@/hooks/useSavingsGoals';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button, Card, CardContent, Progress, Skeleton, Input, Label, Select, SelectTrigger, SelectValue, SelectContent, SelectItem, Badge } from '@/components/ui';
@@ -22,9 +22,8 @@ const PRESET_GOALS = [
   { name: 'Investment', icon: '📈', desc: 'Grow your wealth', color: '#10B981' },
 ];
 
-const now = new Date();
-
 export default function SavingsPage() {
+  const now = useMemo(() => new Date(), []);
   const { goals, loading, createGoal, updateGoal, deleteGoal } = useSavingsGoals();
   const { userData } = useAuth();
   const [showCreate, setShowCreate] = useState(false);
@@ -111,7 +110,7 @@ export default function SavingsPage() {
           <div className="space-y-2">
             {goals.filter((g) => !g.isCompleted).map((goal) => {
               const progress = goal.targetAmount > 0 ? (goal.currentAmount / goal.targetAmount) * 100 : 0;
-              const daysLeft = Math.max(0, Math.ceil((toDate(goal.targetDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24)));
+              const daysLeft = Math.max(0, Math.ceil((toDate(goal.targetDate).getTime() - now.getTime()) / (1000 * 60 * 60 * 24)));
               return (
                 <div key={goal.id} className="bg-[#161a27] rounded-[20px] border border-white/[0.06] p-4">
                    <div className="flex items-center justify-between mb-2">

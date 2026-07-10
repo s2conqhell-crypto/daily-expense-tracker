@@ -29,22 +29,24 @@ const itemAnim = {
   show: { opacity: 1, y: 0 },
 };
 
-const greeting = () => {
-  const h = new Date().getHours();
-  if (h < 12) return 'Good Morning';
-  if (h < 17) return 'Good Afternoon';
-  return 'Good Evening';
-};
-
-const todayStr = new Date().toLocaleDateString('en-US', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
-
 export default function DashboardPage() {
+  const [todayStr, setTodayStr] = useState('');
+  const [greeting, setGreeting] = useState('');
   const { summary, monthlyTrend, loading } = useDashboard();
   const { user, userData } = useAuth();
   const isMobile = useIsMobile();
   const [dialogType, setDialogType] = useState<'expense' | 'income' | null>(null);
   const [txFilter, setTxFilter] = useState<'all' | 'today' | 'week' | 'month'>('all');
   const [extraData, setExtraData] = useState<any>({ upcomingRules: [], upcomingSubs: [], upcomingEmis: [], subTotal: 0 });
+
+  useEffect(() => {
+    const h = new Date().getHours();
+    let g = 'Good Evening';
+    if (h < 12) g = 'Good Morning';
+    else if (h < 17) g = 'Good Afternoon';
+    setGreeting(g);
+    setTodayStr(new Date().toLocaleDateString('en-US', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }));
+  }, []);
 
   useEffect(() => {
     if (!user) return;
@@ -104,7 +106,7 @@ export default function DashboardPage() {
         <div className="flex items-center justify-between gap-3">
           <div className="min-w-0">
             <h1 className="text-lg sm:text-xl font-extrabold tracking-tight text-white">
-              {greeting()}, <span className="text-[#8B6FFF]">{userName}</span>
+              {greeting}, <span className="text-[#8B6FFF]">{userName}</span>
             </h1>
             <p className="text-xs sm:text-sm text-[#8899AA] mt-0.5 font-medium">{todayStr}</p>
           </div>

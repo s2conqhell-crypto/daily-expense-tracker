@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import {
@@ -30,8 +31,15 @@ const navItems = [
 export function Header() {
   const { user, userData, logOut } = useAuth();
   const { setTheme, resolvedTheme } = useTheme();
+  const pathname = usePathname();
   const isMobile = useIsMobile();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [pageTitle, setPageTitle] = useState('Dashboard');
+
+  useEffect(() => {
+    const title = pathname.split('/').filter(Boolean).pop()?.replace(/-/g, ' ')?.replace(/\b\w/g, (c: string) => c.toUpperCase()) || 'Dashboard';
+    setPageTitle(title);
+  }, [pathname]);
 
   const toggleTheme = () => {
     setTheme(resolvedTheme === 'dark' ? 'light' : 'dark');
@@ -80,7 +88,7 @@ export function Header() {
               <Wallet className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-white" />
             </div>
             <h1 className="text-sm sm:text-lg font-semibold tracking-tight text-white hidden sm:block">
-              {typeof window !== 'undefined' && window.location.pathname.split('/').filter(Boolean).pop()?.replace(/-/g, ' ')?.replace(/\b\w/g, (c: string) => c.toUpperCase()) || 'Dashboard'}
+              {pageTitle}
             </h1>
           </div>
         </div>

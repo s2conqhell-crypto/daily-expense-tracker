@@ -16,7 +16,7 @@ export default function CalendarPage() {
   const { user, userData } = useAuth();
   const { expenses, loading } = useExpenses();
   const { incomes } = useIncome();
-  const [currentDate, setCurrentDate] = useState(new Date());
+  const [currentDate, setCurrentDate] = useState(() => new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
 

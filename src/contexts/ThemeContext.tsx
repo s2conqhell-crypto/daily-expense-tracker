@@ -26,10 +26,21 @@ function getResolvedTheme(theme: Theme): 'light' | 'dark' {
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>(getInitialTheme);
-  const [resolvedTheme, setResolvedTheme] = useState<'light' | 'dark'>(() => getResolvedTheme(getInitialTheme()));
+  const [theme, setThemeState] = useState<Theme>('system');
+  const [resolvedTheme, setResolvedTheme] = useState<'light' | 'dark'>('dark');
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
+    const stored = (() => {
+      try { return localStorage.getItem(STORAGE_KEYS.THEME) as Theme | null; }
+      catch { return null; }
+    })();
+    if (stored) setThemeState(stored);
+  }, []);
+
+  useEffect(() => {
+    if (!mounted) return;
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
 
     const updateResolved = () => {
@@ -42,7 +53,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     updateResolved();
     mediaQuery.addEventListener('change', updateResolved);
     return () => mediaQuery.removeEventListener('change', updateResolved);
-  }, [theme]);
+  }, [theme, mounted]);
 
   const setTheme = useCallback((newTheme: Theme) => {
     setThemeState(newTheme);

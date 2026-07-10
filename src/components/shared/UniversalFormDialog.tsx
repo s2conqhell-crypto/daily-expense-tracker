@@ -125,7 +125,6 @@ export function UniversalFormDialog({
               </div>
               <SheetClose asChild>
                 <button
-                  onPointerDown={(e) => e.currentTarget.blur()}
                   className="touch-target flex h-10 w-10 items-center justify-center rounded-[12px] text-[#6b7b8d] hover:bg-white/5 active:scale-90 transition-all shrink-0 -mr-1"
                   aria-label="Close"
                 >
@@ -154,7 +153,6 @@ export function UniversalFormDialog({
               </div>
               <DialogClose asChild>
                 <button
-                  onPointerDown={(e) => e.currentTarget.blur()}
                   className="touch-target flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground hover:bg-accent/50 hover:text-foreground transition-all shrink-0 -mr-1"
                   aria-label="Close"
                 >

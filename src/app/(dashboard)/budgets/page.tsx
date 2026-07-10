@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useBudgets } from '@/hooks/useBudgets';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button, Card, CardContent, Progress, Badge, Skeleton, Input, Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui';
@@ -34,9 +34,11 @@ export default function BudgetsPage() {
   const totalSpent = budgets.reduce((sum, b) => sum + b.spent, 0);
   const overallUtilization = totalBudget > 0 ? (totalSpent / totalBudget) * 100 : 0;
 
-  const daysInMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate();
-  const currentDay = new Date().getDate();
-  const daysLeft = daysInMonth - currentDay;
+  const dateInfo = useMemo(() => {
+    const now = new Date();
+    const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+    return { daysInMonth, currentDay: now.getDate(), daysLeft: daysInMonth - now.getDate() };
+  }, []);
 
   const getStatus = (util: number) => {
     if (util > 100) return statusConfig.over_budget;
@@ -117,7 +119,7 @@ export default function BudgetsPage() {
                     </span>
                   </div>
                   <div className="mt-2 pt-2 border-t border-white/[0.06] flex justify-between text-[11px]">
-                    <span className="text-[#6b7b8d]">{daysLeft} days left</span>
+                    <span className="text-[#6b7b8d]">{dateInfo.daysLeft} days left</span>
                     <span className={util > 100 ? 'text-[#FF5A6E]' : util > 80 ? 'text-[#FBBF24]' : 'text-[#00D09C]'}>
                       {util > 100 ? 'Over budget' : util > 80 ? 'Near limit' : 'On track'}
                     </span>
@@ -160,7 +162,7 @@ export default function BudgetsPage() {
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                 <CalendarDays className="h-3.5 w-3.5" />
-                {daysLeft} days left
+                {dateInfo.daysLeft} days left
               </div>
               <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${getStatus(overallUtilization).bg} ${getStatus(overallUtilization).text}`}>
                 {getStatus(overallUtilization).label}
@@ -200,7 +202,7 @@ export default function BudgetsPage() {
           {budgets.map((budget, i) => {
             const utilization = budget.amount > 0 ? (budget.spent / budget.amount) * 100 : 0;
             const remaining = budget.amount - budget.spent;
-            const dailyBudget = budget.amount / daysInMonth;
+            const dailyBudget = budget.amount / dateInfo.daysInMonth;
             const status = getStatus(utilization);
 
             return (
@@ -264,7 +266,7 @@ export default function BudgetsPage() {
                       <div>
                         <p className="text-[10px] text-muted-foreground">Days Left</p>
                         <p className="text-xs font-medium flex items-center gap-1">
-                          <Clock className="h-3 w-3" /> {daysLeft} days
+                          <Clock className="h-3 w-3" /> {dateInfo.daysLeft} days
                         </p>
                       </div>
                     </div>

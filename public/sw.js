@@ -1,11 +1,12 @@
-const CACHE_NAME = 'expenseflow-v1';
-const STATIC_CACHE_URLS = ['/', '/dashboard', '/manifest.json'];
-const API_CACHE_NAME = 'expenseflow-api-v1';
+const CACHE_NAME = 'expenseflow-v2';
+const ASSET_CACHE = 'expenseflow-assets-v2';
+const STATIC_CACHE_URLS = ['/manifest.json'];
 
 self.addEventListener('install', (event) => {
+  self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(STATIC_CACHE_URLS);
+      return cache.addAll(STATIC_CACHE_URLS).catch(() => {});
     })
   );
 });
@@ -15,69 +16,63 @@ self.addEventListener('activate', (event) => {
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames
-          .filter((name) => name.startsWith('expenseflow-') && name !== CACHE_NAME && name !== API_CACHE_NAME)
+          .filter((name) => name.startsWith('expenseflow-') && name !== CACHE_NAME && name !== ASSET_CACHE)
           .map((name) => caches.delete(name))
       );
-    })
+    }).then(() => self.clients.claim())
   );
 });
 
-function isCacheable(request) {
-  if (request.method !== 'GET') return false;
-  if (request.url.includes('/__/auth/')) return false;
-  if (request.url.includes('googleapis.com/identitytoolkit')) return false;
-  if (request.url.includes('securetoken.googleapis.com')) return false;
-  if (request.url.includes('firestore.googleapis.com/google.firestore')) return false;
-  return true;
-}
-
-function cacheResponse(request, response, cacheName) {
-  if (!isCacheable(request)) return;
-  if (!response || response.status !== 200) return;
-  if (response.type === 'opaqueredirect' || response.type === 'error') return;
-  const clone = response.clone();
-  caches.open(cacheName).then((cache) => cache.put(request, clone));
+function isAuthOrApiRequest(url) {
+  if (url.includes('/__/auth/')) return true;
+  if (url.includes('googleapis.com/identitytoolkit')) return true;
+  if (url.includes('securetoken.googleapis.com')) return true;
+  if (url.includes('firestore.googleapis.com')) return true;
+  if (url.includes('firebaseio.com')) return true;
+  return false;
 }
 
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
-  if (url.origin === self.location.origin) {
-    if (request.destination === 'document') {
-      event.respondWith(
-        caches.match(request).then((cached) => {
-          const fetchPromise = fetch(request).then((response) => {
-            cacheResponse(request, response, CACHE_NAME);
-            return response;
-          }).catch(() => cached);
-          return cached || fetchPromise;
-        })
-      );
-      return;
-    }
+  if (request.method !== 'GET') return;
 
-    if (request.destination === 'style' || request.destination === 'script' || request.destination === 'font' || request.destination === 'image') {
-      event.respondWith(
-        caches.match(request).then((cached) => {
-          const fetchPromise = fetch(request).then((response) => {
-            cacheResponse(request, response, CACHE_NAME);
-            return response;
-          });
-          return cached || fetchPromise;
-        })
-      );
-      return;
-    }
+  if (isAuthOrApiRequest(url.href)) {
+    event.respondWith(fetch(request).catch(() => new Response(null, { status: 503 })));
+    return;
   }
 
-  if (url.pathname.includes('/api/firebase/') || url.pathname.includes('firestore')) {
+  if (url.origin !== self.location.origin) return;
+
+  if (request.destination === 'document') {
     event.respondWith(
-      caches.open(API_CACHE_NAME).then((cache) => {
-        return fetch(request).then((response) => {
-          cacheResponse(request, response, API_CACHE_NAME);
+      fetch(request).then((response) => {
+        if (response.status === 200) {
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
+        }
+        return response;
+      }).catch(() => {
+        return caches.match(request).then((cached) => {
+          return cached || new Response(null, { status: 503 });
+        });
+      })
+    );
+    return;
+  }
+
+  if (request.destination === 'style' || request.destination === 'script' || request.destination === 'font' || request.destination === 'image') {
+    event.respondWith(
+      caches.match(request).then((cached) => {
+        const fetchPromise = fetch(request).then((response) => {
+          if (response.status === 200) {
+            const clone = response.clone();
+            caches.open(ASSET_CACHE).then((cache) => cache.put(request, clone));
+          }
           return response;
-        }).catch(() => cache.match(request));
+        });
+        return cached || fetchPromise;
       })
     );
     return;

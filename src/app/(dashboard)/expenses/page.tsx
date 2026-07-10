@@ -92,10 +92,15 @@ export default function ExpensesPage() {
     else setSelected(new Set(filtered.map((e) => e.id)));
   };
 
-  const todayStr = new Date().toISOString().split('T')[0];
-  const startOfWeek = new Date(); startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
-  const startOfWeekStr = startOfWeek.toISOString().split('T')[0];
-  const startOfMonthStr = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0];
+  const dateRanges = useMemo(() => {
+    const now = new Date();
+    const todayStr = now.toISOString().split('T')[0];
+    const startOfWeek = new Date(now);
+    startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
+    const startOfWeekStr = startOfWeek.toISOString().split('T')[0];
+    const startOfMonthStr = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
+    return { todayStr, startOfWeekStr, startOfMonthStr };
+  }, []);
 
   const filtered = useMemo(() =>
     expenses
@@ -103,9 +108,9 @@ export default function ExpensesPage() {
         if (categoryFilter !== 'all' && e.category !== categoryFilter) return false;
         if (search && !e.description.toLowerCase().includes(search.toLowerCase()) && !e.notes?.toLowerCase().includes(search.toLowerCase())) return false;
         const d = safeDateInput(e.expenseDate);
-        if (dateFilter === 'today' && d !== todayStr) return false;
-        if (dateFilter === 'week' && d < startOfWeekStr) return false;
-        if (dateFilter === 'month' && d < startOfMonthStr) return false;
+        if (dateFilter === 'today' && d !== dateRanges.todayStr) return false;
+        if (dateFilter === 'week' && d < dateRanges.startOfWeekStr) return false;
+        if (dateFilter === 'month' && d < dateRanges.startOfMonthStr) return false;
         return true;
       })
       .sort((a, b) => {
@@ -123,8 +128,8 @@ export default function ExpensesPage() {
   const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
   const paged = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
-  const todayExpenses = expenses.filter((e) => safeDateInput(e.expenseDate) === todayStr);
-  const monthlyExpenses = expenses.filter((e) => safeDateInput(e.expenseDate) >= startOfMonthStr);
+  const todayExpenses = expenses.filter((e) => safeDateInput(e.expenseDate) === dateRanges.todayStr);
+  const monthlyExpenses = expenses.filter((e) => safeDateInput(e.expenseDate) >= dateRanges.startOfMonthStr);
   const highestExpense = expenses.length > 0 ? Math.max(...expenses.map((e) => e.amount)) : 0;
   const avgExpense = expenses.length > 0 ? expenses.reduce((s, e) => s + e.amount, 0) / expenses.length : 0;
 
