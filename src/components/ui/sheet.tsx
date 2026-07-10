@@ -32,7 +32,9 @@ const SheetContent = React.forwardRef<
     onCloseAutoFocus?.(e);
     if (!e.defaultPrevented) {
       e.preventDefault();
-      document.body.focus({ preventScroll: true });
+      if (document.activeElement && document.activeElement instanceof HTMLElement) {
+        document.activeElement.blur();
+      }
     }
   }, [onCloseAutoFocus]);
 

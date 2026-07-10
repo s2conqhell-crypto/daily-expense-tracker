@@ -25,26 +25,6 @@ export function proxy(request: NextRequest) {
     'Strict-Transport-Security',
     'max-age=63072000; includeSubDomains'
   );
-  response.headers.set(
-    'Content-Security-Policy',
-    [
-      "default-src 'self'",
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.firebaseio.com https://*.googleapis.com https://*.gstatic.com https://accounts.google.com https://apis.google.com",
-      "style-src 'self' 'unsafe-inline' https://*.googleapis.com https://accounts.google.com",
-      "img-src 'self' data: blob: https://*.googleapis.com https://*.gstatic.com https://*.firebasestorage.googleapis.com https://lh3.googleusercontent.com https://graph.facebook.com https://*.googleusercontent.com",
-      "font-src 'self' https://*.gstatic.com",
-      "connect-src 'self' https://*.firebaseio.com https://*.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://firestore.googleapis.com https://firebase.googleapis.com https://accounts.google.com https://apis.google.com wss://*.firebaseio.com",
-      "frame-src 'self' https://*.firebaseapp.com https://accounts.google.com https://apis.google.com",
-      "manifest-src 'self' https://vercel.com https://vercel.live",
-      "media-src 'self' https://*.firebasestorage.googleapis.com",
-      "base-uri 'self'",
-      "form-action 'self' https://accounts.google.com https://*.firebaseapp.com",
-      "frame-ancestors 'none'",
-      "worker-src 'self'",
-      "object-src 'none'",
-      "upgrade-insecure-requests",
-    ].join('; ')
-  );
 
   return response;
 }

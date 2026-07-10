@@ -162,6 +162,7 @@ export function MobileDashboard() {
                 <p className="text-[12px] text-[#6b7b8d] font-medium">No data yet</p>
               </div>
             ) : (
+              <div style={{ minHeight: 140, width: '100%' }}>
               <ResponsiveContainer width="100%" height={140}>
                 <BarChart data={monthlyTrend} barGap={4}>
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
@@ -175,6 +176,7 @@ export function MobileDashboard() {
                   <Bar dataKey="expenses" fill="#ff5a7a" radius={[4, 4, 0, 0]} maxBarSize={20} name="Expenses" />
                 </BarChart>
               </ResponsiveContainer>
+              </div>
             )}
           </div>
         </motion.div>

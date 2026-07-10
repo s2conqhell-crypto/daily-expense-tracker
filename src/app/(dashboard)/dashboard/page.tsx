@@ -221,6 +221,7 @@ export default function DashboardPage() {
                   <p className="text-[10px] text-[#8899AA]/60 mt-0.5">Add transactions to see trends</p>
                 </div>
               ) : (
+                <div style={{ minHeight: 260, width: '100%' }}>
                 <ResponsiveContainer width="100%" height={260}>
                   <BarChart data={monthlyTrend} barGap={6}>
                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" vertical={false} />
@@ -234,6 +235,7 @@ export default function DashboardPage() {
                     <Bar dataKey="expenses" fill="#FF5A6E" radius={[4, 4, 0, 0]} maxBarSize={28} name="Expenses" />
                   </BarChart>
                 </ResponsiveContainer>
+                </div>
               )}
               {monthlyTrend.length > 0 && (
                 <div className="flex items-center gap-4 mt-3 pt-3 border-t border-white/[0.06]">

@@ -64,7 +64,7 @@ export default function AnalyticsPage() {
         {!loading && monthlyTrend.length > 0 && (
           <div className="bg-[#161a27] rounded-[20px] border border-white/[0.06] p-4">
             <p className="text-[12px] font-medium text-white mb-2">Monthly Income vs Expenses</p>
-            <div className="h-[140px]">
+            <div className="h-[140px] min-h-[1px]">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={monthlyTrend.slice(-6)}>
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
@@ -184,6 +184,7 @@ export default function AnalyticsPage() {
             <CardHeader><CardTitle>Monthly Income vs Expenses</CardTitle></CardHeader>
             <CardContent>
               {loading ? <Skeleton className="h-[300px]" /> : (
+                <div style={{ minHeight: 300, width: '100%' }}>
                 <ResponsiveContainer width="100%" height={300}>
                   <BarChart data={monthlyTrend}>
                     <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
@@ -195,6 +196,7 @@ export default function AnalyticsPage() {
                     <Bar dataKey="expenses" fill="#EF4444" radius={[6, 6, 0, 0]} name="Expenses" />
                   </BarChart>
                 </ResponsiveContainer>
+                </div>
               )}
             </CardContent>
           </Card>
@@ -206,6 +208,7 @@ export default function AnalyticsPage() {
             <CardContent>
               {loading ? <Skeleton className="h-[300px]" /> : (
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <div style={{ minHeight: 300, width: '100%' }}>
                   <ResponsiveContainer width="100%" height={300}>
                     <PieChart>
                       <Pie data={categoryBreakdown} cx="50%" cy="50%" innerRadius={60} outerRadius={100} paddingAngle={3} dataKey="amount" nameKey="category">
@@ -214,6 +217,7 @@ export default function AnalyticsPage() {
                       <Tooltip contentStyle={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '12px' }} />
                     </PieChart>
                   </ResponsiveContainer>
+                  </div>
                   <div className="space-y-1.5 max-h-[300px] overflow-y-auto">
                     {categoryBreakdown.map((cat, i) => (
                       <div key={i} className="flex items-center justify-between p-2 rounded-lg hover:bg-accent/50 transition-colors">
@@ -240,6 +244,7 @@ export default function AnalyticsPage() {
               <CardHeader><CardTitle>Weekly Spending</CardTitle></CardHeader>
               <CardContent>
                 {loading ? <Skeleton className="h-[250px]" /> : (
+                  <div style={{ minHeight: 250, width: '100%' }}>
                   <ResponsiveContainer width="100%" height={250}>
                     <AreaChart data={weeklySpending}>
                       <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
@@ -255,6 +260,7 @@ export default function AnalyticsPage() {
                       </defs>
                     </AreaChart>
                   </ResponsiveContainer>
+                  </div>
                 )}
               </CardContent>
             </Card>
@@ -262,6 +268,7 @@ export default function AnalyticsPage() {
               <CardHeader><CardTitle>Income Growth</CardTitle></CardHeader>
               <CardContent>
                 {loading ? <Skeleton className="h-[250px]" /> : (
+                  <div style={{ minHeight: 250, width: '100%' }}>
                   <ResponsiveContainer width="100%" height={250}>
                     <LineChart data={monthlyTrend}>
                       <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
@@ -271,6 +278,7 @@ export default function AnalyticsPage() {
                       <Line type="monotone" dataKey="income" stroke="#10B981" strokeWidth={2} dot={{ r: 4 }} name="Income" />
                     </LineChart>
                   </ResponsiveContainer>
+                  </div>
                 )}
               </CardContent>
             </Card>
@@ -282,6 +290,7 @@ export default function AnalyticsPage() {
             <CardHeader><CardTitle>Savings Trend</CardTitle></CardHeader>
             <CardContent>
               {loading ? <Skeleton className="h-[300px]" /> : (
+                <div style={{ minHeight: 300, width: '100%' }}>
                 <ResponsiveContainer width="100%" height={300}>
                   <BarChart data={savingsTrend}>
                     <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
@@ -293,6 +302,7 @@ export default function AnalyticsPage() {
                     <Line type="monotone" dataKey="savingsRate" stroke="#F59E0B" strokeWidth={2} name="Savings Rate (%)" />
                   </BarChart>
                 </ResponsiveContainer>
+                </div>
               )}
             </CardContent>
           </Card>
