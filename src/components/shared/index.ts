@@ -3,3 +3,6 @@ export { AnimatedCounter } from './AnimatedCounter';
 export { TrendBadge } from './TrendBadge';
 export { EmptyState } from './EmptyState';
 export { StatCard } from './StatCard';
+export { TransactionActionMenu } from './TransactionActionMenu';
+export type { ActionMenuItem } from './TransactionActionMenu';
+export { ConfirmDeleteDialog } from './ConfirmDeleteDialog';

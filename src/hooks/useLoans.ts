@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import { firebaseService } from '@/firebase/services';
 import { useAuth } from '@/contexts/AuthContext';
 import type { Loan, LoanPayment } from '@/types';
+import toast from 'react-hot-toast';
 
 export function useLoans() {
   const { user } = useAuth();
@@ -24,14 +25,17 @@ export function useLoans() {
   const addLoan = useCallback(async (data: Omit<Loan, 'id' | 'userId' | 'createdAt' | 'updatedAt'>) => {
     if (!user) throw new Error('Not authenticated');
     await firebaseService.loans.add(user.uid, data);
+    toast.success('Loan added');
   }, [user]);
 
   const updateLoan = useCallback(async (loanId: string, data: Partial<Loan>) => {
     await firebaseService.loans.update(loanId, data);
+    toast.success('Loan updated');
   }, []);
 
   const deleteLoan = useCallback(async (loanId: string) => {
     await firebaseService.loans.delete(loanId);
+    toast.success('Loan deleted');
   }, []);
 
   const recordPayment = useCallback(async (loanId: string, payment: LoanPayment) => {
@@ -57,6 +61,7 @@ export function useLoans() {
       ...(isCompleted ? {} : { nextEmiDate: nextEmi }),
       ...(isCompleted ? { endDate: new Date() } : {}),
     } as Partial<Loan>);
+    toast.success('Payment recorded');
   }, [loans]);
 
   const activeLoans = useMemo(() => loans.filter((l) => l.status === 'active'), [loans]);

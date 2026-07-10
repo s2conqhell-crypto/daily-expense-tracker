@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { firebaseService } from '@/firebase/services';
 import { useAuth } from '@/contexts/AuthContext';
 import type { RecurringTransaction } from '@/types';
+import toast from 'react-hot-toast';
 
 export function useRecurringTransactions() {
   const { user } = useAuth();
@@ -24,18 +25,22 @@ export function useRecurringTransactions() {
   const addRule = useCallback(async (data: Omit<RecurringTransaction, 'id' | 'userId' | 'createdAt' | 'updatedAt'>) => {
     if (!user) throw new Error('Not authenticated');
     await firebaseService.recurringTransactions.add(user.uid, data);
+    toast.success('Recurring rule added');
   }, [user]);
 
   const updateRule = useCallback(async (ruleId: string, data: Partial<RecurringTransaction>) => {
     await firebaseService.recurringTransactions.update(ruleId, data);
+    toast.success('Recurring rule updated');
   }, []);
 
   const deleteRule = useCallback(async (ruleId: string) => {
     await firebaseService.recurringTransactions.delete(ruleId);
+    toast.success('Recurring rule deleted');
   }, []);
 
   const toggleRule = useCallback(async (ruleId: string, isActive: boolean) => {
     await firebaseService.recurringTransactions.update(ruleId, { isActive } as Partial<RecurringTransaction>);
+    toast.success(isActive ? 'Rule activated' : 'Rule deactivated');
   }, []);
 
   const skipNext = useCallback(async (rule: RecurringTransaction) => {
@@ -48,6 +53,7 @@ export function useRecurringTransactions() {
       case 'yearly': next.setFullYear(next.getFullYear() + 1); break;
     }
     await firebaseService.recurringTransactions.update(rule.id, { nextExecution: next } as Partial<RecurringTransaction>);
+    toast.success('Next occurrence skipped');
   }, []);
 
   const processDueRules = useCallback(async () => {

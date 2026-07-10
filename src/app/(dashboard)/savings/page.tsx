@@ -5,7 +5,8 @@ import { useSavingsGoals } from '@/hooks/useSavingsGoals';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button, Card, CardContent, Progress, Skeleton, Input, Label, Select, SelectTrigger, SelectValue, SelectContent, SelectItem, Badge } from '@/components/ui';
 import { MobileFormSheet } from '@/components/mobile/MobileFormSheet';
-import { Plus, PiggyBank, Target, Trash2, TrendingUp, CheckCircle } from 'lucide-react';
+import { TransactionActionMenu, ConfirmDeleteDialog } from '@/components/shared';
+import { Plus, PiggyBank, Target, Trash2, TrendingUp, CheckCircle, Pencil } from 'lucide-react';
 import { formatCurrency, formatDate } from '@/utils/format';
 import { toDate } from '@/utils/helpers';
 import { motion } from 'framer-motion';
@@ -26,9 +27,11 @@ export default function SavingsPage() {
   const { goals, loading, createGoal, updateGoal, deleteGoal } = useSavingsGoals();
   const { userData } = useAuth();
   const [showCreate, setShowCreate] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [newGoal, setNewGoal] = useState({ name: '', description: '', targetAmount: '', targetDate: '', monthlyContribution: '', priority: 'medium' });
   const [creating, setCreating] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const editingGoal = editingId ? goals.find(g => g.id === editingId) : null;
 
   const totalTarget = goals.reduce((sum, g) => sum + g.targetAmount, 0);
   const totalSaved = goals.reduce((sum, g) => sum + g.currentAmount, 0);
@@ -115,7 +118,13 @@ export default function SavingsPage() {
                        <div className="h-10 w-10 rounded-xl bg-[#7C5CFF]/15 flex items-center justify-center"><PiggyBank className="h-4 w-4 text-[#7C5CFF]" /></div>
                       <span className="text-[14px] font-medium text-white">{goal.name}</span>
                     </div>
-                    <button onClick={() => setDeletingId(goal.id)} className="p-1.5 rounded-lg hover:bg-white/5"><Trash2 className="h-3.5 w-3.5 text-[#6b7b8d]" /></button>
+                    <TransactionActionMenu
+                      actions={[
+                        { icon: Pencil, label: 'Edit', onClick: () => setEditingId(goal.id), color: '#7c5cff' },
+                        { icon: CheckCircle, label: 'Mark Complete', onClick: async () => { try { await updateGoal(goal.id, { isCompleted: true } as any); toast.success('Goal completed!'); } catch {} }, color: '#00d09c' },
+                        { icon: Trash2, label: 'Delete', onClick: () => setDeletingId(goal.id), color: '#ff5a7a', destructive: true },
+                      ]}
+                    />
                   </div>
                   <div className="flex justify-between mb-1.5">
                     <span className="text-[12px] text-[#6b7b8d]">Saved</span>
@@ -249,17 +258,13 @@ export default function SavingsPage() {
                             {goal.description && <p className="text-xs text-muted-foreground">{goal.description}</p>}
                           </div>
                         </div>
-                        <div className="flex gap-1 md:opacity-0 md:group-hover:opacity-100 transition-all">
-                          {!goal.isCompleted && (
-                            <button onClick={async () => { try { await updateGoal(goal.id, { isCompleted: true } as any); toast.success('Goal completed!'); } catch { toast.error('Failed'); } }}
-                              className="p-1.5 rounded-lg hover:bg-emerald-500/10" title="Mark complete">
-                              <CheckCircle className="h-3.5 w-3.5 text-emerald-500" />
-                            </button>
-                          )}
-                          <button onClick={() => setDeletingId(goal.id)} className="p-1.5 rounded-lg hover:bg-destructive/10 text-muted-foreground hover:text-destructive" title="Delete goal">
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </button>
-                        </div>
+                        <TransactionActionMenu
+                          actions={[
+                            { icon: Pencil, label: 'Edit', onClick: () => setEditingId(goal.id), color: '#7c5cff' },
+                            ...(goal.isCompleted ? [] : [{ icon: CheckCircle as any, label: 'Mark Complete', onClick: async () => { try { await updateGoal(goal.id, { isCompleted: true } as any); toast.success('Goal completed!'); } catch { toast.error('Failed'); } }, color: '#00d09c' }]),
+                            { icon: Trash2, label: 'Delete', onClick: () => setDeletingId(goal.id), color: '#ff5a7a', destructive: true },
+                          ]}
+                        />
                       </div>
 
                       <div className="flex justify-between mb-2">
@@ -412,20 +417,74 @@ export default function SavingsPage() {
       </div>
     </MobileFormSheet>
 
-    {/* Delete Confirmation */}
-    {deletingId && (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-        <Card className="w-80 mx-4">
-          <CardContent className="p-6 text-center space-y-4">
-            <p className="text-sm text-muted-foreground">Are you sure you want to delete this savings goal?</p>
-            <div className="flex gap-2 justify-center">
-              <Button variant="outline" onClick={() => setDeletingId(null)}>Cancel</Button>
-              <Button variant="destructive" onClick={() => handleDeleteGoal(deletingId)}>Delete</Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+    {/* Edit Goal */}
+    {editingGoal && (
+      <MobileFormSheet
+        open={true}
+        onOpenChange={() => setEditingId(null)}
+        title="Edit Goal"
+        submitLabel="Save"
+        asForm={false}
+        footer={
+          <div className="flex gap-2">
+            <Button variant="outline" className="flex-1 h-11 text-sm" onClick={() => setEditingId(null)}>Cancel</Button>
+            <Button className="flex-1 h-11 text-sm" onClick={async () => {
+              if (editingGoal && newGoal.targetAmount) {
+                await updateGoal(editingGoal.id, {
+                  name: newGoal.name || editingGoal.name,
+                  targetAmount: parseFloat(newGoal.targetAmount),
+                  targetDate: newGoal.targetDate ? new Date(newGoal.targetDate) : editingGoal.targetDate,
+                  monthlyContribution: parseFloat(newGoal.monthlyContribution) || undefined,
+                  priority: newGoal.priority as 'low' | 'medium' | 'high',
+                } as any);
+                setEditingId(null);
+                setNewGoal({ name: '', description: '', targetAmount: '', targetDate: '', monthlyContribution: '', priority: 'medium' });
+              }
+            }} disabled={!newGoal.targetAmount && !newGoal.name}>
+              Save
+            </Button>
+          </div>
+        }
+      >
+        <div className="space-y-2">
+          <Label>Goal Name</Label>
+          <Input placeholder="Name" defaultValue={editingGoal.name} onChange={(e) => setNewGoal({ ...newGoal, name: e.target.value })} />
+        </div>
+        <div className="space-y-2">
+          <Label>Target Amount</Label>
+          <Input type="number" placeholder="Amount" defaultValue={editingGoal.targetAmount} onChange={(e) => setNewGoal({ ...newGoal, targetAmount: e.target.value })} />
+        </div>
+        <div className="space-y-2">
+          <Label>Target Date</Label>
+          <Input type="date" defaultValue={new Date(editingGoal.targetDate).toISOString().split('T')[0]} onChange={(e) => setNewGoal({ ...newGoal, targetDate: e.target.value })} />
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-2">
+            <Label>Monthly Contribution</Label>
+            <Input type="number" placeholder="Amount per month" defaultValue={editingGoal.monthlyContribution || ''} onChange={(e) => setNewGoal({ ...newGoal, monthlyContribution: e.target.value })} />
+          </div>
+          <div className="space-y-2">
+            <Label>Priority</Label>
+            <Select defaultValue={editingGoal.priority || 'medium'} onValueChange={(v) => setNewGoal({ ...newGoal, priority: v })}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="high">High</SelectItem>
+                <SelectItem value="medium">Medium</SelectItem>
+                <SelectItem value="low">Low</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+      </MobileFormSheet>
     )}
+
+    <ConfirmDeleteDialog
+      open={!!deletingId}
+      onOpenChange={(open) => { if (!open) setDeletingId(null); }}
+      onConfirm={() => deletingId && handleDeleteGoal(deletingId)}
+      title="Delete Savings Goal"
+      itemName={deletingId ? goals.find(g => g.id === deletingId)?.name : undefined}
+    />
     </>
   );
 }

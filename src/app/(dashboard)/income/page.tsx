@@ -5,7 +5,7 @@ import { useIncome } from '@/hooks/useIncome';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button, Card, CardContent, Badge, Skeleton, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui';
 import { TransactionDialog } from '@/components/transactions/TransactionDialog';
-import { AnimatedContainer, AnimatedItem } from '@/components/shared';
+import { AnimatedContainer, AnimatedItem, TransactionActionMenu, ConfirmDeleteDialog } from '@/components/shared';
 import {
   Plus, TrendingUp, TrendingDown, Pencil, Trash2, MoreVertical,
   Wallet, Calendar, ArrowUpDown, ArrowDown,
@@ -160,9 +160,12 @@ export default function IncomePage() {
                   </div>
                   <div className="flex items-center gap-1 shrink-0 ml-2">
                     <span className="text-[15px] font-bold text-[#00d09c]">+{formatCurrency(income.amount, userData?.currency)}</span>
-                    <button onClick={() => { setEditingId(income.id); }} className="flex h-11 w-11 items-center justify-center rounded-xl text-[#6b7b8d] hover:bg-white/5 active:scale-90 transition-all" aria-label="More actions">
-                      <MoreVertical className="h-[18px] w-[18px]" />
-                    </button>
+                    <TransactionActionMenu
+                      actions={[
+                        { icon: Pencil, label: 'Edit', onClick: () => setEditingId(income.id), color: '#00d09c' },
+                        { icon: Trash2, label: 'Delete', onClick: () => setDeletingId(income.id), color: '#ff5a7a', destructive: true },
+                      ]}
+                    />
                   </div>
                 </div>
               </div>
@@ -288,12 +291,12 @@ export default function IncomePage() {
                       <span className="font-semibold text-emerald-500 mr-1">
                         +{formatCurrency(income.amount, userData?.currency)}
                       </span>
-                      <button onClick={() => setEditingId(income.id)} className="p-1.5 rounded-lg hover:bg-accent/50" title="Edit">
-                        <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
-                      </button>
-                      <button onClick={() => setDeletingId(income.id)} className="p-1.5 rounded-lg hover:bg-destructive/10" title="Delete">
-                        <Trash2 className="h-3.5 w-3.5 text-destructive" />
-                      </button>
+                      <TransactionActionMenu
+                        actions={[
+                          { icon: Pencil, label: 'Edit', onClick: () => setEditingId(income.id), color: '#00d09c' },
+                          { icon: Trash2, label: 'Delete', onClick: () => setDeletingId(income.id), color: '#ff5a7a', destructive: true },
+                        ]}
+                      />
                     </div>
                   </div>
                 </CardContent>
@@ -347,14 +350,12 @@ export default function IncomePage() {
                       +{formatCurrency(income.amount, userData?.currency)}
                     </TableCell>
                     <TableCell>
-                      <div className="flex items-center gap-0.5 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
-                        <button onClick={() => setEditingId(income.id)} className="p-1.5 rounded-lg hover:bg-accent/50" title="Edit">
-                          <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
-                        </button>
-                        <button onClick={() => setDeletingId(income.id)} className="p-1.5 rounded-lg hover:bg-destructive/10" title="Delete">
-                          <Trash2 className="h-3.5 w-3.5 text-destructive" />
-                        </button>
-                      </div>
+                      <TransactionActionMenu
+                        actions={[
+                          { icon: Pencil, label: 'Edit', onClick: () => setEditingId(income.id), color: '#00d09c' },
+                          { icon: Trash2, label: 'Delete', onClick: () => setDeletingId(income.id), color: '#ff5a7a', destructive: true },
+                        ]}
+                      />
                     </TableCell>
                   </TableRow>
                 ))}
@@ -382,19 +383,13 @@ export default function IncomePage() {
       />
     )}
 
-    {deletingId && (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-        <Card className="w-80 mx-4">
-          <CardContent className="p-6 text-center space-y-4">
-            <p className="text-sm text-muted-foreground">Are you sure you want to delete this income entry?</p>
-            <div className="flex gap-2 justify-center">
-              <Button variant="outline" onClick={() => setDeletingId(null)}>Cancel</Button>
-              <Button variant="destructive" onClick={() => handleDelete(deletingId)}>Delete</Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    )}
+    <ConfirmDeleteDialog
+      open={!!deletingId}
+      onOpenChange={(open) => { if (!open) setDeletingId(null); }}
+      onConfirm={() => deletingId && handleDelete(deletingId)}
+      title="Delete Income"
+      itemName={deletingId ? incomes.find(i => i.id === deletingId)?.description : undefined}
+    />
     </>
   );
 }

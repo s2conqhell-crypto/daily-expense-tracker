@@ -67,7 +67,7 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex flex-col" style={{ paddingTop: 'env(safe-area-inset-top, 0px)', paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
       <div className="flex items-center justify-end p-4 gap-2">
-        <Button variant="ghost" size="icon" onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}>
+        <Button variant="ghost" size="icon" aria-label={resolvedTheme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'} className="h-11 w-11" onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}>
           {resolvedTheme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
         </Button>
       </div>
@@ -116,8 +116,9 @@ export default function LoginPage() {
                     />
                     <button
                       type="button"
+                      aria-label={showPassword ? 'Hide password' : 'Show password'}
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                      className="absolute right-1 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground h-11 w-11 flex items-center justify-center"
                     >
                       {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </button>
@@ -135,7 +136,7 @@ export default function LoginPage() {
                     />
                     Remember me
                   </label>
-                  <Link href="/forgot-password" className="text-sm text-primary hover:underline">
+                  <Link href="/forgot-password" className="text-sm text-primary hover:underline inline-flex items-center min-h-[44px]">
                     Forgot password?
                   </Link>
                 </div>
@@ -173,7 +174,7 @@ export default function LoginPage() {
 
               <p className="text-center text-sm text-muted-foreground">
                 Don&apos;t have an account?{' '}
-                <Link href="/register" className="text-primary font-medium hover:underline">
+                <Link href="/register" className="text-primary font-medium hover:underline inline-flex items-center min-h-[44px]">
                   Sign up
                 </Link>
               </p>

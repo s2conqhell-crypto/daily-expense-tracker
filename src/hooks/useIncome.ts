@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { firebaseService } from '@/firebase/services';
 import { useAuth } from '@/contexts/AuthContext';
 import type { Income } from '@/types';
+import toast from 'react-hot-toast';
 
 export function useIncome() {
   const { user } = useAuth();
@@ -22,15 +23,19 @@ export function useIncome() {
 
   const addIncome = useCallback(async (data: Omit<Income, 'id' | 'createdAt' | 'updatedAt'>) => {
     if (!user) throw new Error('Not authenticated');
-    return firebaseService.income.add(user.uid, data);
+    const id = await firebaseService.income.add(user.uid, data);
+    toast.success('Income added');
+    return id;
   }, [user]);
 
   const updateIncome = useCallback(async (incomeId: string, data: Partial<Income>) => {
-    return firebaseService.income.update(incomeId, data);
+    await firebaseService.income.update(incomeId, data);
+    toast.success('Income updated');
   }, []);
 
   const deleteIncome = useCallback(async (incomeId: string) => {
-    return firebaseService.income.delete(incomeId);
+    await firebaseService.income.delete(incomeId);
+    toast.success('Income deleted');
   }, []);
 
   return { incomes, loading, error, addIncome, updateIncome, deleteIncome };

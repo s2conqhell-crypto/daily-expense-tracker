@@ -4,17 +4,23 @@ import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useExpenses } from '@/hooks/useExpenses';
 import { Button, Card, CardContent, Input, Select, SelectTrigger, SelectValue, SelectContent, SelectItem, Badge, Skeleton } from '@/components/ui';
-import { AnimatedContainer, AnimatedItem } from '@/components/shared';
-import { Search as SearchIcon, Receipt, X, MoreVertical } from 'lucide-react';
+import { TransactionDialog } from '@/components/transactions/TransactionDialog';
+import { AnimatedContainer, AnimatedItem, TransactionActionMenu, ConfirmDeleteDialog } from '@/components/shared';
+import { Search as SearchIcon, Receipt, X, Pencil, Trash2 } from 'lucide-react';
 import { formatCurrency, formatDate } from '@/utils/format';
+import { toDate } from '@/utils/helpers';
 import { EXPENSE_CATEGORIES, PAYMENT_METHODS } from '@/constants';
+import type { Expense } from '@/types';
 
 export default function SearchPage() {
   const { userData } = useAuth();
-  const { expenses, loading, deleteExpense } = useExpenses();
+  const { expenses, loading, deleteExpense, updateExpense } = useExpenses();
   const [query, setQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [methodFilter, setMethodFilter] = useState('all');
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const editingExpense = editingId ? expenses.find(e => e.id === editingId) : null;
 
   const filteredExpenses = expenses
     .filter((e) => {
@@ -130,9 +136,12 @@ export default function SearchPage() {
                   </div>
                   <div className="flex items-center gap-1 shrink-0 ml-2">
                     <span className="text-[14px] font-semibold text-[#ff5a7a]">-{formatCurrency(expense.amount, userData?.currency)}</span>
-                    <button onClick={() => { if (confirm('Delete this transaction?')) deleteExpense(expense.id); }} className="p-1.5 rounded-lg hover:bg-white/5">
-                      <MoreVertical className="h-3.5 w-3.5 text-[#6b7b8d]" />
-                    </button>
+                    <TransactionActionMenu
+                      actions={[
+                        { icon: Pencil, label: 'Edit', onClick: () => setEditingId(expense.id), color: '#7c5cff' },
+                        { icon: Trash2, label: 'Delete', onClick: () => setDeletingId(expense.id), color: '#ff5a7a', destructive: true },
+                      ]}
+                    />
                   </div>
                 </div>
               </div>
@@ -231,9 +240,17 @@ export default function SearchPage() {
                         )}
                       </div>
                     </div>
-                    <span className="font-semibold text-rose-500 shrink-0 ml-3">
-                      -{formatCurrency(expense.amount, userData?.currency)}
-                    </span>
+                    <div className="flex items-center gap-1 shrink-0 ml-3">
+                      <span className="font-semibold text-rose-500">
+                        -{formatCurrency(expense.amount, userData?.currency)}
+                      </span>
+                      <TransactionActionMenu
+                        actions={[
+                          { icon: Pencil, label: 'Edit', onClick: () => setEditingId(expense.id), color: '#7c5cff' },
+                          { icon: Trash2, label: 'Delete', onClick: () => setDeletingId(expense.id), color: '#ff5a7a', destructive: true },
+                        ]}
+                      />
+                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -243,6 +260,30 @@ export default function SearchPage() {
       )}
     </div>
     </div>
+
+    {/* Dialogs */}
+    {editingExpense && (
+      <TransactionDialog
+        type="expense" open={true} onOpenChange={() => setEditingId(null)}
+        defaultValues={{
+          amount: String(editingExpense.amount), description: editingExpense.description,
+          notes: editingExpense.notes || '', category: editingExpense.category,
+          expenseDate: toDate(editingExpense.expenseDate).toISOString().split('T')[0],
+          paymentMethod: editingExpense.paymentMethod, isRecurring: editingExpense.isRecurring,
+          recurringInterval: editingExpense.recurringInterval || 'monthly',
+        }}
+        onSubmit={async (data) => {
+          try { await updateExpense(editingExpense.id, data as Partial<Expense>); setEditingId(null); } catch {}
+        }}
+      />
+    )}
+    <ConfirmDeleteDialog
+      open={!!deletingId}
+      onOpenChange={(open) => { if (!open) setDeletingId(null); }}
+      onConfirm={() => { if (deletingId) { deleteExpense(deletingId); setDeletingId(null); } }}
+      title="Delete Expense"
+      itemName={deletingId ? expenses.find(e => e.id === deletingId)?.description : undefined}
+    />
     </>
   );
 }

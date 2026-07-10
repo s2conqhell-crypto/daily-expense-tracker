@@ -5,6 +5,7 @@ import { firebaseService } from '@/firebase/services';
 import { useAuth } from '@/contexts/AuthContext';
 import type { Budget, Expense } from '@/types';
 import { calculateBudgetSpent } from '@/utils/budget';
+import toast from 'react-hot-toast';
 
 export function useBudgets() {
   const { user } = useAuth();
@@ -40,15 +41,19 @@ export function useBudgets() {
 
   const createBudget = useCallback(async (data: Omit<Budget, 'id' | 'userId' | 'createdAt' | 'updatedAt'>) => {
     if (!user) throw new Error('Not authenticated');
-    return firebaseService.budgets.create(user.uid, data);
+    const id = await firebaseService.budgets.create(user.uid, data);
+    toast.success('Budget created');
+    return id;
   }, [user]);
 
   const updateBudget = useCallback(async (budgetId: string, data: Partial<Budget>) => {
-    return firebaseService.budgets.update(budgetId, data);
+    await firebaseService.budgets.update(budgetId, data);
+    toast.success('Budget updated');
   }, []);
 
   const deleteBudget = useCallback(async (budgetId: string) => {
-    return firebaseService.budgets.delete(budgetId);
+    await firebaseService.budgets.delete(budgetId);
+    toast.success('Budget deleted');
   }, []);
 
   return { budgets: budgetsWithSpent, loading, createBudget, updateBudget, deleteBudget };

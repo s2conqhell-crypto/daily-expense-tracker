@@ -5,7 +5,7 @@ import { useExpenses } from '@/hooks/useExpenses';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button, Card, CardContent, Input, Select, SelectTrigger, SelectValue, SelectContent, SelectItem, Badge, Skeleton, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui';
 import { TransactionDialog } from '@/components/transactions/TransactionDialog';
-import { AnimatedContainer, AnimatedItem } from '@/components/shared';
+import { AnimatedContainer, AnimatedItem, TransactionActionMenu, ConfirmDeleteDialog } from '@/components/shared';
 import {
   Plus, Search, Filter, Pencil, Trash2, Receipt,
   TrendingDown, CreditCard, ArrowUpDown, ArrowDown,
@@ -216,9 +216,12 @@ export default function ExpensesPage() {
                   </div>
                   <div className="flex items-center gap-1 shrink-0 ml-2">
                     <span className="text-[15px] font-bold text-[#ff5a7a]">-{formatCurrency(expense.amount, userData?.currency)}</span>
-                    <button onClick={() => { setEditingId(expense.id); }} className="flex h-11 w-11 items-center justify-center rounded-xl text-[#6b7b8d] hover:bg-white/5 active:scale-90 transition-all" aria-label="More actions">
-                      <MoreVertical className="h-[18px] w-[18px]" />
-                    </button>
+                    <TransactionActionMenu
+                      actions={[
+                        { icon: Pencil, label: 'Edit', onClick: () => setEditingId(expense.id), color: '#7c5cff' },
+                        { icon: Trash2, label: 'Delete', onClick: () => setDeletingId(expense.id), color: '#ff5a7a', destructive: true },
+                      ]}
+                    />
                   </div>
                 </div>
               </div>
@@ -391,12 +394,12 @@ export default function ExpensesPage() {
                       <span className="font-semibold text-rose-500 mr-1">
                         -{formatCurrency(expense.amount, userData?.currency)}
                       </span>
-                      <button onClick={() => setEditingId(expense.id)} className="p-1.5 rounded-lg hover:bg-accent/50" title="Edit">
-                        <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
-                      </button>
-                      <button onClick={() => setDeletingId(expense.id)} className="p-1.5 rounded-lg hover:bg-destructive/10" title="Delete">
-                        <Trash2 className="h-3.5 w-3.5 text-destructive" />
-                      </button>
+                      <TransactionActionMenu
+                        actions={[
+                          { icon: Pencil, label: 'Edit', onClick: () => setEditingId(expense.id), color: '#7c5cff' },
+                          { icon: Trash2, label: 'Delete', onClick: () => setDeletingId(expense.id), color: '#ff5a7a', destructive: true },
+                        ]}
+                      />
                     </div>
                   </div>
                 </CardContent>
@@ -456,14 +459,12 @@ export default function ExpensesPage() {
                       -{formatCurrency(expense.amount, userData?.currency)}
                     </TableCell>
                     <TableCell>
-                      <div className="flex items-center gap-0.5 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
-                        <button onClick={() => setEditingId(expense.id)} className="p-1.5 rounded-lg hover:bg-accent/50" title="Edit">
-                          <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
-                        </button>
-                        <button onClick={() => setDeletingId(expense.id)} className="p-1.5 rounded-lg hover:bg-destructive/10" title="Delete">
-                          <Trash2 className="h-3.5 w-3.5 text-destructive" />
-                        </button>
-                      </div>
+                      <TransactionActionMenu
+                        actions={[
+                          { icon: Pencil, label: 'Edit', onClick: () => setEditingId(expense.id), color: '#7c5cff' },
+                          { icon: Trash2, label: 'Delete', onClick: () => setDeletingId(expense.id), color: '#ff5a7a', destructive: true },
+                        ]}
+                      />
                     </TableCell>
                   </TableRow>
                 ))}
@@ -522,19 +523,13 @@ export default function ExpensesPage() {
         onSubmit={handleEditSubmit}
       />
     )}
-    {deletingId && (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-        <Card className="w-80 mx-4">
-          <CardContent className="p-6 text-center space-y-4">
-            <p className="text-sm text-muted-foreground">Are you sure you want to delete this expense?</p>
-            <div className="flex gap-2 justify-center">
-              <Button variant="outline" onClick={() => setDeletingId(null)}>Cancel</Button>
-              <Button variant="destructive" onClick={() => handleDelete(deletingId)}>Delete</Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    )}
+    <ConfirmDeleteDialog
+      open={!!deletingId}
+      onOpenChange={(open) => { if (!open) setDeletingId(null); }}
+      onConfirm={() => deletingId && handleDelete(deletingId)}
+      title="Delete Expense"
+      itemName={deletingId ? expenses.find(e => e.id === deletingId)?.description : undefined}
+    />
     </>
   );
 }

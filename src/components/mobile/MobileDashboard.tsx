@@ -3,6 +3,8 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useDashboard } from '@/hooks/useDashboard';
 import { useAuth } from '@/contexts/AuthContext';
+import { useExpenses } from '@/hooks/useExpenses';
+import { useIncome } from '@/hooks/useIncome';
 import { firebaseService } from '@/firebase/services';
 import { useRouter } from 'next/navigation';
 import {
@@ -12,13 +14,15 @@ import {
 } from 'lucide-react';
 import { formatCurrency, formatDate } from '@/utils/format';
 import { toDate } from '@/utils/helpers';
-import { AnimatedCounter } from '@/components/shared';
+import { AnimatedCounter, ConfirmDeleteDialog } from '@/components/shared';
+import { TransactionDialog } from '@/components/transactions/TransactionDialog';
 import { MobileBalanceCard } from './MobileBalanceCard';
 import { MobileQuickStats } from './MobileQuickStats';
 import { MobileTransactionItem } from './MobileTransactionItem';
 import { MobileFAB } from './MobileFAB';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { motion } from 'framer-motion';
+import type { Expense, Income } from '@/types';
 
 const greeting = () => {
   const h = new Date().getHours();
@@ -50,6 +54,10 @@ export function MobileDashboard() {
   const router = useRouter();
   const [txCount, setTxCount] = useState(5);
   const [extraData, setExtraData] = useState<any>({ upcomingRules: [], upcomingSubs: [], upcomingEmis: [], subTotal: 0, budgetData: null });
+  const [editingTx, setEditingTx] = useState<Expense | Income | null>(null);
+  const [deletingTx, setDeletingTx] = useState<Expense | Income | null>(null);
+  const { updateExpense, deleteExpense } = useExpenses();
+  const { updateIncome, deleteIncome } = useIncome();
 
   useEffect(() => {
     if (!user) return;
@@ -195,6 +203,8 @@ export function MobileDashboard() {
                   type={'type' in tx && tx.type === 'income' ? 'income' : 'expense'}
                   category={(tx as any).category}
                   currency={userData?.currency}
+                  onEdit={() => setEditingTx(tx)}
+                  onDelete={() => setDeletingTx(tx)}
                 />
               ))
             )}
@@ -316,6 +326,53 @@ export function MobileDashboard() {
       </motion.div>
 
       <MobileFAB actions={fabActions} />
+      {/* Edit dialog */}
+      {editingTx && (
+        <TransactionDialog
+          type={'type' in editingTx && editingTx.type === 'income' ? 'income' : 'expense'}
+          open={true}
+          onOpenChange={() => setEditingTx(null)}
+          defaultValues={{
+            amount: String(editingTx.amount),
+            description: editingTx.description,
+            notes: (editingTx as any).notes || '',
+            category: (editingTx as any).category || '',
+            source: (editingTx as any).source || '',
+            expenseDate: toDate((editingTx as any).expenseDate || editingTx.createdAt).toISOString().split('T')[0],
+            incomeDate: toDate((editingTx as any).incomeDate || editingTx.createdAt).toISOString().split('T')[0],
+            paymentMethod: (editingTx as any).paymentMethod || 'Cash',
+            isRecurring: (editingTx as any).isRecurring || false,
+            recurringInterval: (editingTx as any).recurringInterval || 'monthly',
+          }}
+          onSubmit={async (data) => {
+            try {
+              if ('type' in editingTx && editingTx.type === 'income') {
+                await updateIncome(editingTx.id, data as Partial<Income>);
+              } else {
+                await updateExpense(editingTx.id, data as Partial<Expense>);
+              }
+              setEditingTx(null);
+            } catch {}
+          }}
+        />
+      )}
+      <ConfirmDeleteDialog
+        open={!!deletingTx}
+        onOpenChange={(open) => { if (!open) setDeletingTx(null); }}
+        onConfirm={async () => {
+          if (!deletingTx) return;
+          try {
+            if ('type' in deletingTx && deletingTx.type === 'income') {
+              await deleteIncome(deletingTx.id);
+            } else {
+              await deleteExpense(deletingTx.id);
+            }
+            setDeletingTx(null);
+          } catch {}
+        }}
+        title="Delete Transaction"
+        itemName={deletingTx?.description}
+      />
     </div>
   );
 }

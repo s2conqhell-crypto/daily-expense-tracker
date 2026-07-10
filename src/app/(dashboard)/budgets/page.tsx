@@ -5,11 +5,13 @@ import { useBudgets } from '@/hooks/useBudgets';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button, Card, CardContent, Progress, Badge, Skeleton, Input, Select, SelectTrigger, SelectValue, SelectContent, SelectItem, Label } from '@/components/ui';
 import { MobileFormSheet } from '@/components/mobile/MobileFormSheet';
-import { Plus, Wallet, Target, AlertTriangle, Clock, CalendarDays, Trash2 } from 'lucide-react';
+import { TransactionActionMenu, ConfirmDeleteDialog } from '@/components/shared';
+import { Plus, Wallet, Target, AlertTriangle, Clock, CalendarDays, Trash2, Pencil } from 'lucide-react';
 import { formatCurrency } from '@/utils/format';
 import { EXPENSE_CATEGORIES } from '@/constants';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
+import type { Budget } from '@/types';
 
 const statusConfig = {
   on_track: { label: 'On Track', color: '#00D09C', bg: 'bg-emerald-500/10', text: 'text-emerald-500' },
@@ -18,11 +20,14 @@ const statusConfig = {
 };
 
 export default function BudgetsPage() {
-  const { budgets, loading, createBudget, deleteBudget } = useBudgets();
+  const { budgets, loading, createBudget, updateBudget, deleteBudget } = useBudgets();
   const { userData } = useAuth();
   const [showCreate, setShowCreate] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const [newBudget, setNewBudget] = useState({ category: '', amount: '' });
   const [creating, setCreating] = useState(false);
+  const editingBudget = editingId ? budgets.find(b => b.id === editingId) : null;
 
   const totalBudget = budgets.reduce((sum, b) => sum + b.amount, 0);
   const totalSpent = budgets.reduce((sum, b) => sum + b.spent, 0);
@@ -90,9 +95,12 @@ export default function BudgetsPage() {
                       <div className="h-10 w-10 rounded-xl bg-[#7C5CFF]/15 flex items-center justify-center"><Wallet className="h-4 w-4 text-[#7C5CFF]" /></div>
                       <span className="text-[14px] font-medium text-white">{budget.category}</span>
                     </div>
-                    <div className="relative">
-                      <button onClick={() => { /* 3-dot menu - delete */ if (confirm('Delete this budget?')) deleteBudget(budget.id); }} className="p-1.5 rounded-lg hover:bg-white/5"><Trash2 className="h-3.5 w-3.5 text-[#6b7b8d]" /></button>
-                    </div>
+                    <TransactionActionMenu
+                      actions={[
+                        { icon: Pencil, label: 'Edit', onClick: () => { setEditingId(budget.id); }, color: '#7c5cff' },
+                        { icon: Trash2, label: 'Delete', onClick: () => setDeletingId(budget.id), color: '#ff5a7a', destructive: true },
+                      ]}
+                    />
                   </div>
                   <div className="flex justify-between mb-1.5">
                     <span className="text-[12px] text-[#6b7b8d]">Spent</span>
@@ -220,13 +228,12 @@ export default function BudgetsPage() {
                           </div>
                         </div>
                       </div>
-                      <button
-                        onClick={() => deleteBudget(budget.id)}
-                        className="p-1.5 rounded-lg hover:bg-destructive/10 text-muted-foreground hover:text-destructive md:opacity-0 md:group-hover:opacity-100 transition-all"
-                        title="Delete budget"
-                      >
-                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                      </button>
+                      <TransactionActionMenu
+                        actions={[
+                          { icon: Pencil, label: 'Edit', onClick: () => { setEditingId(budget.id); }, color: '#7c5cff' },
+                          { icon: Trash2, label: 'Delete', onClick: () => setDeletingId(budget.id), color: '#ff5a7a', destructive: true },
+                        ]}
+                      />
                     </div>
 
                     <div className="flex justify-between mb-2">
@@ -303,6 +310,48 @@ export default function BudgetsPage() {
         <Input type="number" placeholder="Amount" value={newBudget.amount} onChange={(e) => setNewBudget({ ...newBudget, amount: e.target.value })} />
       </div>
     </MobileFormSheet>
+
+    {/* Edit Budget */}
+    {editingBudget && (
+      <MobileFormSheet
+        open={true}
+        onOpenChange={() => setEditingId(null)}
+        title="Edit Budget"
+        submitLabel="Save"
+        asForm={false}
+        footer={
+          <div className="flex gap-2">
+            <Button variant="outline" className="flex-1 h-11 text-sm" onClick={() => setEditingId(null)}>Cancel</Button>
+            <Button className="flex-1 h-11 text-sm" onClick={async () => {
+              if (editingBudget && newBudget.amount) {
+                await updateBudget(editingBudget.id, { amount: parseFloat(newBudget.amount) } as Partial<Budget>);
+                setEditingId(null);
+                setNewBudget({ category: '', amount: '' });
+              }
+            }} disabled={!newBudget.amount}>
+              Save
+            </Button>
+          </div>
+        }
+      >
+        <div className="space-y-2">
+          <Label>Category</Label>
+          <Input value={editingBudget.category} disabled className="opacity-50" />
+        </div>
+        <div className="space-y-2">
+          <Label>Monthly Limit</Label>
+          <Input type="number" placeholder="Amount" defaultValue={editingBudget.amount} onChange={(e) => setNewBudget({ ...newBudget, amount: e.target.value })} />
+        </div>
+      </MobileFormSheet>
+    )}
+
+    <ConfirmDeleteDialog
+      open={!!deletingId}
+      onOpenChange={(open) => { if (!open) setDeletingId(null); }}
+      onConfirm={() => { if (deletingId) { deleteBudget(deletingId); setDeletingId(null); } }}
+      title="Delete Budget"
+      itemName={deletingId ? budgets.find(b => b.id === deletingId)?.category : undefined}
+    />
     </>
   );
 }
