@@ -83,40 +83,158 @@ export default function CalendarPage() {
 
   return (
     <>
-    {/* Mobile version */}
-    <div className="lg:hidden">
-      <div className="px-5 space-y-6 min-h-dvh bg-[#09090b]" style={{ paddingBottom: 'calc(90px + env(safe-area-inset-bottom, 0px))' }}>
-        {/* Header */}
-        <div className="flex items-center justify-between pt-1">
-          <div>
-            <h1 className="text-[18px] font-bold text-white">Calendar</h1>
-            <p className="text-[12px] text-[#6b7b8d]">View your transactions by date</p>
-          </div>
+    <TransactionDialog open={dialogOpen} onOpenChange={setDialogOpen} type="expense"
+      onSubmit={async (data) => {
+        try {
+          const { firebaseService } = await import('@/firebase/services');
+          await firebaseService.expenses.add(user!.uid, data as any);
+        } catch (e) { console.warn('[Calendar] Add failed', e); }
+        setDialogOpen(false);
+      }}
+    />
+
+    {/* Mobile */}
+    <div className="lg:hidden px-5 space-y-5 pb-4">
+      {/* Header + Add button row */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-[18px] font-bold text-white">Calendar</h1>
+          <p className="text-[12px] text-[#6b7b8d]">View your transactions by date</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button className="gap-1.5 h-[36px] text-[12px]" onClick={() => setDialogOpen(true)}>
+            <Plus className="h-3.5 w-3.5" /> Add
+          </Button>
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#7c5cff]/15">
             <CalendarIcon className="h-[18px] w-[18px] text-[#7c5cff]" />
           </div>
         </div>
+      </div>
 
-        {/* Calendar grid will reuse desktop logic in mobile format */}
-        <div className="bg-[#161a27] rounded-[20px] border border-white/[0.06] p-5 card-shadow">
-          <div className="grid grid-cols-7 gap-1 text-center mb-3">
-            {['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(day => (
-              <span key={day} className="text-[10px] font-semibold text-[#6b7b8d] uppercase tracking-wider">{day.substring(0,3)}</span>
-            ))}
-          </div>
+      {/* Calendar card */}
+      <div className="bg-[#161a27] rounded-[20px] border border-white/[0.06] card-shadow">
+        {/* Month nav */}
+        <div className="flex items-center justify-between px-5 pt-4 pb-2">
+          <button onClick={prevMonth} className="flex h-9 w-9 items-center justify-center rounded-xl text-[#6b7b8d] hover:bg-white/5 active:scale-90 transition-all">
+            <ChevronLeft className="h-5 w-5" />
+          </button>
+          <span className="text-[15px] font-bold text-white">{getMonthName(month)} {year}</span>
+          <button onClick={nextMonth} className="flex h-9 w-9 items-center justify-center rounded-xl text-[#6b7b8d] hover:bg-white/5 active:scale-90 transition-all">
+            <ChevronRight className="h-5 w-5" />
+          </button>
         </div>
+
+        {loading ? (
+          <div className="px-5 pb-5">
+            <div className="grid grid-cols-7 gap-1">
+              {Array.from({ length: 35 }).map((_, i) => <Skeleton key={i} className="aspect-square rounded-xl" />)}
+            </div>
+          </div>
+        ) : (
+          <div className="px-5 pb-5">
+            {/* Weekday headers */}
+            <div className="grid grid-cols-7 gap-1 text-center mb-2">
+              {WEEKDAYS.map(day => (
+                <span key={day} className="text-[10px] font-semibold text-[#6b7b8d] uppercase tracking-wider py-1">{day.substring(0, 3)}</span>
+              ))}
+            </div>
+            {/* Day grid */}
+            <div className="grid grid-cols-7 gap-1">
+              {days.map((day, i) => {
+                const dayExp = day ? getDayExpenses(day) : [];
+                const dayInc = day ? getDayIncome(day) : [];
+                const hasExpenses = dayExp.length > 0;
+                const hasIncome = dayInc.length > 0;
+                return (
+                  <button
+                    key={i}
+                    onClick={() => day && setSelectedDate(new Date(year, month, day))}
+                    disabled={!day}
+                    className={`relative aspect-square rounded-xl text-[13px] font-medium transition-all flex flex-col items-center justify-center
+                      ${!day ? 'invisible' : ''}
+                      ${isToday(day || 0) ? 'bg-[#7c5cff] text-white shadow-md shadow-[#7c5cff]/25' : ''}
+                      ${isSelected(day || 0) && !isToday(day || 0) ? 'bg-[#7c5cff]/15 text-white ring-2 ring-[#7c5cff]/50' : ''}
+                      ${day && !isToday(day || 0) && !isSelected(day || 0) ? 'hover:bg-white/5 text-white' : ''}
+                    `}
+                  >
+                    <span>{day}</span>
+                    {(hasExpenses || hasIncome) && (
+                      <div className="flex gap-0.5 mt-0.5">
+                        {hasExpenses && <div className="h-1 w-1 rounded-full bg-rose-500" />}
+                        {hasIncome && <div className="h-1 w-1 rounded-full bg-emerald-500" />}
+                      </div>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Selected day detail */}
+      <div className="bg-[#161a27] rounded-[20px] border border-white/[0.06] p-5 card-shadow">
+        {selectedDate ? (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-[15px] font-bold text-white">
+                {selectedDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+              </h2>
+              <Button className="gap-1.5 h-[34px] text-[11px]" onClick={() => setDialogOpen(true)}>
+                <Plus className="h-3 w-3" /> Add Expense
+              </Button>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <div className="p-3 rounded-xl bg-emerald-500/10">
+                <TrendingUp className="h-4 w-4 text-emerald-500 mb-1" />
+                <p className="text-[10px] text-[#6b7b8d]">Income</p>
+                <p className="text-sm font-semibold text-emerald-500">{formatCurrency(selectedDayIncTotal, userData?.currency)}</p>
+              </div>
+              <div className="p-3 rounded-xl bg-rose-500/10">
+                <TrendingDown className="h-4 w-4 text-rose-500 mb-1" />
+                <p className="text-[10px] text-[#6b7b8d]">Expenses</p>
+                <p className="text-sm font-semibold text-rose-500">{formatCurrency(selectedDayExpTotal, userData?.currency)}</p>
+              </div>
+            </div>
+            {selectedDayExpenses.length === 0 && selectedDayIncome.length === 0 ? (
+              <div className="text-center py-8">
+                <Receipt className="h-8 w-8 mx-auto mb-2 opacity-40 text-[#6b7b8d]" />
+                <p className="text-[13px] text-[#6b7b8d]">No transactions on this day</p>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {selectedDayIncome.map((inc) => (
+                  <div key={inc.id} className="flex items-center justify-between p-2.5 rounded-xl bg-emerald-500/5">
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[13px] font-medium text-white truncate">{inc.description}</p>
+                      <p className="text-[11px] text-[#6b7b8d]">{inc.source}</p>
+                    </div>
+                    <span className="text-[13px] font-semibold text-emerald-500 shrink-0 ml-2">+{formatCurrency(inc.amount, userData?.currency)}</span>
+                  </div>
+                ))}
+                {selectedDayExpenses.map((e) => (
+                  <div key={e.id} className="flex items-center justify-between p-2.5 rounded-xl bg-rose-500/5">
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[13px] font-medium text-white truncate">{e.description}</p>
+                      <p className="text-[11px] text-[#6b7b8d]">{e.category}</p>
+                    </div>
+                    <span className="text-[13px] font-semibold text-rose-500 shrink-0 ml-2">-{formatCurrency(e.amount, userData?.currency)}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="text-center py-8">
+            <Receipt className="h-8 w-8 mx-auto mb-2 opacity-40 text-[#6b7b8d]" />
+            <p className="text-[13px] text-[#6b7b8d]">Click a date to view transactions</p>
+          </div>
+        )}
       </div>
     </div>
-    <div className="p-4 sm:p-6 lg:p-8 space-y-5 animate-fade-in max-w-[1200px] mx-auto">
-      <TransactionDialog open={dialogOpen} onOpenChange={setDialogOpen} type="expense"
-        onSubmit={async (data) => {
-          try {
-            const { firebaseService } = await import('@/firebase/services');
-            await firebaseService.expenses.add(user!.uid, data as any);
-          } catch (e) { console.warn('[Calendar] Add failed', e); }
-          setDialogOpen(false);
-        }}
-      />
+
+    {/* Desktop */}
+    <div className="hidden lg:block page-container py-6 space-y-5 animate-fade-in">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Calendar</h1>
@@ -216,7 +334,7 @@ export default function CalendarPage() {
                     <p className="text-sm">No transactions on this day</p>
                   </div>
                 ) : (
-                  <div className="space-y-2 max-h-[280px] overflow-y-auto">
+                  <div className="space-y-2">
                     {selectedDayIncome.map((inc) => (
                       <div key={inc.id} className="flex items-center justify-between p-2.5 rounded-xl bg-emerald-500/5">
                         <div>
