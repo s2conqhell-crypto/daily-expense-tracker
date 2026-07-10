@@ -86,8 +86,8 @@ export function MobileFormSheet({
       {/* Desktop Dialog */}
       <div className="hidden lg:block">
         <Dialog open={open} onOpenChange={onOpenChange}>
-          <DialogContent className="sm:max-w-[480px]">
-            <DialogHeader className="flex flex-row items-center justify-between gap-4">
+          <DialogContent className="sm:max-w-[640px] max-h-[90vh] flex flex-col p-0 gap-0 overflow-hidden">
+            <DialogHeader className="shrink-0 flex flex-row items-center justify-between gap-4 px-6 py-4 border-b">
               <div>
                 <DialogTitle>{title}</DialogTitle>
                 {description && <DialogDescription>{description}</DialogDescription>}
@@ -99,9 +99,35 @@ export function MobileFormSheet({
                 <X className="h-4 w-4" />
               </button>
             </DialogHeader>
-            {children}
-            {footer && (
-              <DialogFooter>{footer}</DialogFooter>
+            {asForm ? (
+              <form onSubmit={onSubmit} className="flex flex-col flex-1 overflow-hidden">
+                <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
+                  {children}
+                </div>
+                <div className="shrink-0 bg-background border-t px-6 py-4 flex items-center justify-end gap-3">
+                  {footer || (
+                    <div className="flex items-center gap-3 w-full sm:w-auto">
+                      <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={loading} className="flex-1 sm:flex-none h-[44px] min-w-[100px] touch-target">
+                        Cancel
+                      </Button>
+                      <Button type="submit" disabled={loading} className="flex-1 sm:flex-none h-[44px] min-w-[100px] touch-target">
+                        {loading ? 'Saving...' : (submitLabel || 'Save')}
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </form>
+            ) : (
+              <div className="flex flex-col flex-1 overflow-hidden">
+                <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
+                  {children}
+                </div>
+                {footer && (
+                  <div className="shrink-0 bg-background border-t px-6 py-4 flex items-center justify-end gap-3">
+                    {footer}
+                  </div>
+                )}
+              </div>
             )}
           </DialogContent>
         </Dialog>
