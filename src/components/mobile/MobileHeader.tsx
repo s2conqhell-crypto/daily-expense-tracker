@@ -10,7 +10,7 @@ import {
   Calendar, Search, Settings, LogOut, X, ChevronRight,
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui';
-import { Sheet, SheetContent } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/sheet';
 import { ROUTES } from '@/constants';
 import { getInitials } from '@/utils/helpers';
 import { NotificationBell } from '@/components/shared/NotificationBell';
@@ -48,17 +48,18 @@ export function MobileHeader() {
         style={{ paddingTop: 'env(safe-area-inset-top, 0px)', height: 'calc(72px + env(safe-area-inset-top, 0px))' }}
       >
         <div className="flex items-center gap-3">
-          <button
-            onClick={() => setDrawerOpen(true)}
-            className="touch-target flex h-11 w-11 items-center justify-center rounded-xl text-[#6b7b8d] hover:bg-white/5 active:scale-90 transition-all"
-            aria-label="Open menu"
-          >
-            <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-              <line x1="3" y1="6" x2="19" y2="6" />
-              <line x1="3" y1="11" x2="19" y2="11" />
-              <line x1="3" y1="16" x2="19" y2="16" />
-            </svg>
-          </button>
+          <SheetTrigger asChild>
+            <button
+              className="touch-target flex h-11 w-11 items-center justify-center rounded-xl text-[#6b7b8d] hover:bg-white/5 active:scale-90 transition-all"
+              aria-label="Open menu"
+            >
+              <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                <line x1="3" y1="6" x2="19" y2="6" />
+                <line x1="3" y1="11" x2="19" y2="11" />
+                <line x1="3" y1="16" x2="19" y2="16" />
+              </svg>
+            </button>
+          </SheetTrigger>
           <div className="flex items-center gap-3">
             <div className="flex h-12 w-12 items-center justify-center rounded-[14px] gradient-primary shadow-lg shadow-[#7c5cff]/25">
               <Wallet className="h-6 w-6 text-white" />
@@ -102,12 +103,13 @@ export function MobileHeader() {
                   </div>
                   <span className="text-[17px] font-bold tracking-tight text-white">ExpenseFlow</span>
                 </div>
-                <button
-                  onClick={() => setDrawerOpen(false)}
-                  className="touch-target flex h-10 w-10 items-center justify-center rounded-xl text-[#6b7b8d] hover:bg-white/5 active:scale-90 transition-all"
-                >
-                  <X className="h-5 w-5" />
-                </button>
+                <SheetClose asChild>
+                  <button
+                    className="touch-target flex h-10 w-10 items-center justify-center rounded-xl text-[#6b7b8d] hover:bg-white/5 active:scale-90 transition-all"
+                  >
+                    <X className="h-5 w-5" />
+                  </button>
+                </SheetClose>
               </div>
               <div className="flex items-center gap-3.5">
                 <Avatar className="h-14 w-14 ring-2 ring-[#7c5cff]/20">

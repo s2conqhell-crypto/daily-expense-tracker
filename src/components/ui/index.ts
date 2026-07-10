@@ -11,3 +11,4 @@ export { Progress } from './progress';
 export { Skeleton } from './skeleton';
 export { Tabs, TabsList, TabsTrigger, TabsContent } from './tabs';
 export { Sheet, SheetPortal, SheetOverlay, SheetTrigger, SheetClose, SheetContent, SheetHeader, SheetFooter, SheetTitle, SheetDescription } from './sheet';
+export { ToggleSwitch } from './toggle-switch';

@@ -84,15 +84,15 @@ export default function ProfilePage() {
           <div className="space-y-4">
             <div className="space-y-1.5">
               <label className="text-[12px] font-medium text-[#6b7b8d]">Full Name</label>
-              <input id="name" value={name} onChange={(e) => setName(e.target.value)} className="w-full h-[52px] rounded-[16px] bg-[#09090b] border border-white/[0.06] px-4 text-[14px] text-white placeholder:text-[#6b7b8d] focus:outline-none focus:border-[#7c5cff]/50" />
+              <Input id="name" value={name} onChange={(e) => setName(e.target.value)} />
             </div>
             <div className="space-y-1.5">
               <label className="text-[12px] font-medium text-[#6b7b8d]">Email</label>
-              <input id="email" value={user?.email || ''} disabled className="w-full h-[52px] rounded-[16px] bg-[#09090b] border border-white/[0.06] px-4 text-[14px] text-white/50 placeholder:text-[#6b7b8d] focus:outline-none focus:border-[#7c5cff]/50 opacity-60" />
+              <Input id="email" value={user?.email || ''} disabled className="opacity-60" />
             </div>
             <div className="space-y-1.5">
               <label className="text-[12px] font-medium text-[#6b7b8d]">Phone</label>
-              <input id="phone" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+1 234 567 890" className="w-full h-[52px] rounded-[16px] bg-[#09090b] border border-white/[0.06] px-4 text-[14px] text-white placeholder:text-[#6b7b8d] focus:outline-none focus:border-[#7c5cff]/50" />
+              <Input id="phone" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+1 234 567 890" />
             </div>
             <div className="space-y-1.5">
               <label className="text-[12px] font-medium text-[#6b7b8d]">Preferred Currency</label>
@@ -105,10 +105,10 @@ export default function ProfilePage() {
               </div>
             </div>
 
-            <button onClick={handleSave} disabled={saving} className="w-full h-[52px] rounded-[16px] bg-gradient-to-r from-[#7c5cff] to-[#00d09c] text-white text-[14px] font-semibold flex items-center justify-center gap-1.5 active:scale-[0.98] transition-all disabled:opacity-50">
+            <Button onClick={handleSave} disabled={saving} className="w-full h-[48px] rounded-[12px] bg-gradient-to-r from-[#7c5cff] to-[#00d09c] text-white text-[14px] font-semibold flex items-center justify-center gap-1.5 active:scale-[0.98] transition-all disabled:opacity-50">
               {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
               Save Changes
-            </button>
+            </Button>
           </div>
         </div>
       </div>

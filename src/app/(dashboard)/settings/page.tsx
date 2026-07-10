@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle, Button, Label, Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui';
+import { Card, CardContent, CardHeader, CardTitle, Button, Label, Tabs, TabsList, TabsTrigger, TabsContent, ToggleSwitch } from '@/components/ui';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { Bell, Moon, Sun, Shield, Trash2, CreditCard, Globe, Download, Upload, FileSpreadsheet } from 'lucide-react';
@@ -214,13 +214,11 @@ export default function SettingsPage() {
                   <p className="text-[13px] font-medium text-white">{item.label}</p>
                   <p className="text-[11px] text-[#6b7b8d]">{item.desc}</p>
                 </div>
-                <label className="relative inline-flex items-center cursor-pointer shrink-0 ml-3">
-                  <input type="checkbox" className="sr-only peer"
-                    checked={settings?.notifications[item.key as keyof typeof settings.notifications] || false}
-                    onChange={(e) => handleNotificationChange(item.key, e.target.checked)}
-                  />
-                  <div className="w-10 h-[22px] bg-white/10 rounded-full peer peer-checked:bg-[#7c5cff] after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:rounded-full after:h-[18px] after:w-[18px] after:transition-all peer-checked:after:translate-x-[18px]" />
-                </label>
+                <ToggleSwitch
+                  id={`mobile-notif-${item.key}`}
+                  checked={settings?.notifications[item.key as keyof typeof settings.notifications] || false}
+                  onChange={(v) => handleNotificationChange(item.key, v)}
+                />
               </div>
             ))}
           </div>
@@ -238,13 +236,11 @@ export default function SettingsPage() {
                   <p className="text-[13px] font-medium text-white">{item.label}</p>
                   <p className="text-[11px] text-[#6b7b8d]">{item.desc}</p>
                 </div>
-                <label className="relative inline-flex items-center cursor-pointer shrink-0 ml-3">
-                  <input type="checkbox" className="sr-only peer"
-                    checked={settings?.privacy[item.key as keyof typeof settings.privacy] || false}
-                    onChange={(e) => handlePrivacyChange(item.key, e.target.checked)}
-                  />
-                  <div className="w-10 h-[22px] bg-white/10 rounded-full peer peer-checked:bg-[#7c5cff] after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:rounded-full after:h-[18px] after:w-[18px] after:transition-all peer-checked:after:translate-x-[18px]" />
-                </label>
+                <ToggleSwitch
+                  id={`mobile-privacy-${item.key}`}
+                  checked={settings?.privacy[item.key as keyof typeof settings.privacy] || false}
+                  onChange={(v) => handlePrivacyChange(item.key, v)}
+                />
               </div>
             ))}
           </div>
@@ -381,13 +377,11 @@ export default function SettingsPage() {
                     <p className="font-medium text-sm">{item.label}</p>
                     <p className="text-xs text-muted-foreground">{item.desc}</p>
                   </div>
-                  <label className="relative inline-flex items-center cursor-pointer">
-                    <input type="checkbox" className="sr-only peer"
-                      checked={settings?.notifications[item.key as keyof typeof settings.notifications] || false}
-                      onChange={(e) => handleNotificationChange(item.key, e.target.checked)}
-                    />
-                    <div className="w-11 h-6 bg-muted rounded-full peer peer-checked:bg-primary peer-focus:ring-2 peer-focus:ring-primary/30 after:content-[''] after:absolute after:top-0.5 after:start-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full" />
-                  </label>
+                  <ToggleSwitch
+                    id={`desktop-notif-${item.key}`}
+                    checked={settings?.notifications[item.key as keyof typeof settings.notifications] || false}
+                    onChange={(v) => handleNotificationChange(item.key, v)}
+                  />
                 </div>
               ))}
             </CardContent>
@@ -407,13 +401,11 @@ export default function SettingsPage() {
                     <p className="font-medium text-sm">{item.label}</p>
                     <p className="text-xs text-muted-foreground">{item.desc}</p>
                   </div>
-                  <label className="relative inline-flex items-center cursor-pointer">
-                    <input type="checkbox" className="sr-only peer"
-                      checked={settings?.privacy[item.key as keyof typeof settings.privacy] || false}
-                      onChange={(e) => handlePrivacyChange(item.key, e.target.checked)}
-                    />
-                    <div className="w-11 h-6 bg-muted rounded-full peer peer-checked:bg-primary peer-focus:ring-2 peer-focus:ring-primary/30 after:content-[''] after:absolute after:top-0.5 after:start-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full" />
-                  </label>
+                  <ToggleSwitch
+                    id={`desktop-privacy-${item.key}`}
+                    checked={settings?.privacy[item.key as keyof typeof settings.privacy] || false}
+                    onChange={(v) => handlePrivacyChange(item.key, v)}
+                  />
                 </div>
               ))}
             </CardContent>

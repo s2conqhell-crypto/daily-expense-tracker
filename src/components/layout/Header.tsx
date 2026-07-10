@@ -9,7 +9,7 @@ import {
   Menu, Wallet,
 } from 'lucide-react';
 import { Button, Avatar, AvatarFallback, AvatarImage } from '@/components/ui';
-import { Sheet, SheetTrigger, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { Sheet, SheetTrigger, SheetContent, SheetHeader, SheetTitle, SheetClose } from '@/components/ui/sheet';
 import { ROUTES } from '@/constants';
 import { NotificationBell } from '@/components/shared/NotificationBell';
 import { getInitials } from '@/utils/helpers';
@@ -61,14 +61,15 @@ export function Header() {
                 </SheetHeader>
                 <nav className="flex flex-col gap-1 p-3">
                   {navItems.map((item) => (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      onClick={() => setMobileMenuOpen(false)}
-                      className="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-[#8899AA] hover:bg-white/5 hover:text-white transition-colors"
-                    >
-                      {item.label}
-                    </Link>
+                    <SheetClose asChild key={item.href}>
+                      <Link
+                        href={item.href}
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-[#8899AA] hover:bg-white/5 hover:text-white transition-colors"
+                      >
+                        {item.label}
+                      </Link>
+                    </SheetClose>
                   ))}
                 </nav>
               </SheetContent>

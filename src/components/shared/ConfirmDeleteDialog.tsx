@@ -1,7 +1,7 @@
 'use client';
 
 import {
-  Dialog, DialogContent, DialogHeader, DialogFooter, DialogTitle, DialogDescription,
+  Dialog, DialogContent, DialogHeader, DialogFooter, DialogTitle, DialogDescription, DialogClose,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Trash2 } from 'lucide-react';
@@ -37,9 +37,11 @@ export function ConfirmDeleteDialog({
           </DialogDescription>
         </DialogHeader>
         <DialogFooter className="flex gap-3 sm:gap-2">
-          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={loading} className="flex-1 h-[44px] touch-target">
-            Cancel
-          </Button>
+          <DialogClose asChild>
+            <Button variant="outline" disabled={loading} className="flex-1 h-[44px] touch-target" onClick={(e) => { (e.currentTarget as HTMLButtonElement).blur(); }}>
+              Cancel
+            </Button>
+          </DialogClose>
           <Button
             variant="destructive"
             onClick={onConfirm}

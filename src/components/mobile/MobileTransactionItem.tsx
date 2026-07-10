@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 import { formatCurrency, formatDate } from '@/utils/format';
 import { toDate } from '@/utils/helpers';
-import { Sheet, SheetContent } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/sheet';
 import { motion } from 'framer-motion';
 
 interface MobileTransactionItemProps {
@@ -34,7 +34,7 @@ export function MobileTransactionItem({
   const constraintsRef = useRef<HTMLDivElement>(null);
 
   return (
-    <>
+    <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
       <div ref={constraintsRef} className="relative overflow-hidden rounded-[16px]">
         {/* Swipe action backgrounds */}
         <div className="absolute inset-y-0 left-0 flex items-center justify-start pl-5 w-full bg-[#7c5cff] rounded-[16px]">
@@ -87,20 +87,20 @@ export function MobileTransactionItem({
               <span className={`text-[15px] font-bold ${isIncome ? 'text-[#00d09c]' : 'text-[#ff5a7a]'}`}>
                 {isIncome ? '+' : '-'}{formatCurrency(amount, currency)}
               </span>
-              <button
-                onClick={() => setMenuOpen(true)}
-                className="flex h-11 w-11 items-center justify-center rounded-xl text-[#6b7b8d] hover:bg-white/5 active:scale-90 transition-all"
-                aria-label="More actions"
-              >
-                <MoreVertical className="h-[18px] w-[18px]" />
-              </button>
+              <SheetTrigger asChild>
+                <button
+                  className="flex h-11 w-11 items-center justify-center rounded-xl text-[#6b7b8d] hover:bg-white/5 active:scale-90 transition-all"
+                  aria-label="More actions"
+                >
+                  <MoreVertical className="h-[18px] w-[18px]" />
+                </button>
+              </SheetTrigger>
             </div>
           </div>
         </motion.div>
       </div>
 
-      <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
-        <SheetContent
+      <SheetContent
           side="bottom"
           className="bg-[#09090b] border-t border-white/[0.06] rounded-t-[28px] px-4 pt-5 shadow-2xl shadow-black/40"
           style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 16px)' }}
@@ -119,26 +119,26 @@ export function MobileTransactionItem({
           </div>
           <div className="space-y-1">
             {[
-              { icon: Pencil, label: 'Edit', action: () => { setMenuOpen(false); setTimeout(() => onEdit?.(), 200); }, color: '#7c5cff' },
-              { icon: Copy, label: 'Duplicate', action: () => { setMenuOpen(false); setTimeout(() => onDuplicate?.(), 200); }, color: '#3b82f6' },
-              { icon: Star, label: isFavorite ? 'Remove from Favorites' : 'Mark as Favorite', action: () => { setMenuOpen(false); setTimeout(() => onToggleFavorite?.(), 200); }, color: '#ffb020' },
-              { icon: Share2, label: 'Share', action: () => { setMenuOpen(false); setTimeout(() => onShare?.(), 200); }, color: '#00d09c' },
-              { icon: Trash2, label: 'Delete', action: () => { setMenuOpen(false); setTimeout(() => onDelete?.(), 200); }, color: '#ff5a7a' },
+              { icon: Pencil, label: 'Edit', action: () => { setTimeout(() => onEdit?.(), 300); }, color: '#7c5cff' },
+              { icon: Copy, label: 'Duplicate', action: () => { setTimeout(() => onDuplicate?.(), 300); }, color: '#3b82f6' },
+              { icon: Star, label: isFavorite ? 'Remove from Favorites' : 'Mark as Favorite', action: () => { setTimeout(() => onToggleFavorite?.(), 300); }, color: '#ffb020' },
+              { icon: Share2, label: 'Share', action: () => { setTimeout(() => onShare?.(), 300); }, color: '#00d09c' },
+              { icon: Trash2, label: 'Delete', action: () => { setTimeout(() => onDelete?.(), 300); }, color: '#ff5a7a' },
             ].map(({ icon: Icon, label, action, color: iconColor }) => (
-              <button
-                key={label}
-                onClick={action}
-                className="flex w-full items-center gap-3.5 rounded-[14px] px-3.5 py-3.5 text-white hover:bg-white/5 active:scale-[0.98] transition-all"
-              >
-                <div className="flex h-10 w-10 items-center justify-center rounded-[12px] shrink-0" style={{ backgroundColor: iconColor + '15' }}>
-                  <Icon className="h-[18px] w-[18px]" style={{ color: iconColor }} />
-                </div>
-                <span className="text-[14px] font-medium">{label}</span>
-              </button>
+              <SheetClose asChild key={label}>
+                <button
+                  onClick={action}
+                  className="flex w-full items-center gap-3.5 rounded-[14px] px-3.5 py-3.5 text-white hover:bg-white/5 active:scale-[0.98] transition-all"
+                >
+                  <div className="flex h-10 w-10 items-center justify-center rounded-[12px] shrink-0" style={{ backgroundColor: iconColor + '15' }}>
+                    <Icon className="h-[18px] w-[18px]" style={{ color: iconColor }} />
+                  </div>
+                  <span className="text-[14px] font-medium">{label}</span>
+                </button>
+              </SheetClose>
             ))}
           </div>
         </SheetContent>
       </Sheet>
-    </>
   );
 }

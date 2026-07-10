@@ -3,9 +3,10 @@
 import { useState } from 'react';
 import { useBudgets } from '@/hooks/useBudgets';
 import { useAuth } from '@/contexts/AuthContext';
-import { Button, Card, CardContent, Progress, Badge, Skeleton, Input, Select, SelectTrigger, SelectValue, SelectContent, SelectItem, Label } from '@/components/ui';
-import { MobileFormSheet } from '@/components/mobile/MobileFormSheet';
+import { Button, Card, CardContent, Progress, Badge, Skeleton, Input, Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui';
+import { UniversalFormDialog, FormField } from '@/components/shared';
 import { TransactionActionMenu, ConfirmDeleteDialog } from '@/components/shared';
+import { cn } from '@/utils/helpers';
 import { Plus, Wallet, Target, AlertTriangle, Clock, CalendarDays, Trash2, Pencil } from 'lucide-react';
 import { formatCurrency } from '@/utils/format';
 import { EXPENSE_CATEGORIES } from '@/constants';
@@ -277,72 +278,54 @@ export default function BudgetsPage() {
     </div>
     </div>
     
-    <MobileFormSheet
+    <UniversalFormDialog
       open={showCreate}
       onOpenChange={setShowCreate}
       title="Create Budget"
       description="Set a monthly spending limit for a category"
       submitLabel={creating ? 'Creating...' : 'Create Budget'}
       loading={creating}
-      asForm={false}
-      footer={
-        <div className="flex gap-2">
-          <Button variant="outline" className="flex-1 h-11 text-sm" onClick={() => setShowCreate(false)}>Cancel</Button>
-          <Button className="flex-1 h-11 text-sm" onClick={handleCreateBudget} disabled={creating || !newBudget.category || !newBudget.amount}>
-            {creating ? 'Creating...' : 'Create Budget'}
-          </Button>
-        </div>
-      }
+      onSubmit={async (e) => { e.preventDefault(); handleCreateBudget(); }}
+      onCancel={() => setShowCreate(false)}
     >
-      <div className="space-y-2">
-        <Label>Category</Label>
+      <FormField label="Category" htmlFor="budget-category" required={!newBudget.category}>
         <Select value={newBudget.category} onValueChange={(v) => setNewBudget({ ...newBudget, category: v })}>
-          <SelectTrigger>
+          <SelectTrigger id="budget-category">
             <SelectValue placeholder="Select category" />
           </SelectTrigger>
           <SelectContent>
             {EXPENSE_CATEGORIES.map((cat) => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
           </SelectContent>
         </Select>
-      </div>
-      <div className="space-y-2">
-        <Label>Monthly Limit</Label>
-        <Input type="number" placeholder="Amount" value={newBudget.amount} onChange={(e) => setNewBudget({ ...newBudget, amount: e.target.value })} />
-      </div>
-    </MobileFormSheet>
+      </FormField>
+      <FormField label="Monthly Limit" htmlFor="budget-amount" required>
+        <Input id="budget-amount" type="number" min="0" step="0.01" placeholder="Amount" value={newBudget.amount} onChange={(e) => setNewBudget({ ...newBudget, amount: e.target.value })} data-autofocus />
+      </FormField>
+    </UniversalFormDialog>
 
-    {/* Edit Budget */}
     {editingBudget && (
-      <MobileFormSheet
+      <UniversalFormDialog
         open={true}
         onOpenChange={() => setEditingId(null)}
         title="Edit Budget"
         submitLabel="Save"
-        asForm={false}
-        footer={
-          <div className="flex gap-2">
-            <Button variant="outline" className="flex-1 h-11 text-sm" onClick={() => setEditingId(null)}>Cancel</Button>
-            <Button className="flex-1 h-11 text-sm" onClick={async () => {
-              if (editingBudget && newBudget.amount) {
-                await updateBudget(editingBudget.id, { amount: parseFloat(newBudget.amount) } as Partial<Budget>);
-                setEditingId(null);
-                setNewBudget({ category: '', amount: '' });
-              }
-            }} disabled={!newBudget.amount}>
-              Save
-            </Button>
-          </div>
-        }
+        onSubmit={async (e) => {
+          e.preventDefault();
+          if (editingBudget && newBudget.amount) {
+            await updateBudget(editingBudget.id, { amount: parseFloat(newBudget.amount) } as Partial<Budget>);
+            setEditingId(null);
+            setNewBudget({ category: '', amount: '' });
+          }
+        }}
+        onCancel={() => setEditingId(null)}
       >
-        <div className="space-y-2">
-          <Label>Category</Label>
-          <Input value={editingBudget.category} disabled className="opacity-50" />
-        </div>
-        <div className="space-y-2">
-          <Label>Monthly Limit</Label>
-          <Input type="number" placeholder="Amount" defaultValue={editingBudget.amount} onChange={(e) => setNewBudget({ ...newBudget, amount: e.target.value })} />
-        </div>
-      </MobileFormSheet>
+        <FormField label="Category" htmlFor="edit-category">
+          <Input id="edit-category" value={editingBudget.category} disabled className="opacity-50" />
+        </FormField>
+        <FormField label="Monthly Limit" htmlFor="edit-amount" required>
+          <Input id="edit-amount" type="number" min="0" step="0.01" placeholder="Amount" defaultValue={editingBudget.amount} onChange={(e) => setNewBudget({ ...newBudget, amount: e.target.value })} data-autofocus />
+        </FormField>
+      </UniversalFormDialog>
     )}
 
     <ConfirmDeleteDialog

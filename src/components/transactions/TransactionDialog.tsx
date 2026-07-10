@@ -1,10 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Button, Input, Label, Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui';
-import { MobileFormSheet } from '@/components/mobile/MobileFormSheet';
+import { Input, Label, Select, SelectTrigger, SelectValue, SelectContent, SelectItem, ToggleSwitch } from '@/components/ui';
+import { UniversalFormDialog, FormField } from '@/components/shared';
 import { EXPENSE_CATEGORIES, INCOME_SOURCES, PAYMENT_METHODS, RECURRING_INTERVALS } from '@/constants';
-import { stripHtml } from '@/utils/helpers';
+import { stripHtml, cn } from '@/utils/helpers';
 import toast from 'react-hot-toast';
 
 type TransactionType = 'expense' | 'income';
@@ -33,20 +33,29 @@ const defaultForm = (type: TransactionType, defaults?: Record<string, unknown>):
 
 export function TransactionDialog({ type, open, onOpenChange, onSubmit, defaultValues }: TransactionDialogProps) {
   const [form, setForm] = useState<FormState>(defaultForm(type, defaultValues));
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
-    if (open) setForm(defaultForm(type, defaultValues));
+    if (open) { setForm(defaultForm(type, defaultValues)); setErrors({}); }
   }, [open, type, defaultValues]);
+
   const [loading, setLoading] = useState(false);
+
+  const validate = (): boolean => {
+    const errs: Record<string, string> = {};
+    if (!(form.amount as string) || isNaN(parseFloat(form.amount as string)) || parseFloat(form.amount as string) <= 0) errs.amount = 'Enter a valid amount';
+    if (!(form.description as string).trim()) errs.description = 'Description is required';
+    setErrors(errs);
+    return Object.keys(errs).length === 0;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!validate()) return;
     setLoading(true);
     try {
       const parsedAmount = parseFloat(form.amount as string);
-      if (isNaN(parsedAmount)) throw new Error('Invalid amount');
       const description = stripHtml(String(form.description || '')).trim().slice(0, 200);
-      if (!description) { toast.error('Description is required'); setLoading(false); return; }
       const notes = stripHtml(String(form.notes || '')).trim().slice(0, 500);
       const data: Record<string, unknown> = {
         amount: parsedAmount,
@@ -69,6 +78,7 @@ export function TransactionDialog({ type, open, onOpenChange, onSubmit, defaultV
       await onSubmit(data);
       onOpenChange(false);
       setForm(defaultForm(type));
+      setErrors({});
     } catch {
       toast.error('Failed to save transaction');
     } finally {
@@ -76,10 +86,13 @@ export function TransactionDialog({ type, open, onOpenChange, onSubmit, defaultV
     }
   };
 
-  const set = (field: string, value: string | boolean) => setForm((f) => ({ ...f, [field]: value }));
+  const set = (field: string, value: string | boolean) => {
+    setForm((f) => ({ ...f, [field]: value }));
+    if (errors[field]) setErrors((prev) => { const n = { ...prev }; delete n[field]; return n; });
+  };
 
   return (
-    <MobileFormSheet
+    <UniversalFormDialog
       open={open}
       onOpenChange={onOpenChange}
       title={defaultValues ? (type === 'expense' ? 'Edit Expense' : 'Edit Income') : (type === 'expense' ? 'Add Expense' : 'Add Income')}
@@ -87,123 +100,86 @@ export function TransactionDialog({ type, open, onOpenChange, onSubmit, defaultV
       loading={loading}
       submitLabel={loading ? 'Saving...' : defaultValues ? 'Update' : (type === 'expense' ? 'Add Expense' : 'Add Income')}
       onSubmit={handleSubmit}
+      onCancel={() => onOpenChange(false)}
     >
-      <div className="space-y-2">
-        <Label htmlFor="amount">Amount</Label>
-        <Input
-          id="amount"
-          type="number"
-          step="0.01"
-          min="0"
-          placeholder="0.00"
-          value={form.amount as string}
-          onChange={(e) => set('amount', e.target.value)}
-          required
-        />
+      <div className="grid grid-cols-2 gap-3">
+        <FormField label="Amount" htmlFor="amount" required error={errors.amount}>
+          <Input
+            id="amount" type="number" step="0.01" min="0" placeholder="0.00"
+            value={form.amount as string} onChange={(e) => set('amount', e.target.value)}
+            data-autofocus aria-invalid={!!errors.amount}
+            className={cn(errors.amount && 'border-destructive')}
+          />
+        </FormField>
+        <FormField label="Date" htmlFor="date" required>
+          <Input
+            id="date" type="date"
+            value={type === 'expense' ? (form.expenseDate as string) : (form.incomeDate as string)}
+            onChange={(e) => set(type === 'expense' ? 'expenseDate' : 'incomeDate', e.target.value)}
+          />
+        </FormField>
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="description">Description</Label>
+      <FormField label="Description" htmlFor="description" required error={errors.description} charCount={{ current: (form.description as string).length, max: 200 }}>
         <Input
-          id="description"
-          placeholder="What was this for?"
-          value={form.description as string}
-          onChange={(e) => set('description', e.target.value)}
-          required
+          id="description" placeholder="What was this for?"
+          value={form.description as string} onChange={(e) => set('description', e.target.value)}
+          aria-invalid={!!errors.description}
+          className={cn(errors.description && 'border-destructive')}
         />
-      </div>
+      </FormField>
 
-      {type === 'expense' ? (
-        <div className="space-y-2">
-          <Label>Category</Label>
-          <Select value={form.category as string} onValueChange={(v) => set('category', v)}>
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
+      <div className="grid grid-cols-2 gap-3">
+        {type === 'expense' ? (
+          <FormField label="Category" htmlFor="category-select">
+            <Select value={form.category as string} onValueChange={(v) => set('category', v)}>
+              <SelectTrigger id="category-select"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {EXPENSE_CATEGORIES.map((cat) => (<SelectItem key={cat} value={cat}>{cat}</SelectItem>))}
+              </SelectContent>
+            </Select>
+          </FormField>
+        ) : (
+          <FormField label="Source" htmlFor="source-select">
+            <Select value={form.source as string} onValueChange={(v) => set('source', v)}>
+              <SelectTrigger id="source-select"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {INCOME_SOURCES.map((src) => (<SelectItem key={src} value={src}>{src}</SelectItem>))}
+              </SelectContent>
+            </Select>
+          </FormField>
+        )}
+        <FormField label="Payment Method" htmlFor="payment-select">
+          <Select value={form.paymentMethod as string} onValueChange={(v) => set('paymentMethod', v)}>
+            <SelectTrigger id="payment-select"><SelectValue /></SelectTrigger>
             <SelectContent>
-              {EXPENSE_CATEGORIES.map((cat) => (
-                <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-              ))}
+              {PAYMENT_METHODS.map((pm) => (<SelectItem key={pm} value={pm}>{pm}</SelectItem>))}
             </SelectContent>
           </Select>
-        </div>
-      ) : (
-        <div className="space-y-2">
-          <Label>Source</Label>
-          <Select value={form.source as string} onValueChange={(v) => set('source', v)}>
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {INCOME_SOURCES.map((src) => (
-                <SelectItem key={src} value={src}>{src}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      )}
-
-      <div className="space-y-2">
-        <Label htmlFor="date">Date</Label>
-        <Input
-          id="date"
-          type="date"
-          value={type === 'expense' ? (form.expenseDate as string) : (form.incomeDate as string)}
-          onChange={(e) => set(type === 'expense' ? 'expenseDate' : 'incomeDate', e.target.value)}
-          required
-        />
+        </FormField>
       </div>
 
-      <div className="space-y-2">
-        <Label>Payment Method</Label>
-        <Select value={form.paymentMethod as string} onValueChange={(v) => set('paymentMethod', v)}>
-          <SelectTrigger>
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {PAYMENT_METHODS.map((pm) => (
-              <SelectItem key={pm} value={pm}>{pm}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+      <FormField label="Notes" htmlFor="notes" charCount={{ current: (form.notes as string).length, max: 500 }}>
+        <Input id="notes" placeholder="Add a note..." value={form.notes as string} onChange={(e) => set('notes', e.target.value)} />
+      </FormField>
 
-      <div className="space-y-2">
-        <Label htmlFor="notes">Notes (optional)</Label>
-        <Input
-          id="notes"
-          placeholder="Add a note..."
-          value={form.notes as string}
-          onChange={(e) => set('notes', e.target.value)}
-        />
-      </div>
-
-      <div className="flex items-center gap-2">
-        <input
-          type="checkbox"
-          id="recurring"
-          checked={form.isRecurring as boolean}
-          onChange={(e) => set('isRecurring', e.target.checked)}
-          className="rounded border-gray-300 text-primary focus:ring-primary"
-        />
-        <Label htmlFor="recurring" className="cursor-pointer">Recurring transaction</Label>
-      </div>
+      <ToggleSwitch
+        id="recurring"
+        checked={form.isRecurring as boolean}
+        onChange={(v) => set('isRecurring', v)}
+        label="Recurring transaction"
+      />
 
       {form.isRecurring && (
-        <div className="space-y-2">
-          <Label>Interval</Label>
+        <FormField label="Interval" htmlFor="interval-select">
           <Select value={form.recurringInterval as string} onValueChange={(v) => set('recurringInterval', v)}>
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
+            <SelectTrigger id="interval-select"><SelectValue /></SelectTrigger>
             <SelectContent>
-              {RECURRING_INTERVALS.map((ri) => (
-                <SelectItem key={ri.value} value={ri.value}>{ri.label}</SelectItem>
-              ))}
+              {RECURRING_INTERVALS.map((ri) => (<SelectItem key={ri.value} value={ri.value}>{ri.label}</SelectItem>))}
             </SelectContent>
           </Select>
-        </div>
+        </FormField>
       )}
-    </MobileFormSheet>
+    </UniversalFormDialog>
   );
 }

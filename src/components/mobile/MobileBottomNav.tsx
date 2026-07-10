@@ -9,7 +9,7 @@ import {
   ChevronRight,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetClose } from '@/components/ui/sheet';
 import { ROUTES } from '@/constants';
 
 const mainNav = [
@@ -81,19 +81,20 @@ export function MobileBottomNav() {
               </Link>
             );
           })}
-          <button
-            onClick={() => setMoreOpen(true)}
-            className="touch-target flex-col gap-0.5 rounded-2xl px-4 py-1 transition-all min-w-[56px] active:scale-95"
-          >
-            <div className="flex items-center justify-center h-7 w-7 mb-0.5">
-              <div className="flex flex-col gap-[3px]">
-                <span className="block w-[5px] h-[5px] rounded-full bg-[#6b7b8d]" />
-                <span className="block w-[5px] h-[5px] rounded-full bg-[#6b7b8d]" />
-                <span className="block w-[5px] h-[5px] rounded-full bg-[#6b7b8d]" />
+          <SheetTrigger asChild>
+            <button
+              className="touch-target flex-col gap-0.5 rounded-2xl px-4 py-1 transition-all min-w-[56px] active:scale-95"
+            >
+              <div className="flex items-center justify-center h-7 w-7 mb-0.5">
+                <div className="flex flex-col gap-[3px]">
+                  <span className="block w-[5px] h-[5px] rounded-full bg-[#6b7b8d]" />
+                  <span className="block w-[5px] h-[5px] rounded-full bg-[#6b7b8d]" />
+                  <span className="block w-[5px] h-[5px] rounded-full bg-[#6b7b8d]" />
+                </div>
               </div>
-            </div>
-            <span className="text-[11px] font-semibold text-center text-[#6b7b8d] leading-none">More</span>
-          </button>
+              <span className="text-[11px] font-semibold text-center text-[#6b7b8d] leading-none">More</span>
+            </button>
+          </SheetTrigger>
         </div>
       </nav>
 

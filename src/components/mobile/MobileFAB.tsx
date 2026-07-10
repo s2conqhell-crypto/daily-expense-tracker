@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Plus, TrendingDown, ArrowUpFromLine, PiggyBank, Repeat, Target, Wallet, Landmark } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetClose } from '@/components/ui/sheet';
 
 interface FABAction {
   id: string;
@@ -61,7 +61,7 @@ export function MobileFAB({ actions }: MobileFABProps) {
           </motion.button>
         )}
       </AnimatePresence>
-
+ 
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetContent
           side="bottom"
@@ -82,16 +82,17 @@ export function MobileFAB({ actions }: MobileFABProps) {
             {actions.map((action) => {
               const Icon = action.icon;
               return (
-                <button
-                  key={action.id}
-                  onClick={() => { setOpen(false); action.onClick(); }}
-                  className="touch-target flex-col gap-2 rounded-2xl py-4 px-1 bg-white/5 hover:bg-white/10 transition-all active:scale-95"
-                >
-                  <div className="flex h-11 w-11 items-center justify-center rounded-xl mx-auto" style={{ backgroundColor: action.color + '18' }}>
-                    <Icon className="h-5 w-5" style={{ color: action.color }} />
-                  </div>
-                  <span className="text-[10px] font-medium text-[#6b7b8d] text-center leading-tight">{action.label}</span>
-                </button>
+                <SheetClose asChild key={action.id}>
+                  <button
+                    onClick={action.onClick}
+                    className="touch-target flex-col gap-2 rounded-2xl py-4 px-1 bg-white/5 hover:bg-white/10 transition-all active:scale-95"
+                  >
+                    <div className="flex h-11 w-11 items-center justify-center rounded-xl mx-auto" style={{ backgroundColor: action.color + '18' }}>
+                      <Icon className="h-5 w-5" style={{ color: action.color }} />
+                    </div>
+                    <span className="text-[10px] font-medium text-[#6b7b8d] text-center leading-tight">{action.label}</span>
+                  </button>
+                </SheetClose>
               );
             })}
           </div>

@@ -1,11 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Button, Input, Label, Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui';
-import { MobileFormSheet } from '@/components/mobile/MobileFormSheet';
+import { Input, Select, SelectTrigger, SelectValue, SelectContent, SelectItem, ToggleSwitch } from '@/components/ui';
+import { UniversalFormDialog, FormField } from '@/components/shared';
 import { SUBSCRIPTION_CATEGORIES } from '@/constants';
 import type { Subscription } from '@/types';
-import { stripHtml, safeDateInput } from '@/utils/helpers';
+import { stripHtml, safeDateInput, cn } from '@/utils/helpers';
 import toast from 'react-hot-toast';
 
 interface SubscriptionDialogProps {
@@ -15,7 +15,9 @@ interface SubscriptionDialogProps {
   defaultValues?: Subscription;
 }
 
-const defaultForm = (defaults?: Subscription) => ({
+type FormState = Record<string, string | boolean>;
+
+const defaultForm = (defaults?: Subscription): FormState => ({
   name: defaults?.name || '',
   category: defaults?.category || 'Netflix',
   customCategory: defaults?.customCategory || '',
@@ -29,22 +31,36 @@ const defaultForm = (defaults?: Subscription) => ({
 });
 
 export function SubscriptionDialog({ open, onOpenChange, onSubmit, defaultValues }: SubscriptionDialogProps) {
-  const [form, setForm] = useState<Record<string, string | boolean>>(defaultForm(defaultValues));
+  const [form, setForm] = useState<FormState>(defaultForm(defaultValues));
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (open) setForm(defaultForm(defaultValues));
+    if (open) { setForm(defaultForm(defaultValues)); setErrors({}); }
   }, [open, defaultValues]);
 
-  const set = (field: string, value: string | boolean) => setForm((f) => ({ ...f, [field]: value }));
+  const set = (field: string, value: string | boolean) => {
+    setForm((f) => ({ ...f, [field]: value }));
+    if (errors[field]) setErrors((prev) => { const n = { ...prev }; delete n[field]; return n; });
+  };
+
+  const validate = (): boolean => {
+    const errs: Record<string, string> = {};
+    if (!(form.name as string).trim()) errs.name = 'Name is required';
+    const cost = parseFloat(form.monthlyCost as string);
+    if (isNaN(cost) || cost <= 0) errs.monthlyCost = 'Enter a valid monthly cost';
+    if (!form.renewalDate) errs.renewalDate = 'Renewal date is required';
+    setErrors(errs);
+    return Object.keys(errs).length === 0;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!validate()) return;
     setLoading(true);
     try {
       const monthlyCost = parseFloat(form.monthlyCost as string);
       const yearlyCost = parseFloat(form.yearlyCost as string);
-      if (isNaN(monthlyCost) || monthlyCost <= 0) throw new Error('Invalid monthly cost');
       await onSubmit({
         name: stripHtml(form.name as string),
         category: stripHtml(form.category as any) as any,
@@ -67,7 +83,7 @@ export function SubscriptionDialog({ open, onOpenChange, onSubmit, defaultValues
   };
 
   return (
-    <MobileFormSheet
+    <UniversalFormDialog
       open={open}
       onOpenChange={onOpenChange}
       title={defaultValues ? 'Edit Subscription' : 'Add Subscription'}
@@ -75,72 +91,74 @@ export function SubscriptionDialog({ open, onOpenChange, onSubmit, defaultValues
       loading={loading}
       submitLabel={loading ? 'Saving...' : defaultValues ? 'Update' : 'Add Subscription'}
       onSubmit={handleSubmit}
+      onCancel={() => onOpenChange(false)}
     >
-      <div className="space-y-2">
-        <Label htmlFor="name">Name</Label>
-        <Input id="name" placeholder="Netflix, Spotify, ..." value={form.name as string} onChange={(e) => set('name', e.target.value)} required />
-      </div>
+      <FormField label="Name" htmlFor="name" required error={errors.name}>
+        <Input id="name" placeholder="Netflix, Spotify, ..." value={form.name as string} onChange={(e) => set('name', e.target.value)}
+          data-autofocus aria-invalid={!!errors.name} className={cn(errors.name && 'border-destructive')} />
+      </FormField>
 
-      <div className="space-y-2">
-        <Label>Category</Label>
-        <Select value={form.category as string} onValueChange={(v) => set('category', v)}>
-          <SelectTrigger><SelectValue /></SelectTrigger>
-          <SelectContent>
-            {SUBSCRIPTION_CATEGORIES.map((cat) => (<SelectItem key={cat} value={cat}>{cat}</SelectItem>))}
-          </SelectContent>
-        </Select>
+      <div className="grid grid-cols-2 gap-3">
+        <FormField label="Category" htmlFor="category-select">
+          <Select value={form.category as string} onValueChange={(v) => set('category', v)}>
+            <SelectTrigger id="category-select"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              {SUBSCRIPTION_CATEGORIES.map((cat) => (<SelectItem key={cat} value={cat}>{cat}</SelectItem>))}
+            </SelectContent>
+          </Select>
+        </FormField>
+        <FormField label="Status" htmlFor="status-select">
+          <Select value={form.status as string} onValueChange={(v) => set('status', v)}>
+            <SelectTrigger id="status-select"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="active">Active</SelectItem>
+              <SelectItem value="paused">Paused</SelectItem>
+              <SelectItem value="expired">Expired</SelectItem>
+            </SelectContent>
+          </Select>
+        </FormField>
       </div>
 
       {form.category === 'Custom' && (
-        <div className="space-y-2">
-          <Label htmlFor="customCategory">Custom Category Name</Label>
-          <Input id="customCategory" placeholder="e.g. Adobe CC" value={form.customCategory as string} onChange={(e) => set('customCategory', e.target.value)} required />
-        </div>
+        <FormField label="Custom Category Name" htmlFor="customCategory" required>
+          <Input id="customCategory" placeholder="e.g. Adobe CC" value={form.customCategory as string} onChange={(e) => set('customCategory', e.target.value)} />
+        </FormField>
       )}
 
       <div className="grid grid-cols-2 gap-3">
-        <div className="space-y-2">
-          <Label htmlFor="monthlyCost">Monthly Cost</Label>
-          <Input id="monthlyCost" type="number" step="0.01" min="0" placeholder="0.00" value={form.monthlyCost as string} onChange={(e) => set('monthlyCost', e.target.value)} required />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="yearlyCost">Yearly Cost</Label>
+        <FormField label="Monthly Cost" htmlFor="monthlyCost" required error={errors.monthlyCost}>
+          <Input id="monthlyCost" type="number" step="0.01" min="0" placeholder="0.00" value={form.monthlyCost as string} onChange={(e) => set('monthlyCost', e.target.value)}
+            aria-invalid={!!errors.monthlyCost} className={cn(errors.monthlyCost && 'border-destructive')} />
+        </FormField>
+        <FormField label="Yearly Cost" htmlFor="yearlyCost">
           <Input id="yearlyCost" type="number" step="0.01" min="0" placeholder="0.00" value={form.yearlyCost as string} onChange={(e) => set('yearlyCost', e.target.value)} />
-        </div>
+        </FormField>
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="renewalDate">Renewal Date</Label>
-        <Input id="renewalDate" type="date" value={form.renewalDate as string} onChange={(e) => set('renewalDate', e.target.value)} required />
+      <div className="grid grid-cols-2 gap-3">
+        <FormField label="Renewal Date" htmlFor="renewalDate" required error={errors.renewalDate}>
+          <Input id="renewalDate" type="date" value={form.renewalDate as string} onChange={(e) => set('renewalDate', e.target.value)}
+            aria-invalid={!!errors.renewalDate} className={cn(errors.renewalDate && 'border-destructive')} />
+        </FormField>
       </div>
 
-      <div className="space-y-2">
-        <Label>Status</Label>
-        <Select value={form.status as string} onValueChange={(v) => set('status', v)}>
-          <SelectTrigger><SelectValue /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="active">Active</SelectItem>
-            <SelectItem value="paused">Paused</SelectItem>
-            <SelectItem value="expired">Expired</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+      <ToggleSwitch
+        id="autoRenew"
+        checked={form.autoRenew as boolean}
+        onChange={(v) => set('autoRenew', v)}
+        label="Auto Renew"
+      />
 
-      <div className="flex items-center gap-4">
-        <label className="flex items-center gap-2 cursor-pointer">
-          <input type="checkbox" checked={form.autoRenew as boolean} onChange={(e) => set('autoRenew', e.target.checked)} className="rounded border-gray-300 text-primary focus:ring-primary" />
-          <span className="text-sm">Auto Renew</span>
-        </label>
-        <label className="flex items-center gap-2 cursor-pointer">
-          <input type="checkbox" checked={form.reminderEnabled as boolean} onChange={(e) => set('reminderEnabled', e.target.checked)} className="rounded border-gray-300 text-primary focus:ring-primary" />
-          <span className="text-sm">Reminder</span>
-        </label>
-      </div>
+      <ToggleSwitch
+        id="reminderEnabled"
+        checked={form.reminderEnabled as boolean}
+        onChange={(v) => set('reminderEnabled', v)}
+        label="Reminder"
+      />
 
-      <div className="space-y-2">
-        <Label htmlFor="notes">Notes (optional)</Label>
+      <FormField label="Notes" htmlFor="notes" charCount={{ current: (form.notes as string).length, max: 500 }}>
         <Input id="notes" placeholder="Add a note..." value={form.notes as string} onChange={(e) => set('notes', e.target.value)} />
-      </div>
-    </MobileFormSheet>
+      </FormField>
+    </UniversalFormDialog>
   );
 }

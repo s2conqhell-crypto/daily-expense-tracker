@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useIsMobile } from '@/hooks/useMediaQuery';
 import { MoreVertical, type LucideIcon } from 'lucide-react';
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetClose } from '@/components/ui/sheet';
 
 export interface ActionMenuItem {
   icon: LucideIcon;
@@ -49,38 +49,39 @@ export function TransactionActionMenu({
 
   if (isMobile) {
     return (
-      <>
+      <Sheet open={open} onOpenChange={setOpen}>
         {trigger ? (
-          <div onClick={() => setOpen(true)}>{trigger}</div>
+          <SheetTrigger asChild>
+            <div onClick={() => setOpen(true)}>{trigger}</div>
+          </SheetTrigger>
         ) : (
-          <button
-            onClick={() => setOpen(true)}
-            className="flex h-11 w-11 items-center justify-center rounded-xl text-[#6b7b8d] hover:bg-white/5 active:scale-90 transition-all"
-            aria-label="More actions"
-          >
-            <MoreVertical className="h-[18px] w-[18px]" />
-          </button>
+          <SheetTrigger asChild>
+            <button
+              className="flex h-11 w-11 items-center justify-center rounded-xl text-[#6b7b8d] hover:bg-white/5 active:scale-90 transition-all"
+              aria-label="More actions"
+            >
+              <MoreVertical className="h-[18px] w-[18px]" />
+            </button>
+          </SheetTrigger>
         )}
-        <Sheet open={open} onOpenChange={setOpen}>
-          <SheetContent
-            side="bottom"
-            className="bg-[#09090b] border-t border-white/[0.06] rounded-t-[28px] px-4 pt-5 shadow-2xl shadow-black/40"
-            style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 16px)' }}
-          >
-            {sheetTitle && (
-              <SheetHeader className="mb-4 pb-4 border-b border-white/[0.06]">
-                <SheetTitle className="text-[15px] font-bold text-white">{sheetTitle}</SheetTitle>
-                {sheetSubtitle && <p className="text-[12px] text-[#6b7b8d]">{sheetSubtitle}</p>}
-              </SheetHeader>
-            )}
-            <div className="space-y-1">
-              {actions.map(({ icon: Icon, label, onClick, color = '#7c5cff', destructive, disabled }) => (
+        <SheetContent
+          side="bottom"
+          className="bg-[#09090b] border-t border-white/[0.06] rounded-t-[28px] px-4 pt-5 shadow-2xl shadow-black/40"
+          style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 16px)' }}
+        >
+          {sheetTitle && (
+            <SheetHeader className="mb-4 pb-4 border-b border-white/[0.06]">
+              <SheetTitle className="text-[15px] font-bold text-white">{sheetTitle}</SheetTitle>
+              {sheetSubtitle && <p className="text-[12px] text-[#6b7b8d]">{sheetSubtitle}</p>}
+            </SheetHeader>
+          )}
+          <div className="space-y-1">
+            {actions.map(({ icon: Icon, label, onClick, color = '#7c5cff', destructive, disabled }) => (
+              <SheetClose asChild key={label}>
                 <button
-                  key={label}
                   onClick={() => {
                     if (!disabled) {
-                      setOpen(false);
-                      setTimeout(() => onClick(), 200);
+                      setTimeout(() => onClick(), 300);
                     }
                   }}
                   disabled={disabled}
@@ -96,11 +97,11 @@ export function TransactionActionMenu({
                     {label}
                   </span>
                 </button>
-              ))}
-            </div>
-          </SheetContent>
-        </Sheet>
-      </>
+              </SheetClose>
+            ))}
+          </div>
+        </SheetContent>
+      </Sheet>
     );
   }
 
