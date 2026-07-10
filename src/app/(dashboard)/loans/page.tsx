@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useLoans } from '@/hooks/useLoans';
 import { useAuth } from '@/contexts/AuthContext';
 import { LoanDialog } from '@/components/loans/LoanDialog';
-import { EmptyState, StatCard } from '@/components/shared';
+import { EmptyState, StatCard, ConfirmDeleteDialog } from '@/components/shared';
 import { Button, Progress } from '@/components/ui';
 import { Plus, Banknote, Trash2, CreditCard, Calendar, TrendingUp, Wallet, CheckCircle } from 'lucide-react';
 import { formatCurrency, formatDate } from '@/utils/format';
@@ -18,6 +18,7 @@ export default function LoansPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<any>(null);
   const [payingLoan, setPayingLoan] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const handleSubmit = async (data: any) => {
     if (editing) {
@@ -29,10 +30,8 @@ export default function LoansPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (confirm('Delete this loan record?')) {
-      await deleteLoan(id);
-      toast.success('Loan deleted');
-    }
+    await deleteLoan(id);
+    setDeletingId(null);
   };
 
   const handlePayEMI = async (loanId: string) => {
@@ -212,7 +211,7 @@ export default function LoansPage() {
                     <div className="flex gap-1 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                       {loan.status === 'active' && <button onClick={() => handlePayEMI(loan.id)} disabled={payingLoan === loan.id} className="p-1.5 rounded-lg hover:bg-[#00D09C]/10" title="Pay EMI"><CheckCircle className="h-3.5 w-3.5 text-[#00D09C]" /></button>}
                       <button onClick={() => { setEditing(loan); setDialogOpen(true); }} className="p-1.5 rounded-lg hover:bg-white/5" title="Edit"><TrendingUp className="h-3.5 w-3.5 text-[#7C5CFF]" /></button>
-                      <button onClick={() => handleDelete(loan.id)} className="p-1.5 rounded-lg hover:bg-white/5" title="Delete"><Trash2 className="h-3.5 w-3.5 text-[#FF5A6E]" /></button>
+                      <button onClick={() => setDeletingId(loan.id)} className="p-1.5 rounded-lg hover:bg-white/5" title="Delete"><Trash2 className="h-3.5 w-3.5 text-[#FF5A6E]" /></button>
                     </div>
                   </div>
 
@@ -258,6 +257,13 @@ export default function LoansPage() {
       onOpenChange={(o) => { if (!o) { setDialogOpen(false); setEditing(null); } }}
       onSubmit={handleSubmit}
       defaultValues={editing}
+    />
+    <ConfirmDeleteDialog
+      open={!!deletingId}
+      onOpenChange={(open) => { if (!open) setDeletingId(null); }}
+      onConfirm={() => deletingId && handleDelete(deletingId)}
+      title="Delete Loan"
+      itemName={deletingId ? loans.find(l => l.id === deletingId)?.name : undefined}
     />
     </>
   );

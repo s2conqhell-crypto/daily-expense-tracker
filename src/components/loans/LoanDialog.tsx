@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { Button, Input, Label } from '@/components/ui';
 import { MobileFormSheet } from '@/components/mobile/MobileFormSheet';
 import type { Loan } from '@/types';
-import { toDate } from '@/utils/helpers';
+import { toDate, stripHtml } from '@/utils/helpers';
 import toast from 'react-hot-toast';
 
 interface LoanDialogProps {
@@ -51,7 +51,7 @@ export function LoanDialog({ open, onOpenChange, onSubmit, defaultValues }: Loan
     e.preventDefault();
     setLoading(true);
     try {
-      const name = form.name.trim();
+      const name = stripHtml(form.name).trim().slice(0, 100);
       if (!name) throw new Error('Please enter a loan name');
 
       const principal = parseFloat(form.principalAmount);
@@ -95,6 +95,8 @@ export function LoanDialog({ open, onOpenChange, onSubmit, defaultValues }: Loan
         }
       }
 
+      const notes = stripHtml(form.notes || '').trim().slice(0, 500);
+
       await onSubmit({
         name,
         principalAmount: principal,
@@ -108,7 +110,7 @@ export function LoanDialog({ open, onOpenChange, onSubmit, defaultValues }: Loan
         paymentHistory: defaultValues?.paymentHistory ?? [],
         nextEmiDate,
         ...(validEmiDay ? { emiDay: validEmiDay } : {}),
-        ...(form.notes ? { notes: form.notes } : {}),
+          ...(notes ? { notes } : {}),
       });
       onOpenChange(false);
       toast.success(defaultValues ? 'Loan updated' : 'Loan added');

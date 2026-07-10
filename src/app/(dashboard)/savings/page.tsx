@@ -121,7 +121,7 @@ export default function SavingsPage() {
                     <TransactionActionMenu
                       actions={[
                         { icon: Pencil, label: 'Edit', onClick: () => setEditingId(goal.id), color: '#7c5cff' },
-                        { icon: CheckCircle, label: 'Mark Complete', onClick: async () => { try { await updateGoal(goal.id, { isCompleted: true } as any); toast.success('Goal completed!'); } catch {} }, color: '#00d09c' },
+                        { icon: CheckCircle, label: 'Mark Complete', onClick: async () => { try { await updateGoal(goal.id, { isCompleted: true } as any); toast.success('Goal completed!'); } catch (e) { console.warn('[Savings] Mark complete failed', e); } }, color: '#00d09c' },
                         { icon: Trash2, label: 'Delete', onClick: () => setDeletingId(goal.id), color: '#ff5a7a', destructive: true },
                       ]}
                     />

@@ -27,12 +27,13 @@ export function PWARegistration() {
               });
             }
           });
-        } catch {}
+        } catch (e) { console.warn('[PWARegistration] SW registration failed', e); }
       });
     }
 
     // Install prompt
     const handler = (e: Event) => {
+      if (localStorage.getItem('ef-install-dismissed')) return;
       e.preventDefault();
       setInstallPrompt(e);
       setShowInstall(true);
@@ -81,7 +82,7 @@ export function PWARegistration() {
           <button onClick={handleInstall} className="px-3 py-1.5 text-xs font-medium rounded-xl bg-[#7C5CFF] text-white hover:bg-[#6B4FE6] transition-colors shrink-0">
             Install
           </button>
-          <button onClick={() => setShowInstall(false)} className="p-1 rounded-lg hover:bg-white/5 transition-colors shrink-0">
+          <button onClick={() => { setShowInstall(false); localStorage.setItem('ef-install-dismissed', 'true'); }} className="p-1 rounded-lg hover:bg-white/5 transition-colors shrink-0">
             <X className="h-4 w-4 text-[#94A3B8]" />
           </button>
         </div>

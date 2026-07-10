@@ -190,6 +190,18 @@ export const firebaseService = {
       await deleteDoc(doc(db, FIRESTORE_COLLECTIONS.EXPENSES, expenseId));
     },
 
+    duplicate: async (expenseId: string): Promise<string> => {
+      const snap = await getDoc(doc(db, FIRESTORE_COLLECTIONS.EXPENSES, expenseId));
+      if (!snap.exists()) throw new Error('Expense not found');
+      const { createdAt, updatedAt, ...data } = snap.data() as Record<string, unknown>;
+      const docRef = await addDoc(collection(db, FIRESTORE_COLLECTIONS.EXPENSES), {
+        ...data,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      });
+      return docRef.id;
+    },
+
     getByDateRange: async (
       userId: string,
       startDate: Date,
@@ -270,6 +282,18 @@ export const firebaseService = {
 
     delete: async (incomeId: string): Promise<void> => {
       await deleteDoc(doc(db, FIRESTORE_COLLECTIONS.INCOME, incomeId));
+    },
+
+    duplicate: async (incomeId: string): Promise<string> => {
+      const snap = await getDoc(doc(db, FIRESTORE_COLLECTIONS.INCOME, incomeId));
+      if (!snap.exists()) throw new Error('Income not found');
+      const { createdAt, updatedAt, ...data } = snap.data() as Record<string, unknown>;
+      const docRef = await addDoc(collection(db, FIRESTORE_COLLECTIONS.INCOME), {
+        ...data,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      });
+      return docRef.id;
     },
 
     subscribe: (userId: string, callback: (incomes: Income[]) => void): Unsubscribe => {

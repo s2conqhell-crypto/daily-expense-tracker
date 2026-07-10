@@ -68,8 +68,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             const { processDueRules, checkAndGenerateMonthlySummary } = await import('@/utils/recurringProcessor');
             await processDueRules(firebaseUser.uid);
             await checkAndGenerateMonthlySummary(firebaseUser.uid);
-          } catch {}
-        } catch {
+          } catch (e) { console.warn('[Auth] Background processing failed', e); }
+        } catch (e) {
           // User document might not exist yet
         }
       } else {

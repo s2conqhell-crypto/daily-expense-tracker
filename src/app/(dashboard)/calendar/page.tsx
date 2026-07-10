@@ -113,7 +113,7 @@ export default function CalendarPage() {
           try {
             const { firebaseService } = await import('@/firebase/services');
             await firebaseService.expenses.add(user!.uid, data as any);
-          } catch {}
+          } catch (e) { console.warn('[Calendar] Add failed', e); }
           setDialogOpen(false);
         }}
       />

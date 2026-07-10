@@ -509,7 +509,7 @@ export default function ExpensesPage() {
     
     {/* Dialogs */}
     <TransactionDialog type="expense" open={dialogOpen} onOpenChange={setDialogOpen}
-      onSubmit={async (data) => { try { await addExpense(data as any); } catch {} }} />
+      onSubmit={async (data) => { try { await addExpense(data as any); } catch (e) { console.warn('[Expenses] Add failed', e); } }} />
     {editingExpense && (
       <TransactionDialog
         type="expense" open={true} onOpenChange={() => setEditingId(null)}

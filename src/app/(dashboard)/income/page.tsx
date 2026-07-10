@@ -369,7 +369,7 @@ export default function IncomePage() {
     </div>
     
     <TransactionDialog type="income" open={dialogOpen} onOpenChange={setDialogOpen}
-      onSubmit={async (data) => { try { await addIncome(data as any); } catch {} }} />
+      onSubmit={async (data) => { try { await addIncome(data as any); } catch (e) { console.warn('[Income] Add failed', e); } }} />
     {editingIncome && (
       <TransactionDialog type="income" open={true} onOpenChange={() => setEditingId(null)}
         defaultValues={{

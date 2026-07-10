@@ -180,3 +180,27 @@ export const downloadFile = (url: string, filename: string): void => {
   a.click();
   document.body.removeChild(a);
 };
+
+export const sanitizeString = (value: string): string => {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#x27;');
+};
+
+export const sanitizeObject = <T extends Record<string, unknown>>(obj: T, fields: (keyof T)[]): T => {
+  const result = { ...obj };
+  for (const field of fields) {
+    const val = result[field];
+    if (typeof val === 'string') {
+      result[field] = sanitizeString(val) as T[keyof T];
+    }
+  }
+  return result;
+};
+
+export const stripHtml = (value: string): string => {
+  return value.replace(/<[^>]*>/g, '');
+};

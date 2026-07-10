@@ -4,7 +4,7 @@ import { useState, useMemo } from 'react';
 import { useRecurringTransactions } from '@/hooks/useRecurringTransactions';
 import { useAuth } from '@/contexts/AuthContext';
 import { RecurringRuleDialog } from '@/components/recurring/RecurringRuleDialog';
-import { EmptyState } from '@/components/shared';
+import { EmptyState, ConfirmDeleteDialog } from '@/components/shared';
 import { Button } from '@/components/ui';
 import { Plus, Repeat, Pause, Play, Trash2, SkipForward, Calendar, Clock, ArrowUpDown } from 'lucide-react';
 import { formatCurrency, formatDate } from '@/utils/format';
@@ -18,6 +18,7 @@ export default function RecurringPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<any>(null);
   const [filter, setFilter] = useState<'all' | 'expense' | 'income'>('all');
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const filtered = useMemo(() =>
     rules.filter((r) => filter === 'all' || r.type === filter),
@@ -38,10 +39,8 @@ export default function RecurringPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (confirm('Delete this recurring rule?')) {
-      await deleteRule(id);
-      toast.success('Rule deleted');
-    }
+    await deleteRule(id);
+    setDeletingId(null);
   };
 
   const intervalLabel = (interval: string) => {
@@ -215,7 +214,7 @@ export default function RecurringPage() {
                       <button onClick={() => handleEdit(rule)} className="p-1.5 rounded-lg hover:bg-white/5 transition-colors" title="Edit">
                         <Repeat className="h-3.5 w-3.5 text-[#7C5CFF]" />
                       </button>
-                      <button onClick={() => handleDelete(rule.id)} className="p-1.5 rounded-lg hover:bg-white/5 transition-colors" title="Delete">
+                      <button onClick={() => setDeletingId(rule.id)} className="p-1.5 rounded-lg hover:bg-white/5 transition-colors" title="Delete">
                         <Trash2 className="h-3.5 w-3.5 text-[#FF5A6E]" />
                       </button>
                     </div>
@@ -234,6 +233,13 @@ export default function RecurringPage() {
       onOpenChange={(o) => { if (!o) { setDialogOpen(false); setEditing(null); } }}
       onSubmit={handleSubmit}
       defaultValues={editing}
+    />
+    <ConfirmDeleteDialog
+      open={!!deletingId}
+      onOpenChange={(open) => { if (!open) setDeletingId(null); }}
+      onConfirm={() => deletingId && handleDelete(deletingId)}
+      title="Delete Recurring Rule"
+      itemName={deletingId ? rules.find(r => r.id === deletingId)?.description : undefined}
     />
     </>
   );

@@ -56,8 +56,8 @@ export function MobileDashboard() {
   const [extraData, setExtraData] = useState<any>({ upcomingRules: [], upcomingSubs: [], upcomingEmis: [], subTotal: 0, budgetData: null });
   const [editingTx, setEditingTx] = useState<Expense | Income | null>(null);
   const [deletingTx, setDeletingTx] = useState<Expense | Income | null>(null);
-  const { updateExpense, deleteExpense } = useExpenses();
-  const { updateIncome, deleteIncome } = useIncome();
+  const { updateExpense, deleteExpense, duplicateExpense, toggleFavoriteExpense } = useExpenses();
+  const { updateIncome, deleteIncome, duplicateIncome, toggleFavoriteIncome } = useIncome();
 
   useEffect(() => {
     if (!user) return;
@@ -78,7 +78,7 @@ export function MobileDashboard() {
           subTotal: subs.filter((s) => s.status === 'active').reduce((sum, s) => sum + s.monthlyCost, 0),
           budgetData: budgets[0] || null,
         });
-      } catch {}
+      } catch (e) { console.warn('[MobileDashboard] Failed to load extra data', e); }
     };
     load();
   }, [user]);
@@ -203,8 +203,26 @@ export function MobileDashboard() {
                   type={'type' in tx && tx.type === 'income' ? 'income' : 'expense'}
                   category={(tx as any).category}
                   currency={userData?.currency}
+                  isFavorite={(tx as any).isFavorite}
                   onEdit={() => setEditingTx(tx)}
                   onDelete={() => setDeletingTx(tx)}
+                  onDuplicate={async () => {
+                    const isIncome = 'type' in tx && tx.type === 'income';
+                    if (isIncome) { await duplicateIncome(tx.id); } else { await duplicateExpense(tx.id); }
+                  }}
+                  onToggleFavorite={async () => {
+                    const isIncome = 'type' in tx && tx.type === 'income';
+                    const newVal = !(tx as any).isFavorite;
+                    if (isIncome) { await toggleFavoriteIncome(tx.id, newVal); } else { await toggleFavoriteExpense(tx.id, newVal); }
+                  }}
+                  onShare={() => {
+                    const text = `${'description' in tx ? tx.description : 'Transaction'}: ${tx.amount} on ${new Date().toLocaleDateString()}`;
+                    if (navigator.share) {
+                      navigator.share({ title: 'ExpenseFlow', text });
+                    } else {
+                      navigator.clipboard?.writeText(text);
+                    }
+                  }}
                 />
               ))
             )}
@@ -352,7 +370,7 @@ export function MobileDashboard() {
                 await updateExpense(editingTx.id, data as Partial<Expense>);
               }
               setEditingTx(null);
-            } catch {}
+            } catch (e) { console.warn('[MobileDashboard] Edit save failed', e); }
           }}
         />
       )}
@@ -368,7 +386,7 @@ export function MobileDashboard() {
               await deleteExpense(deletingTx.id);
             }
             setDeletingTx(null);
-          } catch {}
+          } catch (e) { console.warn('[MobileDashboard] Delete failed', e); }
         }}
         title="Delete Transaction"
         itemName={deletingTx?.description}

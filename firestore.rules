@@ -2,74 +2,104 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
+    // Helper: user owns this document via userId field
+    function isOwner(resource) {
+      return request.auth.uid == resource.data.userId;
+    }
+    // Helper: incoming data has correct userId
+    function isOwnerIncoming() {
+      return request.auth.uid == request.resource.data.userId;
+    }
+    // Helper: userId field cannot be changed on update
+    function userIdUnchanged() {
+      return request.resource.data.userId == resource.data.userId;
+    }
 
-    // User profiles - only the owner can read/write
+    // User profiles - document ID is the userId
     match /users/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+      allow read, update, delete: if request.auth != null && request.auth.uid == userId;
+      allow create: if request.auth != null && request.auth.uid == userId;
     }
 
-    // Expenses - only the owner can read/write
-    match /expenses/{expenseId} {
-      allow read, write: if request.auth != null && request.auth.uid == resource.data.userId;
-      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
-    }
-
-    // Income - only the owner can read/write
-    match /income/{incomeId} {
-      allow read, write: if request.auth != null && request.auth.uid == resource.data.userId;
-      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
-    }
-
-    // Budgets - only the owner can read/write
-    match /budgets/{budgetId} {
-      allow read, write: if request.auth != null && request.auth.uid == resource.data.userId;
-      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
-    }
-
-    // Saving Goals - only the owner can read/write
-    match /savingGoals/{goalId} {
-      allow read, write: if request.auth != null && request.auth.uid == resource.data.userId;
-      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
-    }
-
-    // Receipts - only the owner can read/write
-    match /receipts/{receiptId} {
-      allow read, write: if request.auth != null && request.auth.uid == resource.data.userId;
-      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
-    }
-
-    // Notifications - only the owner can read/write
-    match /notifications/{notificationId} {
-      allow read, write: if request.auth != null && request.auth.uid == resource.data.userId;
-      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
-    }
-
-    // Settings - only the owner can read/write
+    // Settings - document ID is the userId
     match /settings/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+      allow read, update, delete: if request.auth != null && request.auth.uid == userId;
+      allow create: if request.auth != null && request.auth.uid == userId;
     }
 
-    // Recurring Transactions
-    match /recurringTransactions/{transactionId} {
-      allow read, write: if request.auth != null && request.auth.uid == resource.data.userId;
-      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
-    }
-
-    // Subscriptions
-    match /subscriptions/{subscriptionId} {
-      allow read, write: if request.auth != null && request.auth.uid == resource.data.userId;
-      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
-    }
-
-    // Loans
-    match /loans/{loanId} {
-      allow read, write: if request.auth != null && request.auth.uid == resource.data.userId;
-      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
-    }
-
-    // Dashboard Layout
+    // Dashboard Layout - document ID is the userId
     match /dashboardLayout/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+      allow read, update, delete: if request.auth != null && request.auth.uid == userId;
+      allow create: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Expense collections - ownership via userId field
+    match /expenses/{docId} {
+      allow read: if request.auth != null && isOwner(resource);
+      allow create: if request.auth != null && isOwnerIncoming();
+      allow update: if request.auth != null && isOwner(resource) && userIdUnchanged();
+      allow delete: if request.auth != null && isOwner(resource);
+    }
+
+    match /income/{docId} {
+      allow read: if request.auth != null && isOwner(resource);
+      allow create: if request.auth != null && isOwnerIncoming();
+      allow update: if request.auth != null && isOwner(resource) && userIdUnchanged();
+      allow delete: if request.auth != null && isOwner(resource);
+    }
+
+    match /budgets/{docId} {
+      allow read: if request.auth != null && isOwner(resource);
+      allow create: if request.auth != null && isOwnerIncoming();
+      allow update: if request.auth != null && isOwner(resource) && userIdUnchanged();
+      allow delete: if request.auth != null && isOwner(resource);
+    }
+
+    match /savingGoals/{docId} {
+      allow read: if request.auth != null && isOwner(resource);
+      allow create: if request.auth != null && isOwnerIncoming();
+      allow update: if request.auth != null && isOwner(resource) && userIdUnchanged();
+      allow delete: if request.auth != null && isOwner(resource);
+    }
+
+    match /receipts/{docId} {
+      allow read: if request.auth != null && isOwner(resource);
+      allow create: if request.auth != null && isOwnerIncoming();
+      allow update: if request.auth != null && isOwner(resource) && userIdUnchanged();
+      allow delete: if request.auth != null && isOwner(resource);
+    }
+
+    match /notifications/{docId} {
+      allow read: if request.auth != null && isOwner(resource);
+      allow create: if request.auth != null && isOwnerIncoming();
+      allow update: if request.auth != null && isOwner(resource) && userIdUnchanged();
+      allow delete: if request.auth != null && isOwner(resource);
+    }
+
+    match /recurringTransactions/{docId} {
+      allow read: if request.auth != null && isOwner(resource);
+      allow create: if request.auth != null && isOwnerIncoming();
+      allow update: if request.auth != null && isOwner(resource) && userIdUnchanged();
+      allow delete: if request.auth != null && isOwner(resource);
+    }
+
+    match /subscriptions/{docId} {
+      allow read: if request.auth != null && isOwner(resource);
+      allow create: if request.auth != null && isOwnerIncoming();
+      allow update: if request.auth != null && isOwner(resource) && userIdUnchanged();
+      allow delete: if request.auth != null && isOwner(resource);
+    }
+
+    match /loans/{docId} {
+      allow read: if request.auth != null && isOwner(resource);
+      allow create: if request.auth != null && isOwnerIncoming();
+      allow update: if request.auth != null && isOwner(resource) && userIdUnchanged();
+      allow delete: if request.auth != null && isOwner(resource);
+    }
+
+    // Deny everything else
+    match /{document=**} {
+      allow read, write: if false;
     }
   }
 }

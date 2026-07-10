@@ -4,7 +4,7 @@ import { useState, useMemo } from 'react';
 import { useSubscriptions } from '@/hooks/useSubscriptions';
 import { useAuth } from '@/contexts/AuthContext';
 import { SubscriptionDialog } from '@/components/subscriptions/SubscriptionDialog';
-import { EmptyState, StatCard } from '@/components/shared';
+import { EmptyState, StatCard, ConfirmDeleteDialog } from '@/components/shared';
 import { Button } from '@/components/ui';
 import { Plus, Repeat, Pause, Play, Trash2, Calendar, CreditCard, Wallet, TrendingUp } from 'lucide-react';
 import { formatCurrency, formatDate } from '@/utils/format';
@@ -17,6 +17,7 @@ export default function SubscriptionsPage() {
   const { subscriptions, loading, totalMonthlyCost, totalYearlyCost, upcomingRenewals, addSubscription, updateSubscription, deleteSubscription, toggleStatus } = useSubscriptions();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<any>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const handleSubmit = async (data: any) => {
     if (editing) {
@@ -28,10 +29,8 @@ export default function SubscriptionsPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (confirm('Delete this subscription?')) {
-      await deleteSubscription(id);
-      toast.success('Subscription deleted');
-    }
+    await deleteSubscription(id);
+    setDeletingId(null);
   };
 
   const statusColors: Record<string, string> = {
@@ -175,7 +174,7 @@ export default function SubscriptionsPage() {
                     {sub.status === 'active' && <button onClick={() => toggleStatus(sub.id, 'paused')} className="p-1.5 rounded-lg hover:bg-white/5" title="Pause"><Pause className="h-3.5 w-3.5 text-[#FBBF24]" /></button>}
                     {sub.status === 'paused' && <button onClick={() => toggleStatus(sub.id, 'active')} className="p-1.5 rounded-lg hover:bg-white/5" title="Resume"><Play className="h-3.5 w-3.5 text-[#00D09C]" /></button>}
                     <button onClick={() => { setEditing(sub); setDialogOpen(true); }} className="p-1.5 rounded-lg hover:bg-white/5" title="Edit"><Repeat className="h-3.5 w-3.5 text-[#7C5CFF]" /></button>
-                    <button onClick={() => handleDelete(sub.id)} className="p-1.5 rounded-lg hover:bg-white/5" title="Delete"><Trash2 className="h-3.5 w-3.5 text-[#FF5A6E]" /></button>
+                    <button onClick={() => setDeletingId(sub.id)} className="p-1.5 rounded-lg hover:bg-white/5" title="Delete"><Trash2 className="h-3.5 w-3.5 text-[#FF5A6E]" /></button>
                   </div>
                 </div>
                 <div className="flex items-center justify-between">
@@ -203,6 +202,13 @@ export default function SubscriptionsPage() {
       onOpenChange={(o) => { if (!o) { setDialogOpen(false); setEditing(null); } }}
       onSubmit={handleSubmit}
       defaultValues={editing}
+    />
+    <ConfirmDeleteDialog
+      open={!!deletingId}
+      onOpenChange={(open) => { if (!open) setDeletingId(null); }}
+      onConfirm={() => deletingId && handleDelete(deletingId)}
+      title="Delete Subscription"
+      itemName={deletingId ? subscriptions.find(s => s.id === deletingId)?.name : undefined}
     />
     </>
   );

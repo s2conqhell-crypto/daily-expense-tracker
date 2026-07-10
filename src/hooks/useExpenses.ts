@@ -47,7 +47,7 @@ export function useExpenses() {
       const currentExpenses = [...expenses, { ...data, id: expenseId } as Expense];
       const created = await checkBudgetAlerts(user.uid, budgets, currentExpenses);
       created.forEach((title) => toast(title, { icon: '⚠️', duration: 5000 }));
-    } catch {}
+    } catch (e) { console.warn('[useExpenses] Budget alert check failed', e); }
     return expenseId;
   }, [user, expenses]);
 
@@ -59,6 +59,16 @@ export function useExpenses() {
     return firebaseService.expenses.delete(expenseId);
   }, []);
 
+  const duplicateExpense = useCallback(async (expenseId: string) => {
+    await firebaseService.expenses.duplicate(expenseId);
+    toast.success('Expense duplicated');
+  }, []);
+
+  const toggleFavoriteExpense = useCallback(async (expenseId: string, isFavorite: boolean) => {
+    await firebaseService.expenses.update(expenseId, { isFavorite });
+    toast.success(isFavorite ? 'Marked as favorite' : 'Removed from favorites');
+  }, []);
+
   return {
     expenses,
     loading,
@@ -67,5 +77,7 @@ export function useExpenses() {
     addExpense,
     updateExpense,
     deleteExpense,
+    duplicateExpense,
+    toggleFavoriteExpense,
   };
 }

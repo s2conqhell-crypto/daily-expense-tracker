@@ -17,12 +17,16 @@ interface MobileTransactionItemProps {
   type: 'expense' | 'income';
   category?: string;
   currency?: string;
+  isFavorite?: boolean;
   onEdit?: () => void;
   onDelete?: () => void;
+  onDuplicate?: () => void;
+  onToggleFavorite?: () => void;
+  onShare?: () => void;
 }
 
 export function MobileTransactionItem({
-  description, amount, date, type, category, currency, onEdit, onDelete,
+  description, amount, date, type, category, currency, isFavorite, onEdit, onDelete, onDuplicate, onToggleFavorite, onShare,
 }: MobileTransactionItemProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const isIncome = type === 'income';
@@ -116,9 +120,9 @@ export function MobileTransactionItem({
           <div className="space-y-1">
             {[
               { icon: Pencil, label: 'Edit', action: () => { setMenuOpen(false); setTimeout(() => onEdit?.(), 200); }, color: '#7c5cff' },
-              { icon: Copy, label: 'Duplicate', action: () => setMenuOpen(false), color: '#3b82f6' },
-              { icon: Star, label: 'Mark as Favorite', action: () => setMenuOpen(false), color: '#ffb020' },
-              { icon: Share2, label: 'Share', action: () => setMenuOpen(false), color: '#00d09c' },
+              { icon: Copy, label: 'Duplicate', action: () => { setMenuOpen(false); setTimeout(() => onDuplicate?.(), 200); }, color: '#3b82f6' },
+              { icon: Star, label: isFavorite ? 'Remove from Favorites' : 'Mark as Favorite', action: () => { setMenuOpen(false); setTimeout(() => onToggleFavorite?.(), 200); }, color: '#ffb020' },
+              { icon: Share2, label: 'Share', action: () => { setMenuOpen(false); setTimeout(() => onShare?.(), 200); }, color: '#00d09c' },
               { icon: Trash2, label: 'Delete', action: () => { setMenuOpen(false); setTimeout(() => onDelete?.(), 200); }, color: '#ff5a7a' },
             ].map(({ icon: Icon, label, action, color: iconColor }) => (
               <button

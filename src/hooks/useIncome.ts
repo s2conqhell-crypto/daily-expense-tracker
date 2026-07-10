@@ -38,5 +38,15 @@ export function useIncome() {
     toast.success('Income deleted');
   }, []);
 
-  return { incomes, loading, error, addIncome, updateIncome, deleteIncome };
+  const duplicateIncome = useCallback(async (incomeId: string) => {
+    await firebaseService.income.duplicate(incomeId);
+    toast.success('Income duplicated');
+  }, []);
+
+  const toggleFavoriteIncome = useCallback(async (incomeId: string, isFavorite: boolean) => {
+    await firebaseService.income.update(incomeId, { isFavorite });
+    toast.success(isFavorite ? 'Marked as favorite' : 'Removed from favorites');
+  }, []);
+
+  return { incomes, loading, error, addIncome, updateIncome, deleteIncome, duplicateIncome, toggleFavoriteIncome };
 }

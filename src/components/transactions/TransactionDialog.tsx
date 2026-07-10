@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { Button, Input, Label, Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui';
 import { MobileFormSheet } from '@/components/mobile/MobileFormSheet';
 import { EXPENSE_CATEGORIES, INCOME_SOURCES, PAYMENT_METHODS, RECURRING_INTERVALS } from '@/constants';
+import { stripHtml } from '@/utils/helpers';
 import toast from 'react-hot-toast';
 
 type TransactionType = 'expense' | 'income';
@@ -44,10 +45,13 @@ export function TransactionDialog({ type, open, onOpenChange, onSubmit, defaultV
     try {
       const parsedAmount = parseFloat(form.amount as string);
       if (isNaN(parsedAmount)) throw new Error('Invalid amount');
+      const description = stripHtml(String(form.description || '')).trim().slice(0, 200);
+      if (!description) { toast.error('Description is required'); setLoading(false); return; }
+      const notes = stripHtml(String(form.notes || '')).trim().slice(0, 500);
       const data: Record<string, unknown> = {
         amount: parsedAmount,
-        description: form.description,
-        ...((form.notes as string) ? { notes: form.notes as string } : {}),
+        description,
+        ...(notes ? { notes } : {}),
         paymentMethod: form.paymentMethod,
         isRecurring: form.isRecurring,
         ...(form.isRecurring ? { recurringInterval: form.recurringInterval } : {}),

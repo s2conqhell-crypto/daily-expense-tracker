@@ -4,28 +4,21 @@ import { usePathname } from 'next/navigation';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Sidebar } from './Sidebar';
 import { Header } from './Header';
-import { BottomNav } from './BottomNav';
 import { MobileHeader } from '@/components/mobile/MobileHeader';
 import { MobileBottomNav } from '@/components/mobile/MobileBottomNav';
-import { useIsMobile } from '@/hooks/useMediaQuery';
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const isMobile = useIsMobile();
 
   return (
     <div className="min-h-dvh bg-background">
-      {/* Desktop components */}
-      {!isMobile && <Sidebar />}
-      {!isMobile && <Header />}
-      {!isMobile && <BottomNav />}
+      <div className="hidden lg:block"><Sidebar /></div>
+      <div className="hidden lg:block"><Header /></div>
+      <div className="lg:hidden"><MobileHeader /></div>
+      <div className="lg:hidden"><MobileBottomNav /></div>
 
-      {/* Mobile components */}
-      {isMobile && <MobileHeader />}
-      {isMobile && <MobileBottomNav />}
-
-      <div className={`${!isMobile ? 'ml-[240px]' : ''} transition-all duration-300`}>
-        <main className={`${isMobile ? 'pt-0' : 'pt-6'} min-h-dvh`} style={isMobile ? { paddingBottom: 'calc(90px + env(safe-area-inset-bottom, 0px))' } : {}}>
+      <div className="lg:ml-[240px] transition-all duration-300">
+        <main className="lg:pt-6 min-h-dvh" style={{ paddingBottom: 'calc(90px + env(safe-area-inset-bottom, 0px))' }}>
           <AnimatePresence mode="wait">
             <motion.div
               key={pathname}

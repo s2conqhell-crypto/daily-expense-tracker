@@ -5,6 +5,7 @@ import { Button, Input, Label, Select, SelectTrigger, SelectValue, SelectContent
 import { MobileFormSheet } from '@/components/mobile/MobileFormSheet';
 import { SUBSCRIPTION_CATEGORIES } from '@/constants';
 import type { Subscription } from '@/types';
+import { stripHtml } from '@/utils/helpers';
 import toast from 'react-hot-toast';
 
 interface SubscriptionDialogProps {
@@ -45,16 +46,16 @@ export function SubscriptionDialog({ open, onOpenChange, onSubmit, defaultValues
       const yearlyCost = parseFloat(form.yearlyCost as string);
       if (isNaN(monthlyCost) || monthlyCost <= 0) throw new Error('Invalid monthly cost');
       await onSubmit({
-        name: form.name as string,
-        category: form.category as any,
-        customCategory: form.category === 'Custom' ? (form.customCategory as string) : undefined,
+        name: stripHtml(form.name as string),
+        category: stripHtml(form.category as any) as any,
+        customCategory: form.category === 'Custom' ? stripHtml(form.customCategory as string) : undefined,
         monthlyCost,
         yearlyCost: isNaN(yearlyCost) ? monthlyCost * 12 : yearlyCost,
         renewalDate: new Date(form.renewalDate as string),
         autoRenew: form.autoRenew as boolean,
         reminderEnabled: form.reminderEnabled as boolean,
         status: form.status as 'active' | 'paused' | 'expired',
-        notes: (form.notes as string) || undefined,
+        notes: stripHtml(form.notes as string) || undefined,
       });
       onOpenChange(false);
       toast.success(defaultValues ? 'Subscription updated' : 'Subscription added');

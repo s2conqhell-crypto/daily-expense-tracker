@@ -63,7 +63,7 @@ export default function DashboardPage() {
           upcomingEmis: loans.filter((l) => l.status === 'active' && l.nextEmiDate && toDate(l.nextEmiDate) >= now && toDate(l.nextEmiDate) <= next30).sort((a, b) => toDate(a.nextEmiDate!).getTime() - toDate(b.nextEmiDate!).getTime()).slice(0, 3),
           subTotal: subs.filter((s) => s.status === 'active').reduce((sum, s) => sum + s.monthlyCost, 0),
         });
-      } catch {}
+      } catch (e) { console.warn('[Dashboard] Failed to load extra data', e); }
     };
     load();
   }, [user]);
@@ -480,10 +480,10 @@ export default function DashboardPage() {
               if (dialogType === 'expense') {
                 await firebaseService.expenses.add(user!.uid, data as any);
               } else {
-                await firebaseService.income.add(user!.uid, data as any);
-              }
-            } catch {}
-            setDialogType(null);
+              await firebaseService.income.add(user!.uid, data as any);
+            }
+          } catch (e) { console.warn('[Dashboard] Quick add failed', e); }
+          setDialogType(null);
           }}
         />
       )}

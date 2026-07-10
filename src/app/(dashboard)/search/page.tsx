@@ -273,7 +273,7 @@ export default function SearchPage() {
           recurringInterval: editingExpense.recurringInterval || 'monthly',
         }}
         onSubmit={async (data) => {
-          try { await updateExpense(editingExpense.id, data as Partial<Expense>); setEditingId(null); } catch {}
+          try { await updateExpense(editingExpense.id, data as Partial<Expense>); setEditingId(null); } catch (e) { console.warn('[Search] Edit save failed', e); }
         }}
       />
     )}
