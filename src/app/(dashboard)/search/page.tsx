@@ -8,7 +8,7 @@ import { TransactionDialog } from '@/components/transactions/TransactionDialog';
 import { AnimatedContainer, AnimatedItem, TransactionActionMenu, ConfirmDeleteDialog } from '@/components/shared';
 import { Search as SearchIcon, Receipt, X, Pencil, Trash2 } from 'lucide-react';
 import { formatCurrency, formatDate } from '@/utils/format';
-import { toDate } from '@/utils/helpers';
+import { toDate, safeDateInput } from '@/utils/helpers';
 import { EXPENSE_CATEGORIES, PAYMENT_METHODS } from '@/constants';
 import type { Expense } from '@/types';
 
@@ -268,7 +268,7 @@ export default function SearchPage() {
         defaultValues={{
           amount: String(editingExpense.amount), description: editingExpense.description,
           notes: editingExpense.notes || '', category: editingExpense.category,
-          expenseDate: toDate(editingExpense.expenseDate).toISOString().split('T')[0],
+          expenseDate: safeDateInput(editingExpense.expenseDate),
           paymentMethod: editingExpense.paymentMethod, isRecurring: editingExpense.isRecurring,
           recurringInterval: editingExpense.recurringInterval || 'monthly',
         }}

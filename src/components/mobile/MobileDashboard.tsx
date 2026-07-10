@@ -13,7 +13,7 @@ import {
   
 } from 'lucide-react';
 import { formatCurrency, formatDate } from '@/utils/format';
-import { toDate } from '@/utils/helpers';
+import { toDate, safeDateInput } from '@/utils/helpers';
 import { AnimatedCounter, ConfirmDeleteDialog } from '@/components/shared';
 import { TransactionDialog } from '@/components/transactions/TransactionDialog';
 import { MobileBalanceCard } from './MobileBalanceCard';
@@ -356,8 +356,8 @@ export function MobileDashboard() {
             notes: (editingTx as any).notes || '',
             category: (editingTx as any).category || '',
             source: (editingTx as any).source || '',
-            expenseDate: toDate((editingTx as any).expenseDate || editingTx.createdAt).toISOString().split('T')[0],
-            incomeDate: toDate((editingTx as any).incomeDate || editingTx.createdAt).toISOString().split('T')[0],
+            expenseDate: safeDateInput((editingTx as any).expenseDate || editingTx.createdAt),
+            incomeDate: safeDateInput((editingTx as any).incomeDate || editingTx.createdAt),
             paymentMethod: (editingTx as any).paymentMethod || 'Cash',
             isRecurring: (editingTx as any).isRecurring || false,
             recurringInterval: (editingTx as any).recurringInterval || 'monthly',

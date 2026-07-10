@@ -12,7 +12,7 @@ import {
   Check, X, Download, Clock, MoreVertical,
 } from 'lucide-react';
 import { formatCurrency, formatDate } from '@/utils/format';
-import { toDate } from '@/utils/helpers';
+import { toDate, safeDateInput } from '@/utils/helpers';
 import { EXPENSE_CATEGORIES } from '@/constants';
 import { useIsMobile } from '@/hooks/useMediaQuery';
 import type { Expense, SortOption } from '@/types';
@@ -102,7 +102,7 @@ export default function ExpensesPage() {
       .filter((e) => {
         if (categoryFilter !== 'all' && e.category !== categoryFilter) return false;
         if (search && !e.description.toLowerCase().includes(search.toLowerCase()) && !e.notes?.toLowerCase().includes(search.toLowerCase())) return false;
-        const d = toDate(e.expenseDate).toISOString().split('T')[0];
+        const d = safeDateInput(e.expenseDate);
         if (dateFilter === 'today' && d !== todayStr) return false;
         if (dateFilter === 'week' && d < startOfWeekStr) return false;
         if (dateFilter === 'month' && d < startOfMonthStr) return false;
@@ -123,8 +123,8 @@ export default function ExpensesPage() {
   const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
   const paged = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
-  const todayExpenses = expenses.filter((e) => toDate(e.expenseDate).toISOString().split('T')[0] === todayStr);
-  const monthlyExpenses = expenses.filter((e) => toDate(e.expenseDate).toISOString().split('T')[0] >= startOfMonthStr);
+  const todayExpenses = expenses.filter((e) => safeDateInput(e.expenseDate) === todayStr);
+  const monthlyExpenses = expenses.filter((e) => safeDateInput(e.expenseDate) >= startOfMonthStr);
   const highestExpense = expenses.length > 0 ? Math.max(...expenses.map((e) => e.amount)) : 0;
   const avgExpense = expenses.length > 0 ? expenses.reduce((s, e) => s + e.amount, 0) / expenses.length : 0;
 
@@ -516,7 +516,7 @@ export default function ExpensesPage() {
         defaultValues={{
           amount: String(editingExpense.amount), description: editingExpense.description,
           notes: editingExpense.notes || '', category: editingExpense.category,
-          expenseDate: toDate(editingExpense.expenseDate).toISOString().split('T')[0],
+          expenseDate: safeDateInput(editingExpense.expenseDate),
           paymentMethod: editingExpense.paymentMethod, isRecurring: editingExpense.isRecurring,
           recurringInterval: editingExpense.recurringInterval || 'monthly',
         }}

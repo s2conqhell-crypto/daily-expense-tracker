@@ -6,6 +6,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { Bell, Moon, Sun, Shield, Trash2, CreditCard, Globe, Download, Upload, FileSpreadsheet } from 'lucide-react';
 import { CURRENCIES, LANGUAGES } from '@/constants';
+import { safeDateInput } from '@/utils/helpers';
 import toast from 'react-hot-toast';
 
 export default function SettingsPage() {
@@ -73,7 +74,7 @@ export default function SettingsPage() {
       const expenses = await firebaseService.expenses.getAll(user.uid);
       const headers = ['Date', 'Description', 'Category', 'Amount', 'Payment Method', 'Notes'];
       const rows = expenses.map((e: any) => [
-        new Date(e.expenseDate?.seconds ? e.expenseDate.seconds * 1000 : e.expenseDate).toISOString().split('T')[0],
+        safeDateInput(e.expenseDate),
         `"${(e.description || '').replace(/"/g, '""')}"`,
         `"${(e.category || '').replace(/"/g, '""')}"`,
         e.amount,

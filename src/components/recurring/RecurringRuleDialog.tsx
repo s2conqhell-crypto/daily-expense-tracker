@@ -5,7 +5,7 @@ import { Button, Input, Label, Select, SelectTrigger, SelectValue, SelectContent
 import { MobileFormSheet } from '@/components/mobile/MobileFormSheet';
 import { EXPENSE_CATEGORIES, INCOME_SOURCES, PAYMENT_METHODS } from '@/constants';
 import type { RecurringTransaction } from '@/types';
-import { toDate, stripHtml } from '@/utils/helpers';
+import { toDate, stripHtml, safeDateInput } from '@/utils/helpers';
 import toast from 'react-hot-toast';
 
 interface RecurringRuleDialogProps {
@@ -25,7 +25,7 @@ const defaultForm = (defaults?: RecurringTransaction) => ({
   paymentMethod: defaults?.paymentMethod || 'Cash',
   interval: defaults?.interval || 'monthly',
   dayOfMonth: defaults?.dayOfMonth?.toString() || new Date().getDate().toString(),
-  nextExecution: defaults?.nextExecution ? toDate(defaults.nextExecution).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+  nextExecution: safeDateInput(defaults?.nextExecution) || new Date().toISOString().split('T')[0],
   isActive: defaults?.isActive ?? true,
 });
 

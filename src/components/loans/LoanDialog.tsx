@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { Button, Input, Label } from '@/components/ui';
 import { MobileFormSheet } from '@/components/mobile/MobileFormSheet';
 import type { Loan } from '@/types';
-import { toDate, stripHtml } from '@/utils/helpers';
+import { toDate, stripHtml, safeDateInput } from '@/utils/helpers';
 import toast from 'react-hot-toast';
 
 interface LoanDialogProps {
@@ -21,7 +21,7 @@ const defaultForm = (defaults?: Loan) => ({
   emiAmount: defaults?.emiAmount?.toString() || '',
   totalEmi: defaults?.totalEmi?.toString() || '',
   outstandingBalance: defaults?.outstandingBalance?.toString() || '',
-  startDate: defaults?.startDate ? toDate(defaults.startDate).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+  startDate: safeDateInput(defaults?.startDate) || new Date().toISOString().split('T')[0],
   emiDay: defaults?.emiDay?.toString() || '',
   notes: defaults?.notes || '',
 });

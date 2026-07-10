@@ -8,7 +8,7 @@ import { MobileFormSheet } from '@/components/mobile/MobileFormSheet';
 import { TransactionActionMenu, ConfirmDeleteDialog } from '@/components/shared';
 import { Plus, PiggyBank, Target, Trash2, TrendingUp, CheckCircle, Pencil } from 'lucide-react';
 import { formatCurrency, formatDate } from '@/utils/format';
-import { toDate } from '@/utils/helpers';
+import { toDate, safeDateInput } from '@/utils/helpers';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
 
@@ -456,7 +456,7 @@ export default function SavingsPage() {
         </div>
         <div className="space-y-2">
           <Label>Target Date</Label>
-          <Input type="date" defaultValue={new Date(editingGoal.targetDate).toISOString().split('T')[0]} onChange={(e) => setNewGoal({ ...newGoal, targetDate: e.target.value })} />
+          <Input type="date" defaultValue={safeDateInput(editingGoal.targetDate)} onChange={(e) => setNewGoal({ ...newGoal, targetDate: e.target.value })} />
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-2">

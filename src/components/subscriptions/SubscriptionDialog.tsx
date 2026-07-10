@@ -5,7 +5,7 @@ import { Button, Input, Label, Select, SelectTrigger, SelectValue, SelectContent
 import { MobileFormSheet } from '@/components/mobile/MobileFormSheet';
 import { SUBSCRIPTION_CATEGORIES } from '@/constants';
 import type { Subscription } from '@/types';
-import { stripHtml } from '@/utils/helpers';
+import { stripHtml, safeDateInput } from '@/utils/helpers';
 import toast from 'react-hot-toast';
 
 interface SubscriptionDialogProps {
@@ -21,7 +21,7 @@ const defaultForm = (defaults?: Subscription) => ({
   customCategory: defaults?.customCategory || '',
   monthlyCost: defaults?.monthlyCost?.toString() || '',
   yearlyCost: defaults?.yearlyCost?.toString() || '',
-  renewalDate: defaults?.renewalDate ? new Date(defaults.renewalDate).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+  renewalDate: safeDateInput(defaults?.renewalDate) || new Date().toISOString().split('T')[0],
   autoRenew: defaults?.autoRenew ?? true,
   reminderEnabled: defaults?.reminderEnabled ?? true,
   status: defaults?.status || 'active',

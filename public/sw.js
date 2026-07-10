@@ -22,6 +22,23 @@ self.addEventListener('activate', (event) => {
   );
 });
 
+function isCacheable(request) {
+  if (request.method !== 'GET') return false;
+  if (request.url.includes('/__/auth/')) return false;
+  if (request.url.includes('googleapis.com/identitytoolkit')) return false;
+  if (request.url.includes('securetoken.googleapis.com')) return false;
+  if (request.url.includes('firestore.googleapis.com/google.firestore')) return false;
+  return true;
+}
+
+function cacheResponse(request, response, cacheName) {
+  if (!isCacheable(request)) return;
+  if (!response || response.status !== 200) return;
+  if (response.type === 'opaqueredirect' || response.type === 'error') return;
+  const clone = response.clone();
+  caches.open(cacheName).then((cache) => cache.put(request, clone));
+}
+
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
@@ -31,10 +48,7 @@ self.addEventListener('fetch', (event) => {
       event.respondWith(
         caches.match(request).then((cached) => {
           const fetchPromise = fetch(request).then((response) => {
-            if (response && response.status === 200) {
-              const clone = response.clone();
-              caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
-            }
+            cacheResponse(request, response, CACHE_NAME);
             return response;
           }).catch(() => cached);
           return cached || fetchPromise;
@@ -47,10 +61,7 @@ self.addEventListener('fetch', (event) => {
       event.respondWith(
         caches.match(request).then((cached) => {
           const fetchPromise = fetch(request).then((response) => {
-            if (response && response.status === 200) {
-              const clone = response.clone();
-              caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
-            }
+            cacheResponse(request, response, CACHE_NAME);
             return response;
           });
           return cached || fetchPromise;
@@ -64,10 +75,7 @@ self.addEventListener('fetch', (event) => {
     event.respondWith(
       caches.open(API_CACHE_NAME).then((cache) => {
         return fetch(request).then((response) => {
-          if (response && response.status === 200) {
-            const clone = response.clone();
-            cache.put(request, clone);
-          }
+          cacheResponse(request, response, API_CACHE_NAME);
           return response;
         }).catch(() => cache.match(request));
       })

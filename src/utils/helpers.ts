@@ -204,3 +204,13 @@ export const sanitizeObject = <T extends Record<string, unknown>>(obj: T, fields
 export const stripHtml = (value: string): string => {
   return value.replace(/<[^>]*>/g, '');
 };
+
+export const safeDateInput = (value: unknown): string => {
+  const d = toDate(value);
+  if (isNaN(d.getTime())) return '';
+  return d.toISOString().split('T')[0];
+};
+
+export const isValidDate = (d: Date): boolean => {
+  return d instanceof Date && !isNaN(d.getTime());
+};

@@ -12,7 +12,7 @@ import {
   Check, X, Download,
 } from 'lucide-react';
 import { formatCurrency, formatDate } from '@/utils/format';
-import { toDate } from '@/utils/helpers';
+import { toDate, safeDateInput } from '@/utils/helpers';
 import { useIsMobile } from '@/hooks/useMediaQuery';
 import type { Income, SortOption } from '@/types';
 import toast from 'react-hot-toast';
@@ -375,7 +375,7 @@ export default function IncomePage() {
         defaultValues={{
           amount: String(editingIncome.amount), description: editingIncome.description,
           notes: editingIncome.notes || '', source: editingIncome.source,
-          incomeDate: toDate(editingIncome.incomeDate).toISOString().split('T')[0],
+          incomeDate: safeDateInput(editingIncome.incomeDate),
           paymentMethod: editingIncome.paymentMethod, isRecurring: editingIncome.isRecurring,
           recurringInterval: editingIncome.recurringInterval || 'monthly',
         }}
