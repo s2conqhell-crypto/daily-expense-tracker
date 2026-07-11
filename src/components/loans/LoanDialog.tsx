@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { Input } from '@/components/ui';
-import { UniversalFormDialog, FormField } from '@/components/shared';
+import { UniversalFormDialog } from '@/components/shared';
+import { CurrencyInput, FormInput, FormDatePicker, FormTextarea, FormSection } from '@/components/ui/forms';
 import type { Loan } from '@/types';
 import { toDate, stripHtml, safeDateInput, cn } from '@/utils/helpers';
 import toast from 'react-hot-toast';
@@ -129,51 +129,102 @@ export function LoanDialog({ open, onOpenChange, onSubmit, defaultValues }: Loan
       onSubmit={handleSubmit}
       onCancel={() => onOpenChange(false)}
     >
-      <FormField label="Loan Name" htmlFor="name" required error={errors.name}>
-        <Input id="name" placeholder="Home Loan, Car Loan, ..." value={form.name} onChange={(e) => set('name', e.target.value)}
-          data-autofocus aria-invalid={!!errors.name} className={cn(errors.name && 'border-destructive')} />
-      </FormField>
+      <FormInput
+        id="name"
+        label="Loan Name"
+        placeholder="Home Loan, Car Loan, ..."
+        value={form.name}
+        onChange={(e) => set('name', e.target.value)}
+        error={errors.name}
+        required
+        data-autofocus
+      />
 
-      <div className="grid grid-cols-2 gap-3">
-        <FormField label="Principal Amount" htmlFor="principalAmount" required error={errors.principalAmount}>
-          <Input id="principalAmount" type="number" step="0.01" min="0" placeholder="0.00" value={form.principalAmount} onChange={(e) => set('principalAmount', e.target.value)}
-            aria-invalid={!!errors.principalAmount} className={cn(errors.principalAmount && 'border-destructive')} />
-        </FormField>
-        <FormField label="Interest Rate (%)" htmlFor="interestRate">
-          <Input id="interestRate" type="number" step="0.01" min="0" placeholder="0" value={form.interestRate} onChange={(e) => set('interestRate', e.target.value)} />
-        </FormField>
-      </div>
+      <CurrencyInput
+        id="principalAmount"
+        label="Principal Amount"
+        value={form.principalAmount}
+        onChange={(v) => set('principalAmount', v)}
+        error={errors.principalAmount}
+        required
+      />
 
-      <div className="grid grid-cols-2 gap-3">
-        <FormField label="EMI Amount" htmlFor="emiAmount" charCount={{ current: computedEMI > 0 && !form.emiAmount ? computedEMI.toFixed(2).length : 0, max: 0 }}>
-          <Input id="emiAmount" type="number" step="0.01" min="0" placeholder={computedEMI ? computedEMI.toFixed(2) : '0.00'} value={form.emiAmount} onChange={(e) => set('emiAmount', e.target.value)} />
-          {computedEMI > 0 && !form.emiAmount && (
-            <p className="text-[10px] text-muted-foreground">Calculated: {computedEMI.toFixed(2)}</p>
-          )}
-        </FormField>
-        <FormField label="Total EMI" htmlFor="totalEmi" required error={errors.totalEmi}>
-          <Input id="totalEmi" type="number" min="1" placeholder="60" value={form.totalEmi} onChange={(e) => set('totalEmi', e.target.value)}
-            aria-invalid={!!errors.totalEmi} className={cn(errors.totalEmi && 'border-destructive')} />
-        </FormField>
-      </div>
+      <FormInput
+        id="interestRate"
+        label="Interest Rate (%)"
+        type="number"
+        step="0.01"
+        min="0"
+        placeholder="0"
+        value={form.interestRate}
+        onChange={(e) => set('interestRate', e.target.value)}
+        helperText="Leave at 0 if unknown. EMI can be entered manually."
+      />
 
-      <div className="grid grid-cols-2 gap-3">
-        <FormField label="Outstanding Balance" htmlFor="outstandingBalance">
-          <Input id="outstandingBalance" type="number" step="0.01" min="0" placeholder="Same as principal" value={form.outstandingBalance} onChange={(e) => set('outstandingBalance', e.target.value)} />
-        </FormField>
-        <FormField label="Start Date" htmlFor="startDate" required error={errors.startDate}>
-          <Input id="startDate" type="date" value={form.startDate} onChange={(e) => set('startDate', e.target.value)}
-            aria-invalid={!!errors.startDate} className={cn(errors.startDate && 'border-destructive')} />
-        </FormField>
-      </div>
+      <FormSection title="Repayment Details">
+        <CurrencyInput
+          id="emiAmount"
+          label="EMI Amount"
+          value={form.emiAmount}
+          onChange={(v) => set('emiAmount', v)}
+          placeholder={computedEMI ? computedEMI.toFixed(2) : '0.00'}
+        />
+        {computedEMI > 0 && !form.emiAmount && (
+          <p className="text-[12px] text-[#7c5cff] -mt-2">Calculated EMI: {computedEMI.toFixed(2)}</p>
+        )}
 
-      <FormField label="EMI Due Day" htmlFor="emiDay">
-        <Input id="emiDay" type="number" min="1" max="31" placeholder="Day of month (leave empty for start date day)" value={form.emiDay} onChange={(e) => set('emiDay', e.target.value)} />
-      </FormField>
+        <FormInput
+          id="totalEmi"
+          label="Total Number of EMIs"
+          type="number"
+          min="1"
+          placeholder="60"
+          value={form.totalEmi}
+          onChange={(e) => set('totalEmi', e.target.value)}
+          error={errors.totalEmi}
+          required
+        />
 
-      <FormField label="Notes" htmlFor="notes" charCount={{ current: form.notes.length, max: 500 }}>
-        <Input id="notes" placeholder="Add a note..." value={form.notes} onChange={(e) => set('notes', e.target.value)} />
-      </FormField>
+        <CurrencyInput
+          id="outstandingBalance"
+          label="Outstanding Balance"
+          value={form.outstandingBalance}
+          onChange={(v) => set('outstandingBalance', v)}
+          placeholder="Same as principal"
+        />
+      </FormSection>
+
+      <FormSection title="Schedule">
+        <FormDatePicker
+          id="startDate"
+          label="Start Date"
+          value={form.startDate}
+          onChange={(v) => set('startDate', v)}
+          error={errors.startDate}
+          required
+        />
+
+        <FormInput
+          id="emiDay"
+          label="EMI Due Day"
+          type="number"
+          min="1"
+          max="31"
+          placeholder="Day of month (leave empty for start date day)"
+          value={form.emiDay}
+          onChange={(e) => set('emiDay', e.target.value)}
+        />
+      </FormSection>
+
+      <FormTextarea
+        id="notes"
+        label="Notes"
+        placeholder="Add a note..."
+        value={form.notes}
+        onChange={(e) => set('notes', e.target.value)}
+        charCount={{ current: form.notes.length, max: 500 }}
+        hideCharUntilTyping
+      />
     </UniversalFormDialog>
   );
 }

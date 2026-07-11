@@ -1,11 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Input, Select, SelectTrigger, SelectValue, SelectContent, SelectItem, ToggleSwitch } from '@/components/ui';
-import { UniversalFormDialog, FormField } from '@/components/shared';
+import { UniversalFormDialog } from '@/components/shared';
+import { CurrencyInput, FormInput, FormSelect, FormDatePicker, FormSwitch, FormTextarea, FormSection } from '@/components/ui/forms';
 import { EXPENSE_CATEGORIES, INCOME_SOURCES, PAYMENT_METHODS } from '@/constants';
 import type { RecurringTransaction } from '@/types';
-import { toDate, stripHtml, safeDateInput, cn } from '@/utils/helpers';
+import { toDate, stripHtml, safeDateInput } from '@/utils/helpers';
 import toast from 'react-hot-toast';
 
 interface RecurringRuleDialogProps {
@@ -30,6 +30,22 @@ const defaultForm = (defaults?: RecurringTransaction): FormState => ({
   nextExecution: safeDateInput(defaults?.nextExecution) || new Date().toISOString().split('T')[0],
   isActive: defaults?.isActive ?? true,
 });
+
+const typeOptions = [
+  { value: 'expense', label: 'Expense' },
+  { value: 'income', label: 'Income' },
+];
+
+const intervalOptions = [
+  { value: 'daily', label: 'Daily' },
+  { value: 'weekly', label: 'Weekly' },
+  { value: 'monthly', label: 'Monthly' },
+  { value: 'yearly', label: 'Yearly' },
+];
+
+const paymentOptions = PAYMENT_METHODS.map((p) => ({ value: p, label: p }));
+const catOptions = EXPENSE_CATEGORIES.map((c) => ({ value: c, label: c }));
+const sourceOptions = INCOME_SOURCES.map((s) => ({ value: s, label: s }));
 
 export function RecurringRuleDialog({ open, onOpenChange, onSubmit, defaultValues }: RecurringRuleDialogProps) {
   const [form, setForm] = useState<FormState>(defaultForm(defaultValues));
@@ -96,90 +112,98 @@ export function RecurringRuleDialog({ open, onOpenChange, onSubmit, defaultValue
       onSubmit={handleSubmit}
       onCancel={() => onOpenChange(false)}
     >
-      <div className="grid grid-cols-2 gap-3">
-        <FormField label="Type" htmlFor="type-select">
-          <Select value={form.type as string} onValueChange={(v) => set('type', v)}>
-            <SelectTrigger id="type-select"><SelectValue /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="expense">Expense</SelectItem>
-              <SelectItem value="income">Income</SelectItem>
-            </SelectContent>
-          </Select>
-        </FormField>
-        <FormField label="Amount" htmlFor="amount" required error={errors.amount}>
-          <Input id="amount" type="number" step="0.01" min="0" placeholder="0.00" value={form.amount as string} onChange={(e) => set('amount', e.target.value)}
-            data-autofocus aria-invalid={!!errors.amount} className={cn(errors.amount && 'border-destructive')} />
-        </FormField>
-      </div>
+      <FormSelect
+        id="type-select"
+        label="Type"
+        value={form.type as string}
+        onValueChange={(v) => set('type', v)}
+        options={typeOptions}
+      />
 
-      <FormField label="Description" htmlFor="description" required error={errors.description} charCount={{ current: (form.description as string).length, max: 200 }}>
-        <Input id="description" placeholder="What is this for?" value={form.description as string} onChange={(e) => set('description', e.target.value)}
-          aria-invalid={!!errors.description} className={cn(errors.description && 'border-destructive')} />
-      </FormField>
+      <CurrencyInput
+        id="amount"
+        label="Amount"
+        value={form.amount as string}
+        onChange={(v) => set('amount', v)}
+        error={errors.amount}
+        required
+        autoFocus
+      />
 
-      <div className="grid grid-cols-2 gap-3">
-        {form.type === 'expense' ? (
-          <FormField label="Category" htmlFor="category-select">
-            <Select value={form.category as string} onValueChange={(v) => set('category', v)}>
-              <SelectTrigger id="category-select"><SelectValue /></SelectTrigger>
-              <SelectContent>
-                {EXPENSE_CATEGORIES.map((cat) => (<SelectItem key={cat} value={cat}>{cat}</SelectItem>))}
-              </SelectContent>
-            </Select>
-          </FormField>
-        ) : (
-          <FormField label="Source" htmlFor="source-select">
-            <Select value={form.source as string} onValueChange={(v) => set('source', v)}>
-              <SelectTrigger id="source-select"><SelectValue /></SelectTrigger>
-              <SelectContent>
-                {INCOME_SOURCES.map((src) => (<SelectItem key={src} value={src}>{src}</SelectItem>))}
-              </SelectContent>
-            </Select>
-          </FormField>
-        )}
-        <FormField label="Payment Method" htmlFor="payment-select">
-          <Select value={form.paymentMethod as string} onValueChange={(v) => set('paymentMethod', v)}>
-            <SelectTrigger id="payment-select"><SelectValue /></SelectTrigger>
-            <SelectContent>
-              {PAYMENT_METHODS.map((pm) => (<SelectItem key={pm} value={pm}>{pm}</SelectItem>))}
-            </SelectContent>
-          </Select>
-        </FormField>
-      </div>
+      <FormInput
+        id="description"
+        label="Description"
+        placeholder="What is this for?"
+        value={form.description as string}
+        onChange={(e) => set('description', e.target.value)}
+        error={errors.description}
+        required
+        charCount={{ current: (form.description as string).length, max: 200 }}
+        hideCharUntilTyping
+      />
 
-      <div className="grid grid-cols-2 gap-3">
-        <FormField label="Interval" htmlFor="interval-select">
-          <Select value={form.interval as string} onValueChange={(v) => set('interval', v)}>
-            <SelectTrigger id="interval-select"><SelectValue /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="daily">Daily</SelectItem>
-              <SelectItem value="weekly">Weekly</SelectItem>
-              <SelectItem value="monthly">Monthly</SelectItem>
-              <SelectItem value="yearly">Yearly</SelectItem>
-            </SelectContent>
-          </Select>
-        </FormField>
-        <FormField label="Next Execution" htmlFor="nextExecution" required error={errors.nextExecution}>
-          <Input id="nextExecution" type="date" value={form.nextExecution as string} onChange={(e) => set('nextExecution', e.target.value)}
-            aria-invalid={!!errors.nextExecution} className={cn(errors.nextExecution && 'border-destructive')} />
-        </FormField>
-      </div>
+      <FormSelect
+        id="category-select"
+        label={form.type === 'expense' ? 'Category' : 'Source'}
+        value={form.type === 'expense' ? (form.category as string) : (form.source as string)}
+        onValueChange={(v) => set(form.type === 'expense' ? 'category' : 'source', v)}
+        options={form.type === 'expense' ? catOptions : sourceOptions}
+      />
+
+      <FormSelect
+        id="payment-select"
+        label="Payment Method"
+        value={form.paymentMethod as string}
+        onValueChange={(v) => set('paymentMethod', v)}
+        options={paymentOptions}
+      />
+
+      <FormSelect
+        id="interval-select"
+        label="Interval"
+        value={form.interval as string}
+        onValueChange={(v) => set('interval', v)}
+        options={intervalOptions}
+      />
 
       {form.interval === 'monthly' && (
-        <FormField label="Day of Month" htmlFor="dayOfMonth">
-          <Input id="dayOfMonth" type="number" min="1" max="31" placeholder="1-31" value={form.dayOfMonth as string} onChange={(e) => set('dayOfMonth', e.target.value)} />
-        </FormField>
+        <FormInput
+          id="dayOfMonth"
+          label="Day of Month"
+          type="number"
+          min="1"
+          max="31"
+          placeholder="1-31"
+          value={form.dayOfMonth as string}
+          onChange={(e) => set('dayOfMonth', e.target.value)}
+        />
       )}
 
-      <FormField label="Notes" htmlFor="notes" charCount={{ current: (form.notes as string).length, max: 500 }}>
-        <Input id="notes" placeholder="Add a note..." value={form.notes as string} onChange={(e) => set('notes', e.target.value)} />
-      </FormField>
+      <FormDatePicker
+        id="nextExecution"
+        label="Next Execution"
+        value={form.nextExecution as string}
+        onChange={(v) => set('nextExecution', v)}
+        error={errors.nextExecution}
+        required
+      />
 
-      <ToggleSwitch
+      <FormTextarea
+        id="notes"
+        label="Notes"
+        placeholder="Add a note..."
+        value={form.notes as string}
+        onChange={(e) => set('notes', e.target.value)}
+        charCount={{ current: (form.notes as string).length, max: 500 }}
+        hideCharUntilTyping
+      />
+
+      <FormSwitch
         id="isActive"
         checked={form.isActive as boolean}
         onChange={(v) => set('isActive', v)}
         label="Active"
+        description="Enable this recurring rule."
       />
     </UniversalFormDialog>
   );

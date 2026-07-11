@@ -6,6 +6,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button, Card, CardContent, Progress, Skeleton, Input, Label, Select, SelectTrigger, SelectValue, SelectContent, SelectItem, Badge } from '@/components/ui';
 import { UniversalFormDialog, FormField } from '@/components/shared';
 import { TransactionActionMenu, ConfirmDeleteDialog } from '@/components/shared';
+import { CurrencyInput, FormInput, FormDatePicker, FormSelect, FormTextarea } from '@/components/ui/forms';
 import { cn } from '@/utils/helpers';
 import { Plus, PiggyBank, Target, Trash2, TrendingUp, CheckCircle, Pencil } from 'lucide-react';
 import { formatCurrency, formatDate } from '@/utils/format';
@@ -371,54 +372,85 @@ function SavingsContent() {
     >
       {/* Presets */}
       <div>
-        <Label className="mb-2 block text-[13px] font-medium">Quick Select</Label>
+        <div className="flex items-center gap-2 mb-3">
+          <div className="h-px flex-1 bg-white/[0.06]" />
+          <span className="text-[11px] font-semibold uppercase tracking-wider text-white/30">Quick Select</span>
+          <div className="h-px flex-1 bg-white/[0.06]" />
+        </div>
         <div className="grid grid-cols-3 gap-2">
           {PRESET_GOALS.map((preset) => (
             <button
               key={preset.name}
               type="button"
               onClick={() => selectPreset(preset)}
-              className={`flex flex-col items-center gap-1 rounded-xl p-2.5 text-xs transition-all border ${
+              className={`flex flex-col items-center gap-1 rounded-[14px] p-3 text-xs transition-all border ${
                 newGoal.name === preset.name
-                  ? 'border-primary bg-primary/10 text-primary'
-                  : 'border-border hover:border-primary/30 hover:bg-accent/50'
+                  ? 'border-[#7c5cff]/60 bg-[#7c5cff]/10 text-[#7c5cff]'
+                  : 'border-white/[0.06] hover:border-white/[0.12] bg-[#1E2235]/30'
               }`}
             >
               <span className="text-lg">{preset.icon}</span>
-              <span className="font-medium leading-tight text-center">{preset.name}</span>
+              <span className="font-medium leading-tight text-center text-white/80">{preset.name}</span>
             </button>
           ))}
         </div>
       </div>
-      <FormField label="Goal Name" htmlFor="goal-name" required={!newGoal.name}>
-        <Input id="goal-name" placeholder="e.g. Emergency Fund" value={newGoal.name} onChange={(e) => setNewGoal({ ...newGoal, name: e.target.value })} data-autofocus />
-      </FormField>
-      <FormField label="Description (optional)" htmlFor="goal-desc" charCount={{ current: newGoal.description.length, max: 200 }}>
-        <Input id="goal-desc" placeholder="Why are you saving?" value={newGoal.description} onChange={(e) => setNewGoal({ ...newGoal, description: e.target.value })} />
-      </FormField>
-      <div className="grid grid-cols-2 gap-3">
-        <FormField label="Target Amount" htmlFor="goal-amount" required={!newGoal.targetAmount}>
-          <Input id="goal-amount" type="number" min="0" step="0.01" placeholder="Amount" value={newGoal.targetAmount} onChange={(e) => setNewGoal({ ...newGoal, targetAmount: e.target.value })} />
-        </FormField>
-        <FormField label="Target Date" htmlFor="goal-date" required={!newGoal.targetDate}>
-          <Input id="goal-date" type="date" value={newGoal.targetDate} onChange={(e) => setNewGoal({ ...newGoal, targetDate: e.target.value })} />
-        </FormField>
-      </div>
-      <div className="grid grid-cols-2 gap-3">
-        <FormField label="Monthly Contribution" htmlFor="goal-monthly">
-          <Input id="goal-monthly" type="number" min="0" step="0.01" placeholder="Amount per month" value={newGoal.monthlyContribution} onChange={(e) => setNewGoal({ ...newGoal, monthlyContribution: e.target.value })} />
-        </FormField>
-        <FormField label="Priority" htmlFor="goal-priority">
-          <Select value={newGoal.priority} onValueChange={(v) => setNewGoal({ ...newGoal, priority: v })}>
-            <SelectTrigger id="goal-priority"><SelectValue /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="high">High</SelectItem>
-              <SelectItem value="medium">Medium</SelectItem>
-              <SelectItem value="low">Low</SelectItem>
-            </SelectContent>
-          </Select>
-        </FormField>
-      </div>
+
+      <FormInput
+        id="goal-name"
+        label="Goal Name"
+        placeholder="e.g. Emergency Fund"
+        value={newGoal.name}
+        onChange={(e) => setNewGoal({ ...newGoal, name: e.target.value })}
+        required
+        data-autofocus
+      />
+
+      <FormInput
+        id="goal-desc"
+        label="Description"
+        placeholder="Why are you saving?"
+        value={newGoal.description}
+        onChange={(e) => setNewGoal({ ...newGoal, description: e.target.value })}
+        charCount={{ current: newGoal.description.length, max: 200 }}
+        hideCharUntilTyping
+      />
+
+      <CurrencyInput
+        id="goal-amount"
+        label="Target Amount"
+        value={newGoal.targetAmount}
+        onChange={(v) => setNewGoal({ ...newGoal, targetAmount: v })}
+        required
+      />
+
+      <FormDatePicker
+        id="goal-date"
+        label="Target Date"
+        value={newGoal.targetDate}
+        onChange={(v) => setNewGoal({ ...newGoal, targetDate: v })}
+        required
+      />
+
+      <CurrencyInput
+        id="goal-monthly"
+        label="Monthly Contribution"
+        value={newGoal.monthlyContribution}
+        onChange={(v) => setNewGoal({ ...newGoal, monthlyContribution: v })}
+        placeholder="Amount per month"
+      />
+
+      <FormSelect
+        id="goal-priority"
+        label="Priority"
+        value={newGoal.priority}
+        onValueChange={(v) => setNewGoal({ ...newGoal, priority: v })}
+        options={[
+          { value: 'high', label: 'High' },
+          { value: 'medium', label: 'Medium' },
+          { value: 'low', label: 'Low' },
+        ]}
+      />
     </UniversalFormDialog>
 
     {/* Edit Goal */}
@@ -444,32 +476,45 @@ function SavingsContent() {
         }}
         onCancel={() => setEditingId(null)}
       >
-        <FormField label="Goal Name" htmlFor="edit-name">
-          <Input id="edit-name" placeholder="Name" defaultValue={editingGoal.name} onChange={(e) => setNewGoal({ ...newGoal, name: e.target.value })} data-autofocus />
-        </FormField>
-        <div className="grid grid-cols-2 gap-3">
-          <FormField label="Target Amount" htmlFor="edit-amount">
-            <Input id="edit-amount" type="number" min="0" step="0.01" placeholder="Amount" defaultValue={editingGoal.targetAmount} onChange={(e) => setNewGoal({ ...newGoal, targetAmount: e.target.value })} />
-          </FormField>
-          <FormField label="Target Date" htmlFor="edit-date">
-            <Input id="edit-date" type="date" defaultValue={safeDateInput(editingGoal.targetDate)} onChange={(e) => setNewGoal({ ...newGoal, targetDate: e.target.value })} />
-          </FormField>
-        </div>
-        <div className="grid grid-cols-2 gap-3">
-          <FormField label="Monthly Contribution" htmlFor="edit-monthly">
-            <Input id="edit-monthly" type="number" min="0" step="0.01" placeholder="Amount per month" defaultValue={editingGoal.monthlyContribution || ''} onChange={(e) => setNewGoal({ ...newGoal, monthlyContribution: e.target.value })} />
-          </FormField>
-          <FormField label="Priority" htmlFor="edit-priority">
-            <Select defaultValue={editingGoal.priority || 'medium'} onValueChange={(v) => setNewGoal({ ...newGoal, priority: v })}>
-              <SelectTrigger id="edit-priority"><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="high">High</SelectItem>
-                <SelectItem value="medium">Medium</SelectItem>
-                <SelectItem value="low">Low</SelectItem>
-              </SelectContent>
-            </Select>
-          </FormField>
-        </div>
+        <FormInput
+          id="edit-name"
+          label="Goal Name"
+          placeholder="Name"
+          defaultValue={editingGoal.name}
+          onChange={(e) => setNewGoal({ ...newGoal, name: e.target.value })}
+          data-autofocus
+        />
+        <CurrencyInput
+          id="edit-amount"
+          label="Target Amount"
+          value={newGoal.targetAmount || editingGoal.targetAmount.toString()}
+          onChange={(v) => setNewGoal({ ...newGoal, targetAmount: v })}
+          required
+        />
+        <FormDatePicker
+          id="edit-date"
+          label="Target Date"
+          value={newGoal.targetDate || safeDateInput(editingGoal.targetDate)}
+          onChange={(v) => setNewGoal({ ...newGoal, targetDate: v })}
+        />
+        <CurrencyInput
+          id="edit-monthly"
+          label="Monthly Contribution"
+          value={newGoal.monthlyContribution}
+          onChange={(v) => setNewGoal({ ...newGoal, monthlyContribution: v })}
+          placeholder="Amount per month"
+        />
+        <FormSelect
+          id="edit-priority"
+          label="Priority"
+          value={newGoal.priority || editingGoal.priority || 'medium'}
+          onValueChange={(v) => setNewGoal({ ...newGoal, priority: v })}
+          options={[
+            { value: 'high', label: 'High' },
+            { value: 'medium', label: 'Medium' },
+            { value: 'low', label: 'Low' },
+          ]}
+        />
       </UniversalFormDialog>
     )}
 

@@ -6,6 +6,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button, Card, CardContent, Progress, Badge, Skeleton, Input, Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui';
 import { UniversalFormDialog, FormField } from '@/components/shared';
 import { TransactionActionMenu, ConfirmDeleteDialog } from '@/components/shared';
+import { CurrencyInput, FormInput, FormSelect } from '@/components/ui/forms';
 import { cn } from '@/utils/helpers';
 import { Plus, Wallet, Target, AlertTriangle, Clock, CalendarDays, Trash2, Pencil } from 'lucide-react';
 import { formatCurrency } from '@/utils/format';
@@ -305,19 +306,23 @@ function BudgetsContent() {
       onSubmit={async (e) => { e.preventDefault(); handleCreateBudget(); }}
       onCancel={() => setShowCreate(false)}
     >
-      <FormField label="Category" htmlFor="budget-category" required={!newBudget.category}>
-        <Select value={newBudget.category} onValueChange={(v) => setNewBudget({ ...newBudget, category: v })}>
-          <SelectTrigger id="budget-category">
-            <SelectValue placeholder="Select category" />
-          </SelectTrigger>
-          <SelectContent>
-            {EXPENSE_CATEGORIES.map((cat) => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
-          </SelectContent>
-        </Select>
-      </FormField>
-      <FormField label="Monthly Limit" htmlFor="budget-amount" required>
-        <Input id="budget-amount" type="number" min="0" step="0.01" placeholder="Amount" value={newBudget.amount} onChange={(e) => setNewBudget({ ...newBudget, amount: e.target.value })} data-autofocus />
-      </FormField>
+      <FormSelect
+        id="budget-category"
+        label="Category"
+        value={newBudget.category}
+        onValueChange={(v) => setNewBudget({ ...newBudget, category: v })}
+        options={EXPENSE_CATEGORIES.map((c) => ({ value: c, label: c }))}
+        placeholder="Select category"
+        required
+      />
+      <CurrencyInput
+        id="budget-amount"
+        label="Monthly Limit"
+        value={newBudget.amount}
+        onChange={(v) => setNewBudget({ ...newBudget, amount: v })}
+        required
+        autoFocus
+      />
     </UniversalFormDialog>
 
     {editingBudget && (
@@ -336,12 +341,20 @@ function BudgetsContent() {
         }}
         onCancel={() => setEditingId(null)}
       >
-        <FormField label="Category" htmlFor="edit-category">
-          <Input id="edit-category" value={editingBudget.category} disabled className="opacity-50" />
-        </FormField>
-        <FormField label="Monthly Limit" htmlFor="edit-amount" required>
-          <Input id="edit-amount" type="number" min="0" step="0.01" placeholder="Amount" defaultValue={editingBudget.amount} onChange={(e) => setNewBudget({ ...newBudget, amount: e.target.value })} data-autofocus />
-        </FormField>
+        <FormInput
+          id="edit-category"
+          label="Category"
+          value={editingBudget.category}
+          disabled
+        />
+        <CurrencyInput
+          id="edit-amount"
+          label="Monthly Limit"
+          value={newBudget.amount}
+          onChange={(v) => setNewBudget({ ...newBudget, amount: v })}
+          required
+          autoFocus
+        />
       </UniversalFormDialog>
     )}
 
