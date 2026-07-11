@@ -6,7 +6,7 @@ import { useExpenses } from '@/hooks/useExpenses';
 import { Button, Card, CardContent, Input, Select, SelectTrigger, SelectValue, SelectContent, SelectItem, Badge, Skeleton } from '@/components/ui';
 import { TransactionDialog } from '@/components/transactions/TransactionDialog';
 import { AnimatedContainer, AnimatedItem, TransactionActionMenu, ConfirmDeleteDialog } from '@/components/shared';
-import { Search as SearchIcon, Receipt, X, Pencil, Trash2 } from 'lucide-react';
+import { Search as SearchIcon, Receipt, X, Pencil, Trash2, Star, Copy, Share2 } from 'lucide-react';
 import { formatCurrency, formatDate } from '@/utils/format';
 import { toDate, safeDateInput } from '@/utils/helpers';
 import { EXPENSE_CATEGORIES, PAYMENT_METHODS } from '@/constants';
@@ -14,7 +14,7 @@ import type { Expense } from '@/types';
 
 export default function SearchPage() {
   const { userData } = useAuth();
-  const { expenses, loading, deleteExpense, updateExpense } = useExpenses();
+  const { expenses, loading, deleteExpense, updateExpense, duplicateExpense, toggleFavoriteExpense } = useExpenses();
   const [query, setQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [methodFilter, setMethodFilter] = useState('all');
@@ -139,6 +139,9 @@ export default function SearchPage() {
                     <TransactionActionMenu
                       actions={[
                         { icon: Pencil, label: 'Edit', onClick: () => setEditingId(expense.id), color: '#7c5cff' },
+                        { icon: Star, label: (expense as any).isFavorite ? 'Remove from Favorites' : 'Add to Favorites', onClick: () => { const newVal = !(expense as any).isFavorite; toggleFavoriteExpense(expense.id, newVal).catch(() => {}); }, color: '#ffb020' },
+                        { icon: Copy, label: 'Duplicate', onClick: () => duplicateExpense(expense.id).catch(() => {}), color: '#3b82f6' },
+                        { icon: Share2, label: 'Share', onClick: () => { if (navigator.share) { navigator.share({ title: 'Expense', text: `${expense.description}: ${formatCurrency(expense.amount, userData?.currency)}` }); } }, color: '#10b981' },
                         { icon: Trash2, label: 'Delete', onClick: () => setDeletingId(expense.id), color: '#ff5a7a', destructive: true },
                       ]}
                     />
@@ -247,6 +250,9 @@ export default function SearchPage() {
                       <TransactionActionMenu
                         actions={[
                           { icon: Pencil, label: 'Edit', onClick: () => setEditingId(expense.id), color: '#7c5cff' },
+                          { icon: Star, label: (expense as any).isFavorite ? 'Remove from Favorites' : 'Add to Favorites', onClick: () => { const newVal = !(expense as any).isFavorite; toggleFavoriteExpense(expense.id, newVal).catch(() => {}); }, color: '#ffb020' },
+                          { icon: Copy, label: 'Duplicate', onClick: () => duplicateExpense(expense.id).catch(() => {}), color: '#3b82f6' },
+                          { icon: Share2, label: 'Share', onClick: () => { if (navigator.share) { navigator.share({ title: 'Expense', text: `${expense.description}: ${formatCurrency(expense.amount, userData?.currency)}` }); } }, color: '#10b981' },
                           { icon: Trash2, label: 'Delete', onClick: () => setDeletingId(expense.id), color: '#ff5a7a', destructive: true },
                         ]}
                       />

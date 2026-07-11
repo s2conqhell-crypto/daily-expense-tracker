@@ -143,13 +143,26 @@ function ReportsContent() {
           )}
         </div>
 
+        {/* Export actions */}
+        <div className="bg-[#161a27] rounded-[20px] border border-white/[0.06] p-5 card-shadow">
+          <h2 className="text-[15px] font-bold text-white mb-3">Export</h2>
+          <div className="grid grid-cols-3 gap-2">
+            <button onClick={printReport} className="touch-target flex flex-col items-center gap-1.5 rounded-xl bg-white/5 p-3 active:scale-95 transition-all"><Printer className="h-5 w-5 text-white/70" /><span className="text-[10px] text-[#6b7b8d] font-medium">Print</span></button>
+            <button onClick={exportCSV} className="touch-target flex flex-col items-center gap-1.5 rounded-xl bg-white/5 p-3 active:scale-95 transition-all"><FileSpreadsheet className="h-5 w-5 text-[#00d09c]" /><span className="text-[10px] text-[#6b7b8d] font-medium">CSV</span></button>
+            <button onClick={exportJSON} className="touch-target flex flex-col items-center gap-1.5 rounded-xl bg-white/5 p-3 active:scale-95 transition-all"><FileJson className="h-5 w-5 text-[#ffb020]" /><span className="text-[10px] text-[#6b7b8d] font-medium">JSON</span></button>
+            <button onClick={exportPDF} className="touch-target flex flex-col items-center gap-1.5 rounded-xl bg-white/5 p-3 active:scale-95 transition-all"><Download className="h-5 w-5 text-[#ff5a7a]" /><span className="text-[10px] text-[#6b7b8d] font-medium">PDF</span></button>
+            <button onClick={exportXLSX} className="touch-target flex flex-col items-center gap-1.5 rounded-xl bg-white/5 p-3 active:scale-95 transition-all"><Download className="h-5 w-5 text-[#7c5cff]" /><span className="text-[10px] text-[#6b7b8d] font-medium">Excel</span></button>
+            <button onClick={shareReport} className="touch-target flex flex-col items-center gap-1.5 rounded-xl bg-white/5 p-3 active:scale-95 transition-all"><Share2 className="h-5 w-5 text-[#3b82f6]" /><span className="text-[10px] text-[#6b7b8d] font-medium">Share</span></button>
+          </div>
+        </div>
+
         {/* Desktop note */}
         <div className="bg-[#161a27] rounded-[20px] border border-white/[0.06] p-5 card-shadow">
           <div className="flex items-center gap-3 mb-3">
             <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#ffb020]/15">
               <FileText className="h-4 w-4 text-[#ffb020]" />
             </div>
-            <p className="text-[13px] text-[#6b7b8d] font-medium">Detailed reports with charts, exports, and breakdowns are available on desktop.</p>
+            <p className="text-[13px] text-[#6b7b8d] font-medium">Detailed charts and breakdowns are available on desktop.</p>
           </div>
         </div>
       </div>

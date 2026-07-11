@@ -9,7 +9,7 @@ import { AnimatedContainer, AnimatedItem, TransactionActionMenu, ConfirmDeleteDi
 import {
   Plus, TrendingUp, TrendingDown, Pencil, Trash2, MoreVertical,
   Wallet, Calendar, ArrowUpDown, ArrowDown,
-  Check, X, Download,
+  Check, X, Download, Star, Copy, Share2,
 } from 'lucide-react';
 import { formatCurrency, formatDate } from '@/utils/format';
 import { toDate, safeDateInput } from '@/utils/helpers';
@@ -27,7 +27,7 @@ export default function IncomePage() {
 }
 
 function IncomeContent() {
-  const { incomes, loading, addIncome, updateIncome, deleteIncome } = useIncome();
+  const { incomes, loading, addIncome, updateIncome, deleteIncome, duplicateIncome, toggleFavoriteIncome } = useIncome();
   const { userData } = useAuth();
   const isMobile = useIsMobile();
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -179,6 +179,9 @@ function IncomeContent() {
                     <TransactionActionMenu
                       actions={[
                         { icon: Pencil, label: 'Edit', onClick: () => setEditingId(income.id), color: '#00d09c' },
+                        { icon: Star, label: (income as any).isFavorite ? 'Remove from Favorites' : 'Add to Favorites', onClick: () => { const newVal = !(income as any).isFavorite; toggleFavoriteIncome(income.id, newVal).catch(() => toast.error('Failed to update favorite')); }, color: '#ffb020' },
+                        { icon: Copy, label: 'Duplicate', onClick: () => duplicateIncome(income.id).catch(() => toast.error('Failed to duplicate')), color: '#3b82f6' },
+                        { icon: Share2, label: 'Share', onClick: () => { if (navigator.share) { navigator.share({ title: 'Income', text: `${income.description}: ${formatCurrency(income.amount, userData?.currency)}` }); } }, color: '#10b981' },
                         { icon: Trash2, label: 'Delete', onClick: () => setDeletingId(income.id), color: '#ff5a7a', destructive: true },
                       ]}
                     />
@@ -310,6 +313,9 @@ function IncomeContent() {
                       <TransactionActionMenu
                         actions={[
                           { icon: Pencil, label: 'Edit', onClick: () => setEditingId(income.id), color: '#00d09c' },
+                          { icon: Star, label: (income as any).isFavorite ? 'Remove from Favorites' : 'Add to Favorites', onClick: () => { const newVal = !(income as any).isFavorite; toggleFavoriteIncome(income.id, newVal).catch(() => toast.error('Failed to update favorite')); }, color: '#ffb020' },
+                          { icon: Copy, label: 'Duplicate', onClick: () => duplicateIncome(income.id).catch(() => toast.error('Failed to duplicate')), color: '#3b82f6' },
+                          { icon: Share2, label: 'Share', onClick: () => { if (navigator.share) { navigator.share({ title: 'Income', text: `${income.description}: ${formatCurrency(income.amount, userData?.currency)}` }); } }, color: '#10b981' },
                           { icon: Trash2, label: 'Delete', onClick: () => setDeletingId(income.id), color: '#ff5a7a', destructive: true },
                         ]}
                       />
@@ -369,6 +375,9 @@ function IncomeContent() {
                       <TransactionActionMenu
                         actions={[
                           { icon: Pencil, label: 'Edit', onClick: () => setEditingId(income.id), color: '#00d09c' },
+                          { icon: Star, label: (income as any).isFavorite ? 'Remove from Favorites' : 'Add to Favorites', onClick: () => { const newVal = !(income as any).isFavorite; toggleFavoriteIncome(income.id, newVal).catch(() => toast.error('Failed to update favorite')); }, color: '#ffb020' },
+                          { icon: Copy, label: 'Duplicate', onClick: () => duplicateIncome(income.id).catch(() => toast.error('Failed to duplicate')), color: '#3b82f6' },
+                          { icon: Share2, label: 'Share', onClick: () => { if (navigator.share) { navigator.share({ title: 'Income', text: `${income.description}: ${formatCurrency(income.amount, userData?.currency)}` }); } }, color: '#10b981' },
                           { icon: Trash2, label: 'Delete', onClick: () => setDeletingId(income.id), color: '#ff5a7a', destructive: true },
                         ]}
                       />

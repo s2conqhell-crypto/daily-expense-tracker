@@ -9,7 +9,7 @@ import { AnimatedContainer, AnimatedItem, TransactionActionMenu, ConfirmDeleteDi
 import {
   Plus, Search, Filter, Pencil, Trash2, Receipt,
   TrendingDown, CreditCard, ArrowUpDown, ArrowDown,
-  Check, X, Download, Clock, MoreVertical,
+  Check, X, Download, Clock, MoreVertical, Star, Copy, Share2,
 } from 'lucide-react';
 import { formatCurrency, formatDate } from '@/utils/format';
 import { toDate, safeDateInput } from '@/utils/helpers';
@@ -31,7 +31,7 @@ export default function ExpensesPage() {
 }
 
 function ExpensesContent() {
-  const { expenses, loading, addExpense, updateExpense, deleteExpense } = useExpenses();
+  const { expenses, loading, addExpense, updateExpense, deleteExpense, duplicateExpense, toggleFavoriteExpense } = useExpenses();
   const { userData } = useAuth();
   const isMobile = useIsMobile();
   const [search, setSearch] = useState('');
@@ -240,6 +240,9 @@ function ExpensesContent() {
                     <TransactionActionMenu
                       actions={[
                         { icon: Pencil, label: 'Edit', onClick: () => setEditingId(expense.id), color: '#7c5cff' },
+                        { icon: Star, label: (expense as any).isFavorite ? 'Remove from Favorites' : 'Add to Favorites', onClick: () => { const newVal = !(expense as any).isFavorite; toggleFavoriteExpense(expense.id, newVal).catch(() => toast.error('Failed to update favorite')); }, color: '#ffb020' },
+                        { icon: Copy, label: 'Duplicate', onClick: () => duplicateExpense(expense.id).catch(() => toast.error('Failed to duplicate')), color: '#3b82f6' },
+                        { icon: Share2, label: 'Share', onClick: () => { if (navigator.share) { navigator.share({ title: 'Expense', text: `${expense.description}: ${formatCurrency(expense.amount, userData?.currency)}` }); } }, color: '#10b981' },
                         { icon: Trash2, label: 'Delete', onClick: () => setDeletingId(expense.id), color: '#ff5a7a', destructive: true },
                       ]}
                     />
@@ -483,6 +486,9 @@ function ExpensesContent() {
                       <TransactionActionMenu
                         actions={[
                           { icon: Pencil, label: 'Edit', onClick: () => setEditingId(expense.id), color: '#7c5cff' },
+                          { icon: Star, label: (expense as any).isFavorite ? 'Remove from Favorites' : 'Add to Favorites', onClick: () => { const newVal = !(expense as any).isFavorite; toggleFavoriteExpense(expense.id, newVal).catch(() => toast.error('Failed to update favorite')); }, color: '#ffb020' },
+                          { icon: Copy, label: 'Duplicate', onClick: () => duplicateExpense(expense.id).catch(() => toast.error('Failed to duplicate')), color: '#3b82f6' },
+                          { icon: Share2, label: 'Share', onClick: () => { if (navigator.share) { navigator.share({ title: 'Expense', text: `${expense.description}: ${formatCurrency(expense.amount, userData?.currency)}` }); } }, color: '#10b981' },
                           { icon: Trash2, label: 'Delete', onClick: () => setDeletingId(expense.id), color: '#ff5a7a', destructive: true },
                         ]}
                       />
