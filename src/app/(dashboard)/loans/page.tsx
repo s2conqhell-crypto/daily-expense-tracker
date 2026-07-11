@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useLoans } from '@/hooks/useLoans';
 import { useAuth } from '@/contexts/AuthContext';
 import { LoanDialog } from '@/components/loans/LoanDialog';
@@ -11,14 +11,30 @@ import { formatCurrency, formatDate } from '@/utils/format';
 import { toDate } from '@/utils/helpers';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
+import { useSearchParams } from 'next/navigation';
 
 export default function LoansPage() {
+  return (
+    <Suspense fallback={<div className="p-5 space-y-4"><div className="h-8 w-40 bg-white/5 rounded animate-pulse" /><div className="h-[200px] bg-white/5 rounded animate-pulse" /></div>}>
+      <LoansContent />
+    </Suspense>
+  );
+}
+
+function LoansContent() {
   const { userData } = useAuth();
   const { loans, loading, activeLoans, totalOutstanding, upcomingEmis, totalEmiPerMonth, addLoan, updateLoan, deleteLoan, recordPayment } = useLoans();
+  const searchParams = useSearchParams();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<any>(null);
   const [payingLoan, setPayingLoan] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (searchParams.get('add') === '1') {
+      setDialogOpen(true);
+    }
+  }, [searchParams]);
 
   const handleSubmit = async (data: any) => {
     if (editing) {
@@ -84,7 +100,6 @@ export default function LoansPage() {
             <Banknote className="h-12 w-12 text-white/10 mb-3" />
             <p className="text-[14px] font-medium text-white mb-1">No loans</p>
             <p className="text-[12px] text-[#6b7b8d] mb-4">Add your home loan, car loan, personal loan EMIs here.</p>
-            <button onClick={() => { setEditing(null); setDialogOpen(true); }} className="px-4 py-2 text-[13px] font-medium rounded-xl bg-gradient-to-r from-[#7C5CFF] to-[#00D09C] text-white">Add Loan</button>
           </div>
         ) : (
           <div className="space-y-2">
@@ -119,6 +134,11 @@ export default function LoansPage() {
                     {loan.status === 'active' && loan.nextEmiDate && <span className="text-[#FBBF24]">Next: {formatDate(toDate(loan.nextEmiDate))}</span>}
                   </div>
                   <div className="mt-2 pt-2 border-t border-white/[0.06] flex justify-end gap-1">
+                    {loan.status === 'active' && (
+                      <button onClick={() => handlePayEMI(loan.id)} disabled={payingLoan === loan.id} className="bg-emerald-500/20 text-emerald-400 text-[13px] px-3 py-1.5 rounded-xl font-medium disabled:opacity-50">
+                        {payingLoan === loan.id ? '...' : 'Pay EMI'}
+                      </button>
+                    )}
                     <button onClick={() => { setEditing(loan); setDialogOpen(true); }} className="px-2 py-1 text-[11px] rounded-lg bg-white/5 text-[#6b7b8d]">Edit</button>
                     <button onClick={() => handleDelete(loan.id)} className="px-2 py-1 text-[11px] rounded-lg bg-white/5 text-[#FF5A6E]">Delete</button>
                   </div>

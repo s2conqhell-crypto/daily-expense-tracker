@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, Suspense } from 'react';
 import { useBudgets } from '@/hooks/useBudgets';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button, Card, CardContent, Progress, Badge, Skeleton, Input, Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui';
@@ -13,6 +13,7 @@ import { EXPENSE_CATEGORIES } from '@/constants';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
 import type { Budget } from '@/types';
+import { useSearchParams } from 'next/navigation';
 
 const statusConfig = {
   on_track: { label: 'On Track', color: '#00D09C', bg: 'bg-emerald-500/10', text: 'text-emerald-500' },
@@ -21,14 +22,29 @@ const statusConfig = {
 };
 
 export default function BudgetsPage() {
+  return (
+    <Suspense fallback={<div className="p-5 space-y-4"><div className="h-8 w-40 bg-white/5 rounded animate-pulse" /><div className="h-[200px] bg-white/5 rounded animate-pulse" /></div>}>
+      <BudgetsContent />
+    </Suspense>
+  );
+}
+
+function BudgetsContent() {
   const { budgets, loading, createBudget, updateBudget, deleteBudget } = useBudgets();
   const { userData } = useAuth();
+  const searchParams = useSearchParams();
   const [showCreate, setShowCreate] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [newBudget, setNewBudget] = useState({ category: '', amount: '' });
   const [creating, setCreating] = useState(false);
   const editingBudget = editingId ? budgets.find(b => b.id === editingId) : null;
+
+  useEffect(() => {
+    if (searchParams.get('add') === '1') {
+      setShowCreate(true);
+    }
+  }, [searchParams]);
 
   const totalBudget = budgets.reduce((sum, b) => sum + b.amount, 0);
   const totalSpent = budgets.reduce((sum, b) => sum + b.spent, 0);
@@ -84,7 +100,6 @@ export default function BudgetsPage() {
             <Target className="h-12 w-12 text-white/10 mb-3" />
             <p className="text-[14px] font-medium text-white mb-1">No budgets set</p>
             <p className="text-[12px] text-[#6b7b8d] mb-4">Create your first budget to start tracking</p>
-            <button onClick={() => setShowCreate(true)} className="px-4 py-2 text-[13px] font-medium rounded-xl bg-[#7C5CFF]/20 text-[#7C5CFF]">Create Budget</button>
           </div>
         ) : (
           <div className="space-y-2">

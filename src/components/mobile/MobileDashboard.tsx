@@ -19,7 +19,7 @@ import { TransactionDialog } from '@/components/transactions/TransactionDialog';
 import { MobileBalanceCard } from './MobileBalanceCard';
 import { MobileQuickStats } from './MobileQuickStats';
 import { MobileTransactionItem } from './MobileTransactionItem';
-import { MobileFAB } from './MobileFAB';
+
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { motion } from 'framer-motion';
 import type { Expense, Income } from '@/types';
@@ -92,16 +92,6 @@ export function MobileDashboard() {
   const filteredTx = useMemo(() =>
     summary.recentTransactions.slice(0, txCount),
   [summary.recentTransactions, txCount]);
-
-  const fabActions = [
-    { id: 'expense', label: 'Expense', icon: TrendingUp, color: '#ff5a7a', onClick: () => router.push('/expenses?add=true') },
-    { id: 'income', label: 'Income', icon: TrendingUp, color: '#00d09c', onClick: () => router.push('/income?add=true') },
-    { id: 'budget', label: 'Budget', icon: Target, color: '#7c5cff', onClick: () => router.push('/budgets?add=true') },
-    { id: 'savings', label: 'Goal', icon: PiggyBank, color: '#ffb020', onClick: () => router.push('/savings?add=true') },
-    { id: 'subscription', label: 'Subscription', icon: Repeat, color: '#3b82f6', onClick: () => router.push('/subscriptions?add=true') },
-    { id: 'loan', label: 'Loan', icon: Banknote, color: '#ff5a7a', onClick: () => router.push('/loans?add=true') },
-    { id: 'recurring', label: 'Recurring', icon: Clock, color: '#00d09c', onClick: () => router.push('/recurring?add=true') },
-  ];
 
   return (
     <div className="min-h-dvh bg-[#09090b]" style={{ paddingBottom: 'calc(90px + env(safe-area-inset-bottom, 0px))' }}>
@@ -347,7 +337,6 @@ export function MobileDashboard() {
         </motion.div>
       </motion.div>
 
-      <MobileFAB actions={fabActions} />
       {/* Edit dialog */}
       {editingTx && (
         <TransactionDialog

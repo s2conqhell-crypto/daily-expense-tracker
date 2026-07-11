@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, Suspense } from 'react';
 import { useSubscriptions } from '@/hooks/useSubscriptions';
 import { useAuth } from '@/contexts/AuthContext';
 import { SubscriptionDialog } from '@/components/subscriptions/SubscriptionDialog';
@@ -11,13 +11,29 @@ import { formatCurrency, formatDate } from '@/utils/format';
 import { toDate } from '@/utils/helpers';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
+import { useSearchParams } from 'next/navigation';
 
 export default function SubscriptionsPage() {
+  return (
+    <Suspense fallback={<div className="p-5 space-y-4"><div className="h-8 w-40 bg-white/5 rounded animate-pulse" /><div className="h-[200px] bg-white/5 rounded animate-pulse" /></div>}>
+      <SubscriptionsContent />
+    </Suspense>
+  );
+}
+
+function SubscriptionsContent() {
   const { userData } = useAuth();
   const { subscriptions, loading, totalMonthlyCost, totalYearlyCost, upcomingRenewals, addSubscription, updateSubscription, deleteSubscription, toggleStatus } = useSubscriptions();
+  const searchParams = useSearchParams();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<any>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (searchParams.get('add') === '1') {
+      setDialogOpen(true);
+    }
+  }, [searchParams]);
 
   const handleSubmit = async (data: any) => {
     if (editing) {
@@ -67,7 +83,6 @@ export default function SubscriptionsPage() {
             <Repeat className="h-12 w-12 text-white/10 mb-3" />
             <p className="text-[14px] font-medium text-white mb-1">No subscriptions</p>
             <p className="text-[12px] text-[#6b7b8d] mb-4">Add your Netflix, Spotify, bills and other subscriptions.</p>
-            <button onClick={() => { setEditing(null); setDialogOpen(true); }} className="px-4 py-2 text-[13px] font-medium rounded-xl bg-gradient-to-r from-[#7C5CFF] to-[#00D09C] text-white">Add Subscription</button>
           </div>
         ) : (
           <div className="space-y-2">
@@ -91,6 +106,8 @@ export default function SubscriptionsPage() {
                     <span className="text-[10px] text-[#6b7b8d]">Renews {formatDate(toDate(sub.renewalDate))}</span>
                   </div>
                   <div className="flex gap-1">
+                    {sub.status === 'active' && <button onClick={() => toggleStatus(sub.id, 'paused')} className="px-2 py-1 text-[11px] rounded-lg bg-[#FBBF24]/15 text-[#FBBF24]">Pause</button>}
+                    {sub.status === 'paused' && <button onClick={() => toggleStatus(sub.id, 'active')} className="px-2 py-1 text-[11px] rounded-lg bg-[#00D09C]/15 text-[#00D09C]">Resume</button>}
                     <button onClick={() => { setEditing(sub); setDialogOpen(true); }} className="p-1.5 rounded-lg hover:bg-white/5"><Repeat className="h-3 w-3 text-[#7C5CFF]" /></button>
                     <button onClick={() => handleDelete(sub.id)} className="p-1.5 rounded-lg hover:bg-white/5"><Trash2 className="h-3 w-3 text-[#FF5A6E]" /></button>
                   </div>

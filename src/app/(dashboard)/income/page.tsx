@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect, Suspense } from 'react';
 import { useIncome } from '@/hooks/useIncome';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button, Card, CardContent, Badge, Skeleton, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui';
@@ -16,8 +16,17 @@ import { toDate, safeDateInput } from '@/utils/helpers';
 import { useIsMobile } from '@/hooks/useMediaQuery';
 import type { Income, SortOption } from '@/types';
 import toast from 'react-hot-toast';
+import { useSearchParams } from 'next/navigation';
 
 export default function IncomePage() {
+  return (
+    <Suspense fallback={<div className="p-5 space-y-4"><div className="h-8 w-40 bg-white/5 rounded animate-pulse" /><div className="h-[200px] bg-white/5 rounded animate-pulse" /></div>}>
+      <IncomeContent />
+    </Suspense>
+  );
+}
+
+function IncomeContent() {
   const { incomes, loading, addIncome, updateIncome, deleteIncome } = useIncome();
   const { userData } = useAuth();
   const isMobile = useIsMobile();
@@ -26,6 +35,14 @@ export default function IncomePage() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [sort, setSort] = useState<SortOption>('date-desc');
   const [selected, setSelected] = useState<Set<string>>(new Set());
+
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    if (searchParams.get('add') === '1') {
+      setDialogOpen(true);
+    }
+  }, [searchParams]);
 
   const editingIncome = editingId ? incomes.find((i) => i.id === editingId) : null;
   const totalIncome = incomes.reduce((sum, i) => sum + i.amount, 0);
@@ -139,7 +156,6 @@ export default function IncomePage() {
             <TrendingUp className="h-12 w-12 text-white/10 mb-3" />
             <p className="text-[14px] font-medium text-white mb-1">No income recorded</p>
             <p className="text-[12px] text-[#6b7b8d] mb-4">Start tracking your earnings</p>
-            <button onClick={() => setDialogOpen(true)} className="px-4 py-2 text-[13px] font-medium rounded-xl bg-[#00d09c]/20 text-[#00d09c]">Add Income</button>
           </div>
         ) : (
           <div className="space-y-2">

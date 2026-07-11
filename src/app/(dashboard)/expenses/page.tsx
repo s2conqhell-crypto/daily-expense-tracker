@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect, Suspense } from 'react';
 import { useExpenses } from '@/hooks/useExpenses';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button, Card, CardContent, Input, Select, SelectTrigger, SelectValue, SelectContent, SelectItem, Badge, Skeleton, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui';
@@ -18,10 +18,19 @@ import { useIsMobile } from '@/hooks/useMediaQuery';
 import type { Expense, SortOption } from '@/types';
 import toast from 'react-hot-toast';
 import { motion } from 'framer-motion';
+import { useSearchParams } from 'next/navigation';
 
 const PAGE_SIZE = 10;
 
 export default function ExpensesPage() {
+  return (
+    <Suspense fallback={<div className="p-5 space-y-4"><div className="h-8 w-40 bg-white/5 rounded animate-pulse" /><div className="h-[200px] bg-white/5 rounded animate-pulse" /></div>}>
+      <ExpensesContent />
+    </Suspense>
+  );
+}
+
+function ExpensesContent() {
   const { expenses, loading, addExpense, updateExpense, deleteExpense } = useExpenses();
   const { userData } = useAuth();
   const isMobile = useIsMobile();
@@ -34,6 +43,14 @@ export default function ExpensesPage() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [dateFilter, setDateFilter] = useState<'all' | 'today' | 'week' | 'month'>('all');
+
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    if (searchParams.get('add') === '1') {
+      setDialogOpen(true);
+    }
+  }, [searchParams]);
 
   const editingExpense = editingId ? expenses.find((e) => e.id === editingId) : null;
 
@@ -200,7 +217,6 @@ export default function ExpensesPage() {
             <Receipt className="h-12 w-12 text-white/10 mb-3" />
             <p className="text-[14px] font-medium text-white mb-1">No expenses found</p>
             <p className="text-[12px] text-[#6b7b8d] mb-4">{search || categoryFilter !== 'all' || dateFilter !== 'all' ? 'Try adjusting your filters' : 'Start tracking your spending'}</p>
-            <button onClick={() => setDialogOpen(true)} className="px-4 py-2 text-[13px] font-medium rounded-xl bg-[#7c5cff]/20 text-[#7c5cff]">Add Expense</button>
           </div>
         ) : (
           <div className="space-y-2">

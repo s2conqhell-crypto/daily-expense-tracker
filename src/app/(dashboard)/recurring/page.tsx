@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, Suspense } from 'react';
 import { useRecurringTransactions } from '@/hooks/useRecurringTransactions';
 import { useAuth } from '@/contexts/AuthContext';
 import { RecurringRuleDialog } from '@/components/recurring/RecurringRuleDialog';
@@ -11,14 +11,30 @@ import { formatCurrency, formatDate } from '@/utils/format';
 import { toDate } from '@/utils/helpers';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
+import { useSearchParams } from 'next/navigation';
 
 export default function RecurringPage() {
+  return (
+    <Suspense fallback={<div className="p-5 space-y-4"><div className="h-8 w-40 bg-white/5 rounded animate-pulse" /><div className="h-[200px] bg-white/5 rounded animate-pulse" /></div>}>
+      <RecurringContent />
+    </Suspense>
+  );
+}
+
+function RecurringContent() {
   const { userData } = useAuth();
   const { rules, upcoming, loading, addRule, updateRule, deleteRule, toggleRule, skipNext } = useRecurringTransactions();
+  const searchParams = useSearchParams();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<any>(null);
   const [filter, setFilter] = useState<'all' | 'expense' | 'income'>('all');
   const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (searchParams.get('add') === '1') {
+      setDialogOpen(true);
+    }
+  }, [searchParams]);
 
   const filtered = useMemo(() =>
     rules.filter((r) => filter === 'all' || r.type === filter),
@@ -83,7 +99,6 @@ export default function RecurringPage() {
             <Repeat className="h-12 w-12 text-white/10 mb-3" />
             <p className="text-[14px] font-medium text-white mb-1">No recurring rules</p>
             <p className="text-[12px] text-[#6b7b8d] mb-4">Set up automatic transactions for bills, income, and more.</p>
-            <button onClick={() => { setEditing(null); setDialogOpen(true); }} className="px-4 py-2 text-[13px] font-medium rounded-xl bg-gradient-to-r from-[#7C5CFF] to-[#00D09C] text-white">Create Rule</button>
           </div>
         ) : (
           <div className="space-y-2">
@@ -107,6 +122,8 @@ export default function RecurringPage() {
                     <span className={`text-[14px] font-semibold ${rule.type === 'expense' ? 'text-[#FF5A6E]' : 'text-[#00D09C]'}`}>
                       {rule.type === 'expense' ? '-' : '+'}{formatCurrency(rule.amount, userData?.currency)}
                     </span>
+                    <button onClick={() => toggleRule(rule.id, !rule.isActive)} className="px-2 py-1 text-[11px] rounded-lg bg-[#FBBF24]/15 text-[#FBBF24]">{rule.isActive ? 'Pause' : 'Resume'}</button>
+                    <button onClick={() => skipNext(rule)} className="px-2 py-1 text-[11px] rounded-lg bg-white/5 text-[#6b7b8d]">Skip</button>
                     <button onClick={() => { setEditing(rule); setDialogOpen(true); }} className="p-1.5 rounded-lg hover:bg-white/5"><Repeat className="h-3 w-3 text-[#7C5CFF]" /></button>
                     <button onClick={() => handleDelete(rule.id)} className="p-1.5 rounded-lg hover:bg-white/5"><Trash2 className="h-3 w-3 text-[#FF5A6E]" /></button>
                   </div>

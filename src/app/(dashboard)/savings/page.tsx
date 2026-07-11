@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, Suspense } from 'react';
 import { useSavingsGoals } from '@/hooks/useSavingsGoals';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button, Card, CardContent, Progress, Skeleton, Input, Label, Select, SelectTrigger, SelectValue, SelectContent, SelectItem, Badge } from '@/components/ui';
@@ -12,6 +12,7 @@ import { formatCurrency, formatDate } from '@/utils/format';
 import { toDate, safeDateInput } from '@/utils/helpers';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
+import { useSearchParams } from 'next/navigation';
 
 const PRESET_GOALS = [
   { name: 'Emergency Fund', icon: '🛡️', desc: '3-6 months of expenses', color: '#FF5A6E' },
@@ -23,15 +24,30 @@ const PRESET_GOALS = [
 ];
 
 export default function SavingsPage() {
+  return (
+    <Suspense fallback={<div className="p-5 space-y-4"><div className="h-8 w-40 bg-white/5 rounded animate-pulse" /><div className="h-[200px] bg-white/5 rounded animate-pulse" /></div>}>
+      <SavingsContent />
+    </Suspense>
+  );
+}
+
+function SavingsContent() {
   const now = useMemo(() => new Date(), []);
   const { goals, loading, createGoal, updateGoal, deleteGoal } = useSavingsGoals();
   const { userData } = useAuth();
+  const searchParams = useSearchParams();
   const [showCreate, setShowCreate] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [newGoal, setNewGoal] = useState({ name: '', description: '', targetAmount: '', targetDate: '', monthlyContribution: '', priority: 'medium' });
   const [creating, setCreating] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const editingGoal = editingId ? goals.find(g => g.id === editingId) : null;
+
+  useEffect(() => {
+    if (searchParams.get('add') === '1') {
+      setShowCreate(true);
+    }
+  }, [searchParams]);
 
   const totalTarget = goals.reduce((sum, g) => sum + g.targetAmount, 0);
   const totalSaved = goals.reduce((sum, g) => sum + g.currentAmount, 0);
@@ -104,7 +120,6 @@ export default function SavingsPage() {
             <Target className="h-12 w-12 text-white/10 mb-3" />
             <p className="text-[14px] font-medium text-white mb-1">No savings goals</p>
             <p className="text-[12px] text-[#6b7b8d] mb-4">Set your first savings goal</p>
-            <button onClick={() => setShowCreate(true)} className="px-4 py-2 text-[13px] font-medium rounded-xl bg-[#7C5CFF]/20 text-[#7C5CFF]">Create Goal</button>
           </div>
         ) : (
           <div className="space-y-2">

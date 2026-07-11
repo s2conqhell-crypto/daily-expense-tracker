@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import {
-  LayoutDashboard, TrendingDown, ArrowUpFromLine, Wallet,
+  LayoutDashboard, TrendingDown, ArrowUpFromLine, Search, Wallet,
   PiggyBank, BarChart3, Calendar, FileText, Settings, LogOut,
   ChevronRight,
 } from 'lucide-react';
@@ -16,6 +16,7 @@ const mainNav = [
   { href: ROUTES.DASHBOARD, label: 'Home', icon: LayoutDashboard, activeColor: '#7c5cff' },
   { href: ROUTES.EXPENSES, label: 'Expenses', icon: TrendingDown, activeColor: '#ff5a7a' },
   { href: ROUTES.INCOME, label: 'Income', icon: ArrowUpFromLine, activeColor: '#00d09c' },
+  { href: ROUTES.SEARCH, label: 'Search', icon: Search, activeColor: '#3b82f6' },
   { href: ROUTES.BUDGETS, label: 'Budget', icon: Wallet, activeColor: '#ffb020' },
 ];
 

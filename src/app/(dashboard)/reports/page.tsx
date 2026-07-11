@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, Button, Tabs, TabsList, TabsTrigger, TabsContent, Select, SelectTrigger, SelectValue, SelectContent, SelectItem, Skeleton } from '@/components/ui';
 import { StatCard } from '@/components/shared/StatCard';
 import { Download, Printer, Share2, FileSpreadsheet, FileJson, Calendar, TrendingUp, CreditCard, PiggyBank, Wallet, FileText } from 'lucide-react';
@@ -10,7 +10,7 @@ import { formatCurrency } from '@/utils/format';
 import { getMonthName } from '@/utils/helpers';
 import toast from 'react-hot-toast';
 
-export default function ReportsPage() {
+function ReportsContent() {
   const { userData } = useAuth();
   const { summary, monthlyTrend, categoryBreakdown, loading } = useDashboard();
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
@@ -102,10 +102,55 @@ export default function ReportsPage() {
           </div>
         </div>
 
-        {/* Month/Year selectors will use the existing desktop logic */}
+        {/* Summary KPIs */}
+        <div className="grid grid-cols-2 gap-3">
+          <div className="bg-[#161a27] rounded-[20px] border border-white/[0.06] p-4 card-shadow">
+            <p className="text-[11px] text-[#6b7b8d] font-medium uppercase tracking-wider">Income</p>
+            <p className="text-[17px] font-bold text-white mt-1">{formatCurrency(summary.totalIncome, userData?.currency)}</p>
+          </div>
+          <div className="bg-[#161a27] rounded-[20px] border border-white/[0.06] p-4 card-shadow">
+            <p className="text-[11px] text-[#6b7b8d] font-medium uppercase tracking-wider">Expenses</p>
+            <p className="text-[17px] font-bold text-[#ff5a7a] mt-1">{formatCurrency(summary.totalExpenses, userData?.currency)}</p>
+          </div>
+          <div className="bg-[#161a27] rounded-[20px] border border-white/[0.06] p-4 card-shadow">
+            <p className="text-[11px] text-[#6b7b8d] font-medium uppercase tracking-wider">Savings</p>
+            <p className="text-[17px] font-bold text-[#00d09c] mt-1">{formatCurrency(summary.savings, userData?.currency)}</p>
+          </div>
+          <div className="bg-[#161a27] rounded-[20px] border border-white/[0.06] p-4 card-shadow">
+            <p className="text-[11px] text-[#6b7b8d] font-medium uppercase tracking-wider">Balance</p>
+            <p className="text-[17px] font-bold text-[#7c5cff] mt-1">{formatCurrency(summary.currentBalance, userData?.currency)}</p>
+          </div>
+        </div>
+
+        {/* Category breakdown */}
         <div className="bg-[#161a27] rounded-[20px] border border-white/[0.06] p-5 card-shadow">
-          <p className="text-[13px] text-[#6b7b8d] font-medium">Use the desktop view for detailed reports and exports.</p>
-          <button onClick={() => {}} className="mt-4 px-4 py-2 text-[13px] font-medium rounded-xl bg-[#7c5cff]/20 text-[#7c5cff] w-full">Open Desktop Reports</button>
+          <h2 className="text-[15px] font-bold text-white mb-3">Category Breakdown</h2>
+          {loading ? (
+            <div className="space-y-3">
+              {[1,2,3].map((i) => <div key={i} className="h-10 bg-white/5 rounded-xl animate-pulse" />)}
+            </div>
+          ) : categoryBreakdown.length === 0 ? (
+            <p className="text-[13px] text-[#6b7b8d] text-center py-4">No expenses yet</p>
+          ) : (
+            <div className="space-y-2">
+              {categoryBreakdown.slice(0, 5).map((cat, i) => (
+                <div key={i} className="flex items-center justify-between py-2 border-b border-white/[0.06] last:border-0">
+                  <span className="text-[14px] text-white font-medium">{cat.category}</span>
+                  <span className="text-[14px] font-semibold text-white">{formatCurrency(cat.amount, userData?.currency)}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Desktop note */}
+        <div className="bg-[#161a27] rounded-[20px] border border-white/[0.06] p-5 card-shadow">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#ffb020]/15">
+              <FileText className="h-4 w-4 text-[#ffb020]" />
+            </div>
+            <p className="text-[13px] text-[#6b7b8d] font-medium">Detailed reports with charts, exports, and breakdowns are available on desktop.</p>
+          </div>
         </div>
       </div>
     </div>
@@ -244,5 +289,17 @@ export default function ReportsPage() {
       </Tabs>
     </div>
     </>
+  );
+}
+
+export default function ReportsPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-dvh bg-[#09090b] flex items-center justify-center">
+        <div className="h-8 w-8 border-2 border-[#7c5cff] border-t-transparent rounded-full animate-spin" />
+      </div>
+    }>
+      <ReportsContent />
+    </Suspense>
   );
 }
