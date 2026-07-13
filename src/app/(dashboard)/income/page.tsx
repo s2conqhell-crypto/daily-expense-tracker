@@ -20,7 +20,7 @@ import { toDate, safeDateInput } from '@/utils/helpers';
 import { useIsMobile } from '@/hooks/useMediaQuery';
 import type { Income, SortOption } from '@/types';
 import toast from 'react-hot-toast';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 
 export default function IncomePage() {
   return (
@@ -41,6 +41,8 @@ function IncomeContent() {
   const [selected, setSelected] = useState<Set<string>>(new Set());
 
   const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
 
   useEffect(() => {
     if (searchParams.get('add') === '1') {
@@ -48,6 +50,14 @@ function IncomeContent() {
       setDialogOpen(true);
     }
   }, [searchParams]);
+
+  const handleDialogOpen = useCallback((open: boolean) => {
+    setDialogOpen(open);
+    if (!open) {
+      router.replace(pathname, { scroll: false });
+      setEditingId(null);
+    }
+  }, [router, pathname]);
 
   const editingIncome = editingId ? incomes.find((i) => i.id === editingId) : null;
   const totalIncome = incomes.reduce((sum, i) => sum + i.amount, 0);
@@ -385,7 +395,7 @@ function IncomeContent() {
     </div>
     </div>
     
-    <TransactionDialog type="income" open={dialogOpen} onOpenChange={setDialogOpen}
+    <TransactionDialog type="income" open={dialogOpen} onOpenChange={handleDialogOpen}
       onSubmit={async (data) => { try { await addIncome(data as Omit<Income, 'id' | 'createdAt' | 'updatedAt'>); } catch (e) { console.warn('[Income] Add failed', e); } }} />
     {editingIncome && (
       <TransactionDialog type="income" open={true} onOpenChange={() => setEditingId(null)}

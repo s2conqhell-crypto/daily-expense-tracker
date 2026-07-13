@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useEffect, Suspense } from 'react';
+import { useState, useMemo, useCallback, useEffect, Suspense } from 'react';
 import { useSavingsGoals } from '@/hooks/useSavingsGoals';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button, Card, CardContent, Progress, Skeleton, Badge } from '@/components/ui';
@@ -12,7 +12,7 @@ import { formatCurrency, formatDate } from '@/utils/format';
 import { toDate, safeDateInput } from '@/utils/helpers';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import {
   MobilePage, MobilePageHeader, MobileSection, MobileCard,
   MobileEmptyState, MobileLoadingSkeleton, buildDefaultActions,
@@ -40,6 +40,8 @@ function SavingsContent() {
   const { goals, loading, createGoal, updateGoal, deleteGoal } = useSavingsGoals();
   const { userData } = useAuth();
   const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
   const [showCreate, setShowCreate] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [newGoal, setNewGoal] = useState({ name: '', description: '', targetAmount: '', targetDate: '', monthlyContribution: '', priority: 'medium' });
@@ -53,6 +55,14 @@ function SavingsContent() {
       setShowCreate(true);
     }
   }, [searchParams]);
+
+  const handleCreateOpen = useCallback((open: boolean) => {
+    setShowCreate(open);
+    if (!open) {
+      router.replace(pathname, { scroll: false });
+      setEditingId(null);
+    }
+  }, [router, pathname]);
 
   const totalTarget = goals.reduce((sum, g) => sum + g.targetAmount, 0);
   const totalSaved = goals.reduce((sum, g) => sum + g.currentAmount, 0);
@@ -354,7 +364,7 @@ function SavingsContent() {
     {/* Create Goal Sheet */}
     <UniversalFormDialog
       open={showCreate}
-      onOpenChange={setShowCreate}
+      onOpenChange={handleCreateOpen}
       title="New Savings Goal"
       description="Set a new financial goal to save towards"
       submitLabel={creating ? 'Creating...' : 'Create Goal'}

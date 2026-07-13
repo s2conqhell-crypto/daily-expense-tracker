@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useCallback, useEffect, Suspense } from 'react';
 import { useLoans } from '@/hooks/useLoans';
 import { useAuth } from '@/contexts/AuthContext';
 import { LoanDialog } from '@/components/loans/LoanDialog';
@@ -16,7 +16,7 @@ import { formatCurrency, formatDate } from '@/utils/format';
 import { toDate } from '@/utils/helpers';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 
 export default function LoansPage() {
   return (
@@ -30,6 +30,8 @@ function LoansContent() {
   const { userData } = useAuth();
   const { loans, loading, activeLoans, totalOutstanding, upcomingEmis, totalEmiPerMonth, addLoan, updateLoan, deleteLoan, recordPayment } = useLoans();
   const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Loan | null>(null);
   const [payingLoan, setPayingLoan] = useState<string | null>(null);
@@ -41,6 +43,14 @@ function LoansContent() {
       setDialogOpen(true);
     }
   }, [searchParams]);
+
+  const handleDialogOpen = useCallback((open: boolean) => {
+    setDialogOpen(open);
+    if (!open) {
+      router.replace(pathname, { scroll: false });
+      setEditing(null);
+    }
+  }, [router, pathname]);
 
   const handleSubmit = async (data: Omit<Loan, 'id' | 'userId' | 'createdAt' | 'updatedAt'>) => {
     if (editing) {
@@ -261,7 +271,7 @@ function LoansContent() {
     
     <LoanDialog
       open={dialogOpen}
-      onOpenChange={(o) => { if (!o) { setDialogOpen(false); setEditing(null); } }}
+      onOpenChange={handleDialogOpen}
       onSubmit={handleSubmit}
       defaultValues={editing ?? undefined}
     />

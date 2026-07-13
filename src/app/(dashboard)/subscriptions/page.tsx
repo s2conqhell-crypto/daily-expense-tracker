@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useCallback, useEffect, Suspense } from 'react';
 import { useSubscriptions } from '@/hooks/useSubscriptions';
 import { useAuth } from '@/contexts/AuthContext';
 import { SubscriptionDialog } from '@/components/subscriptions/SubscriptionDialog';
@@ -15,7 +15,7 @@ import type { Subscription } from '@/types';
 import { formatCurrency, formatDate } from '@/utils/format';
 import { toDate } from '@/utils/helpers';
 import { motion } from 'framer-motion';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 
 export default function SubscriptionsPage() {
   return (
@@ -29,6 +29,8 @@ function SubscriptionsContent() {
   const { userData } = useAuth();
   const { subscriptions, loading, totalMonthlyCost, totalYearlyCost, upcomingRenewals, addSubscription, updateSubscription, deleteSubscription, toggleStatus } = useSubscriptions();
   const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Subscription | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -39,6 +41,14 @@ function SubscriptionsContent() {
       setDialogOpen(true);
     }
   }, [searchParams]);
+
+  const handleDialogOpen = useCallback((open: boolean) => {
+    setDialogOpen(open);
+    if (!open) {
+      router.replace(pathname, { scroll: false });
+      setEditing(null);
+    }
+  }, [router, pathname]);
 
   const handleSubmit = async (data: Omit<Subscription, 'id' | 'userId' | 'createdAt' | 'updatedAt'>) => {
     if (editing) {
@@ -219,7 +229,7 @@ function SubscriptionsContent() {
     
     <SubscriptionDialog
       open={dialogOpen}
-      onOpenChange={(o) => { if (!o) { setDialogOpen(false); setEditing(null); } }}
+      onOpenChange={handleDialogOpen}
       onSubmit={handleSubmit}
       defaultValues={editing ?? undefined}
     />

@@ -18,7 +18,7 @@ import { useIsMobile } from '@/hooks/useMediaQuery';
 import type { Expense, SortOption } from '@/types';
 import toast from 'react-hot-toast';
 import { motion } from 'framer-motion';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import {
   MobilePage, MobilePageHeader, MobileSection, MobileCard, MobileStatCard,
   MobileSearchBar, MobileFilterBar, buildDefaultActions,
@@ -51,6 +51,8 @@ function ExpensesContent() {
   const [dateFilter, setDateFilter] = useState<'all' | 'today' | 'week' | 'month'>('all');
 
   const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
 
   useEffect(() => {
     if (searchParams.get('add') === '1') {
@@ -58,6 +60,14 @@ function ExpensesContent() {
       setDialogOpen(true);
     }
   }, [searchParams]);
+
+  const handleDialogOpen = useCallback((open: boolean) => {
+    setDialogOpen(open);
+    if (!open) {
+      router.replace(pathname, { scroll: false });
+      setEditingId(null);
+    }
+  }, [router, pathname]);
 
   const editingExpense = editingId ? expenses.find((e) => e.id === editingId) : null;
 
@@ -528,7 +538,7 @@ function ExpensesContent() {
     </div>
     
     {/* Dialogs */}
-    <TransactionDialog type="expense" open={dialogOpen} onOpenChange={setDialogOpen}
+    <TransactionDialog type="expense" open={dialogOpen} onOpenChange={handleDialogOpen}
       onSubmit={async (data) => { try { await addExpense(data as Omit<Expense, 'id' | 'createdAt' | 'updatedAt'>); } catch (e) { console.warn('[Expenses] Add failed', e); } }} />
     {editingExpense && (
       <TransactionDialog

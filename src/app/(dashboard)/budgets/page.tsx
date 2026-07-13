@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useEffect, Suspense } from 'react';
+import { useState, useMemo, useCallback, useEffect, Suspense } from 'react';
 import { useBudgets } from '@/hooks/useBudgets';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button, Card, CardContent, Progress, Badge, Skeleton } from '@/components/ui';
@@ -17,7 +17,7 @@ import { EXPENSE_CATEGORIES } from '@/constants';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
 import type { Budget } from '@/types';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 
 const statusConfig = {
   on_track: { label: 'On Track', color: '#00D09C', bg: 'bg-emerald-500/10', text: 'text-emerald-500' },
@@ -37,6 +37,8 @@ function BudgetsContent() {
   const { budgets, loading, createBudget, updateBudget, deleteBudget } = useBudgets();
   const { userData } = useAuth();
   const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
   const [showCreate, setShowCreate] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -50,6 +52,14 @@ function BudgetsContent() {
       setShowCreate(true);
     }
   }, [searchParams]);
+
+  const handleCreateOpen = useCallback((open: boolean) => {
+    setShowCreate(open);
+    if (!open) {
+      router.replace(pathname, { scroll: false });
+      setEditingId(null);
+    }
+  }, [router, pathname]);
 
   const totalBudget = budgets.reduce((sum, b) => sum + b.amount, 0);
   const totalSpent = budgets.reduce((sum, b) => sum + b.spent, 0);
@@ -286,7 +296,7 @@ function BudgetsContent() {
     
     <UniversalFormDialog
       open={showCreate}
-      onOpenChange={setShowCreate}
+      onOpenChange={handleCreateOpen}
       title="Create Budget"
       description="Set a monthly spending limit for a category"
       submitLabel={creating ? 'Creating...' : 'Create Budget'}

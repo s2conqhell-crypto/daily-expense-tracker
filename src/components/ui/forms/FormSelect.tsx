@@ -1,7 +1,5 @@
 'use client';
 
-import { useState } from 'react';
-import { ChevronDown } from 'lucide-react';
 import { cn } from '@/utils/helpers';
 import { ValidationMessage } from './ValidationMessage';
 import {
@@ -21,8 +19,6 @@ interface FormSelectProps {
 }
 
 export function FormSelect({ id, label, value, onValueChange, options, placeholder = 'Select...', error, required, className }: FormSelectProps) {
-  const [open, setOpen] = useState(false);
-
   return (
     <div className="space-y-1">
       {label && (
@@ -31,7 +27,7 @@ export function FormSelect({ id, label, value, onValueChange, options, placehold
           {required && <span className="text-[#FF5A6E] ml-0.5">*</span>}
         </label>
       )}
-      <Select value={value} onValueChange={onValueChange} onOpenChange={setOpen}>
+      <Select value={value} onValueChange={onValueChange}>
         <SelectTrigger
           id={id}
           className={cn(
