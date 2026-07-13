@@ -12,11 +12,6 @@ interface ThemeContextType {
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
-function getInitialTheme(): Theme {
-  if (typeof window === 'undefined') return 'system';
-  return (localStorage.getItem(STORAGE_KEYS.THEME) as Theme) || 'system';
-}
-
 function getResolvedTheme(theme: Theme): 'light' | 'dark' {
   if (theme === 'system') {
     if (typeof window === 'undefined') return 'light';
@@ -31,6 +26,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
     const stored = (() => {
       try { return localStorage.getItem(STORAGE_KEYS.THEME) as Theme | null; }

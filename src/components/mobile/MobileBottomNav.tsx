@@ -6,10 +6,9 @@ import Link from 'next/link';
 import {
   LayoutDashboard, TrendingDown, ArrowUpFromLine, Search, Wallet,
   PiggyBank, BarChart3, Calendar, FileText, Settings, LogOut,
-  ChevronRight,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetClose } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { ROUTES } from '@/constants';
 
 const mainNav = [

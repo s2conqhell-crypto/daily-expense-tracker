@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { firebaseService } from '@/firebase/services';
 import { useAuth } from '@/contexts/AuthContext';
 import type { DashboardSummary, Expense, Income, Budget, MonthlyTrend, CategoryBreakdown, ChartDataPoint } from '@/types';
@@ -13,8 +13,9 @@ export function useDashboard() {
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [incomes, setIncomes] = useState<Income[]>([]);
   const [budgets, setBudgets] = useState<Budget[]>([]);
-  const [loading, setLoading] = useState(true);
-  const loaded = useRef(false);
+  const [loadingStates, setLoadingStates] = useState({ expenses: true, incomes: true, budgets: false });
+
+  const loading = loadingStates.expenses || loadingStates.incomes;
 
   useEffect(() => {
     if (!user) return;
@@ -22,12 +23,12 @@ export function useDashboard() {
     const unsubExpenses = firebaseService.expenses.subscribe(user.uid, (data) => {
       if (cancelled) return;
       setExpenses(data);
-      if (!loaded.current) { loaded.current = true; setLoading(false); }
+      setLoadingStates((prev) => (prev.expenses ? { ...prev, expenses: false } : prev));
     });
     const unsubIncomes = firebaseService.income.subscribe(user.uid, (data) => {
       if (cancelled) return;
       setIncomes(data);
-      if (!loaded.current) { loaded.current = true; setLoading(false); }
+      setLoadingStates((prev) => (prev.incomes ? { ...prev, incomes: false } : prev));
     });
     const unsubBudgets = firebaseService.budgets.subscribe(user.uid, (data) => {
       if (cancelled) return;

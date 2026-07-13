@@ -10,9 +10,10 @@ export function useLoans() {
   const { user } = useAuth();
   const [loans, setLoans] = useState<Loan[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error] = useState<string | null>(null);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (!user) { setLoading(false); return; }
     setLoading(true);
     const unsub = firebaseService.loans.subscribe(user.uid, (data) => {

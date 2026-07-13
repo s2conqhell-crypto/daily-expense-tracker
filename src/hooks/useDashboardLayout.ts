@@ -19,6 +19,7 @@ export function useDashboardLayout() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (!user) { setLoading(false); return; }
     setLoading(true);
     firebaseService.dashboardLayout.get(user.uid).then((data) => {

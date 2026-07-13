@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/utils/helpers';
@@ -34,9 +34,8 @@ export function FormDatePicker({ id, label, value, onChange, error, required, mi
   const [open, setOpen] = useState(false);
   const [viewYear, setViewYear] = useState(new Date().getFullYear());
   const [viewMonth, setViewMonth] = useState(new Date().getMonth());
-  const [animDir, setAnimDir] = useState(0);
   const ref = useRef<HTMLDivElement>(null);
-  const selectedDate = value ? new Date(value + 'T00:00:00') : null;
+  const selectedDate = useMemo(() => value ? new Date(value + 'T00:00:00') : null, [value]);
   const today = new Date();
   const minDate = min ? new Date(min + 'T00:00:00') : null;
   const maxDate = max ? new Date(max + 'T00:00:00') : null;
@@ -51,13 +50,14 @@ export function FormDatePicker({ id, label, value, onChange, error, required, mi
 
   useEffect(() => {
     if (open && selectedDate) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setViewYear(selectedDate.getFullYear());
       setViewMonth(selectedDate.getMonth());
     }
   }, [open, selectedDate]);
 
-  const prev = () => { setAnimDir(-1); setViewMonth((m) => { if (m === 0) { setViewYear((y) => y - 1); return 11; } return m - 1; }); };
-  const next = () => { setAnimDir(1); setViewMonth((m) => { if (m === 11) { setViewYear((y) => y + 1); return 0; } return m + 1; }); };
+  const prev = () => { setViewMonth((m) => { if (m === 0) { setViewYear((y) => y - 1); return 11; } return m - 1; }); };
+  const next = () => { setViewMonth((m) => { if (m === 11) { setViewYear((y) => y + 1); return 0; } return m + 1; }); };
 
   const selectDay = (day: number) => {
     const d = `${viewYear}-${String(viewMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;

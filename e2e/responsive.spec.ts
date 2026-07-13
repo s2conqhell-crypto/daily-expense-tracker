@@ -18,7 +18,7 @@ test.describe('Responsive Layout', () => {
   ];
 
   for (const { width, height, name } of viewports) {
-    for (const { route, heading } of pages) {
+    for (const { route } of pages) {
       test(`"${name}" - ${route} has no horizontal scroll @responsive`, async ({ page }) => {
         await page.setViewportSize({ width, height });
         await navigateAndWait(page, route);

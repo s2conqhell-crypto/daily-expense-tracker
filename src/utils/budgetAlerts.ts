@@ -2,8 +2,6 @@ import { firebaseService } from '@/firebase/services';
 import type { Budget, Expense } from '@/types';
 import { calculateBudgetProgress, calculateBudgetStatus, calculateBudgetSpent } from './budget';
 
-const ALERT_THRESHOLDS = [80, 90, 100];
-
 interface AlertCheck {
   threshold: number;
   type: 'budget_limit';
@@ -19,10 +17,6 @@ const alerts: AlertCheck[] = [
 ];
 
 const notifiedThresholds: Record<string, Set<number>> = {};
-
-function getAlertKey(budgetId: string, threshold: number): string {
-  return `${budgetId}_${threshold}`;
-}
 
 export async function checkBudgetAlerts(userId: string, budgets: Budget[], expenses: Expense[]): Promise<string[]> {
   const created: string[] = [];
@@ -46,7 +40,6 @@ export async function checkBudgetAlerts(userId: string, budgets: Budget[], expen
       const isThreshold = progress >= alert.threshold && progress < alert.threshold + (alert.threshold === 100 ? 50 : 10);
 
       if (isThreshold || isOverBudget) {
-        const key = getAlertKey(budget.id, alert.threshold);
         if (!notifiedThresholds[budget.id].has(alert.threshold)) {
           notifiedThresholds[budget.id].add(alert.threshold);
           try {

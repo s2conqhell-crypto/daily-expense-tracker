@@ -11,6 +11,7 @@ export function useNotifications() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (!user) { setLoading(false); return; }
     setLoading(true);
     const unsub = firebaseService.notifications.subscribe(user.uid, (data) => {

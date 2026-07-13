@@ -69,7 +69,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             await processDueRules(firebaseUser.uid);
             await checkAndGenerateMonthlySummary(firebaseUser.uid);
           } catch (e) { console.warn('[Auth] Background processing failed', e); }
-        } catch (e) {
+        } catch {
           // User document might not exist yet
         }
       } else {

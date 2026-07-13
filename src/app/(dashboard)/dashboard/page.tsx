@@ -3,9 +3,8 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useDashboard } from '@/hooks/useDashboard';
 import { useAuth } from '@/contexts/AuthContext';
-import { useIsMobile } from '@/hooks/useMediaQuery';
 import { firebaseService } from '@/firebase/services';
-import { Button, Badge } from '@/components/ui';
+
 import { TransactionDialog } from '@/components/transactions/TransactionDialog';
 import { AnimatedCounter } from '@/components/shared';
 import { MobileDashboard } from '@/components/mobile/MobileDashboard';
@@ -16,8 +15,11 @@ import {
 } from 'lucide-react';
 import { formatCurrency, formatDate } from '@/utils/format';
 import { toDate } from '@/utils/helpers';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import dynamic from 'next/dynamic';
+import type { RecurringTransaction, Subscription, Loan, Expense, Income } from '@/types';
 import { motion } from 'framer-motion';
+
+const DashboardChart = dynamic(() => import('@/components/charts/DashboardChart'), { ssr: false });
 
 const container = {
   hidden: {},
@@ -30,23 +32,19 @@ const itemAnim = {
 };
 
 export default function DashboardPage() {
-  const [todayStr, setTodayStr] = useState('');
-  const [greeting, setGreeting] = useState('');
+  const getGreeting = () => {
+    const h = new Date().getHours();
+    if (h < 12) return 'Good Morning';
+    if (h < 17) return 'Good Afternoon';
+    return 'Good Evening';
+  };
+  const greeting = getGreeting();
+  const todayStr = new Date().toLocaleDateString('en-US', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
   const { summary, monthlyTrend, loading } = useDashboard();
   const { user, userData } = useAuth();
-  const isMobile = useIsMobile();
   const [dialogType, setDialogType] = useState<'expense' | 'income' | null>(null);
   const [txFilter, setTxFilter] = useState<'all' | 'today' | 'week' | 'month'>('all');
-  const [extraData, setExtraData] = useState<any>({ upcomingRules: [], upcomingSubs: [], upcomingEmis: [], subTotal: 0 });
-
-  useEffect(() => {
-    const h = new Date().getHours();
-    let g = 'Good Evening';
-    if (h < 12) g = 'Good Morning';
-    else if (h < 17) g = 'Good Afternoon';
-    setGreeting(g);
-    setTodayStr(new Date().toLocaleDateString('en-US', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }));
-  }, []);
+  const [extraData, setExtraData] = useState<{ upcomingRules: RecurringTransaction[]; upcomingSubs: Subscription[]; upcomingEmis: Loan[]; subTotal: number }>({ upcomingRules: [], upcomingSubs: [], upcomingEmis: [], subTotal: 0 });
 
   useEffect(() => {
     if (!user) return;
@@ -82,7 +80,7 @@ export default function DashboardPage() {
     startOfWeek.setHours(0, 0, 0, 0);
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
     return summary.recentTransactions.filter((tx) => {
-      const d = toDate(tx.createdAt || (tx as any).expenseDate || (tx as any).incomeDate);
+      const d = toDate(tx.createdAt || ('expenseDate' in tx ? tx.expenseDate : 'incomeDate' in tx ? tx.incomeDate : undefined));
       if (txFilter === 'today') return d >= startOfDay;
       if (txFilter === 'week') return d >= startOfWeek;
       if (txFilter === 'month') return d >= startOfMonth;
@@ -200,57 +198,7 @@ export default function DashboardPage() {
 
         {/* Chart + Budget Row */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          {/* Chart */}
-          <motion.div variants={itemAnim} initial="hidden" animate="show" className="lg:col-span-2">
-            <div className="bg-[#141822] rounded-xl border border-white/[0.08] p-4 shadow-sm">
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-2">
-                  <div className="h-7 w-7 rounded-xl bg-[#8B6FFF]/15 flex items-center justify-center">
-                    <TrendingUp className="h-4 w-4 text-[#8B6FFF]" />
-                  </div>
-                  <span className="text-sm font-bold text-white">Income vs Expenses</span>
-                </div>
-                <Badge className="text-[10px] rounded-lg bg-white/5 text-[#8899AA] border border-white/[0.06] font-medium">Last 6 months</Badge>
-              </div>
-              {loading ? (
-                <div className="h-[260px] rounded-xl bg-white/5 animate-pulse" />
-              ) : monthlyTrend.length === 0 ? (
-                <div className="h-[260px] flex flex-col items-center justify-center rounded-xl bg-white/[0.02] border border-dashed border-white/[0.06]">
-                  <TrendingUp className="h-10 w-10 text-white/10 mb-2" />
-                  <p className="text-sm font-medium text-[#8899AA]">No chart data yet</p>
-                  <p className="text-[10px] text-[#8899AA]/60 mt-0.5">Add transactions to see trends</p>
-                </div>
-              ) : (
-                <div style={{ minHeight: 260, width: '100%' }}>
-                <ResponsiveContainer width="100%" height={260}>
-                  <BarChart data={monthlyTrend} barGap={6}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" vertical={false} />
-                    <XAxis dataKey="month" tick={{ fontSize: 11, fill: '#8899AA', fontWeight: 500 }} axisLine={false} tickLine={false} dy={6} />
-                    <YAxis tick={{ fontSize: 11, fill: '#8899AA', fontWeight: 500 }} axisLine={false} tickLine={false} dx={-4} />
-                    <Tooltip
-                      contentStyle={{ background: '#1A1D2E', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', fontSize: '12px', color: '#fff', boxShadow: '0 8px 32px rgba(0,0,0,0.5)', fontWeight: 500 }}
-                      cursor={{ fill: 'rgba(255,255,255,0.03)' }}
-                    />
-                    <Bar dataKey="income" fill="#00D09C" radius={[4, 4, 0, 0]} maxBarSize={28} name="Income" />
-                    <Bar dataKey="expenses" fill="#FF5A6E" radius={[4, 4, 0, 0]} maxBarSize={28} name="Expenses" />
-                  </BarChart>
-                </ResponsiveContainer>
-                </div>
-              )}
-              {monthlyTrend.length > 0 && (
-                <div className="flex items-center gap-4 mt-3 pt-3 border-t border-white/[0.06]">
-                  <div className="flex items-center gap-1.5">
-                    <div className="h-3 w-3 rounded-sm bg-[#00D09C]" />
-                    <span className="text-[11px] font-medium text-[#8899AA]">Income</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <div className="h-3 w-3 rounded-sm bg-[#FF5A6E]" />
-                    <span className="text-[11px] font-medium text-[#8899AA]">Expenses</span>
-                  </div>
-                </div>
-              )}
-            </div>
-          </motion.div>
+          <DashboardChart monthlyTrend={monthlyTrend} loading={loading} />
 
           {/* Budget Card */}
           <motion.div variants={itemAnim} initial="hidden" animate="show">
@@ -350,7 +298,7 @@ export default function DashboardPage() {
                   <span className="text-[10px] font-medium text-[#8899AA]">Next 30 days</span>
                 </div>
                 <div className="divide-y divide-white/[0.06]">
-                  {extraData.upcomingRules.map((rule: any) => (
+                  {extraData.upcomingRules.map((rule: RecurringTransaction) => (
                     <div key={`rule-${rule.id}`} className="flex items-center justify-between py-2.5 first:pt-0 last:pb-0">
                       <div className="flex items-center gap-2.5 min-w-0 flex-1">
                         <div className="h-8 w-8 rounded-xl flex items-center justify-center shrink-0 bg-[#8B6FFF]/15">
@@ -366,7 +314,7 @@ export default function DashboardPage() {
                       </span>
                     </div>
                   ))}
-                  {extraData.upcomingSubs.map((sub: any) => (
+                  {extraData.upcomingSubs.map((sub: Subscription) => (
                     <div key={`sub-${sub.id}`} className="flex items-center justify-between py-2.5 first:pt-0 last:pb-0">
                       <div className="flex items-center gap-2.5 min-w-0 flex-1">
                         <div className="h-8 w-8 rounded-xl flex items-center justify-center shrink-0 bg-[#00D09C]/15">
@@ -380,7 +328,7 @@ export default function DashboardPage() {
                       <span className="text-xs font-bold shrink-0 ml-2 text-[#FF5A6E]">{formatCurrency(sub.monthlyCost, userData?.currency)}</span>
                     </div>
                   ))}
-                  {extraData.upcomingEmis.map((loan: any) => (
+                  {extraData.upcomingEmis.map((loan: Loan) => (
                     <div key={`emi-${loan.id}`} className="flex items-center justify-between py-2.5 first:pt-0 last:pb-0">
                       <div className="flex items-center gap-2.5 min-w-0 flex-1">
                         <div className="h-8 w-8 rounded-xl flex items-center justify-center shrink-0 bg-[#FF5A6E]/15">
@@ -456,7 +404,7 @@ export default function DashboardPage() {
                           <div className="min-w-0 flex-1">
                             <p className="text-xs font-bold text-white truncate">{'description' in tx ? tx.description : ''}</p>
                             <p className="text-[10px] font-medium text-[#8899AA]">
-                              {formatDate(toDate(tx.createdAt || (tx as any).expenseDate || (tx as any).incomeDate))}
+                              {formatDate(toDate(tx.createdAt || ('expenseDate' in tx ? tx.expenseDate : 'incomeDate' in tx ? tx.incomeDate : undefined)))}
                             </p>
                           </div>
                         </div>
@@ -482,9 +430,9 @@ export default function DashboardPage() {
             try {
               const { firebaseService } = await import('@/firebase/services');
               if (dialogType === 'expense') {
-                await firebaseService.expenses.add(user!.uid, data as any);
+                await firebaseService.expenses.add(user!.uid, data as Omit<Expense, 'id' | 'createdAt' | 'updatedAt'>);
               } else {
-              await firebaseService.income.add(user!.uid, data as any);
+              await firebaseService.income.add(user!.uid, data as Omit<Income, 'id' | 'createdAt' | 'updatedAt'>);
             }
           } catch (e) { console.warn('[Dashboard] Quick add failed', e); }
           setDialogType(null);

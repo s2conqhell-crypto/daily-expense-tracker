@@ -10,14 +10,14 @@ export function useIncome() {
   const { user } = useAuth();
   const [incomes, setIncomes] = useState<Income[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error] = useState<string | null>(null);
 
   useEffect(() => {
     if (!user) return;
     const unsub = firebaseService.income.subscribe(user.uid, (data) => {
       setIncomes(data);
       setLoading(false);
-    });
+    }, 100);
     return unsub;
   }, [user]);
 

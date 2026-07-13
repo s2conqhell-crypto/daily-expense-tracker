@@ -1,7 +1,9 @@
 #!/usr/bin/env node
+/* global require, __dirname, process */
 
-const { execSync } = require('child_process');
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 const fs = require('fs');
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 const path = require('path');
 
 const SOURCE_SVG = path.join(__dirname, '..', 'public', 'icons', 'icon-512.svg');
@@ -35,6 +37,7 @@ const SPLASH = [
 
 async function generate() {
   try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const sharp = require('sharp');
     
     if (!fs.existsSync(SPLASH_DIR)) {

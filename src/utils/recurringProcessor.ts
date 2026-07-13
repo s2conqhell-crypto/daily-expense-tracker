@@ -10,6 +10,7 @@ export async function processDueRules(userId: string): Promise<void> {
       try {
         if (rule.type === 'expense') {
           await firebaseService.expenses.add(userId, {
+            userId,
             amount: rule.amount,
             category: rule.category || 'Other',
             description: rule.description,
@@ -20,23 +21,23 @@ export async function processDueRules(userId: string): Promise<void> {
             isRecurring: true,
             recurringInterval: rule.interval,
             isFavorite: false,
-          } as any);
+          });
         } else {
           await firebaseService.income.add(userId, {
+            userId,
             amount: rule.amount,
             source: rule.source || 'Other',
             description: rule.description,
             notes: rule.notes,
             paymentMethod: rule.paymentMethod,
             incomeDate: now,
-            tags: [],
             isRecurring: true,
             recurringInterval: rule.interval,
             isFavorite: false,
-          } as any);
+          });
         }
 
-        let next = new Date(rule.nextExecution);
+        const next = new Date(rule.nextExecution);
         switch (rule.interval) {
           case 'daily': next.setDate(next.getDate() + 1); break;
           case 'weekly': next.setDate(next.getDate() + 7); break;
@@ -57,7 +58,7 @@ export async function processDueRules(userId: string): Promise<void> {
         await firebaseService.recurringTransactions.update(rule.id, {
           nextExecution: next,
           lastExecuted: now,
-        } as any);
+        });
       } catch (e) {
         console.error('Failed to process recurring rule', rule.id, e);
       }

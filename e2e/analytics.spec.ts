@@ -1,5 +1,5 @@
-import { test, expect } from '@playwright/test';
-import { navigateAndWait, ROUTES } from './helpers';
+import { test } from '@playwright/test';
+import { ROUTES } from './helpers';
 
 test.describe('Analytics Page', () => {
   test('redirects to login when not authenticated @fast', async ({ page }) => {

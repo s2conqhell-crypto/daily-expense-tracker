@@ -1,16 +1,20 @@
 'use client';
 
-import { useState, useMemo, useEffect, Suspense } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSubscriptions } from '@/hooks/useSubscriptions';
 import { useAuth } from '@/contexts/AuthContext';
 import { SubscriptionDialog } from '@/components/subscriptions/SubscriptionDialog';
 import { EmptyState, StatCard, ConfirmDeleteDialog } from '@/components/shared';
 import { Button } from '@/components/ui';
 import { Plus, Repeat, Pause, Play, Trash2, Calendar, CreditCard, Wallet, TrendingUp } from 'lucide-react';
+import {
+  MobilePage, MobilePageHeader, MobileSection, MobileCard,
+  MobileEmptyState, MobileLoadingSkeleton, buildDefaultActions,
+} from '@/components/mobile';
+import type { Subscription } from '@/types';
 import { formatCurrency, formatDate } from '@/utils/format';
 import { toDate } from '@/utils/helpers';
 import { motion } from 'framer-motion';
-import toast from 'react-hot-toast';
 import { useSearchParams } from 'next/navigation';
 
 export default function SubscriptionsPage() {
@@ -26,16 +30,17 @@ function SubscriptionsContent() {
   const { subscriptions, loading, totalMonthlyCost, totalYearlyCost, upcomingRenewals, addSubscription, updateSubscription, deleteSubscription, toggleStatus } = useSubscriptions();
   const searchParams = useSearchParams();
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [editing, setEditing] = useState<any>(null);
+  const [editing, setEditing] = useState<Subscription | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
   useEffect(() => {
     if (searchParams.get('add') === '1') {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setDialogOpen(true);
     }
   }, [searchParams]);
 
-  const handleSubmit = async (data: any) => {
+  const handleSubmit = async (data: Omit<Subscription, 'id' | 'userId' | 'createdAt' | 'updatedAt'>) => {
     if (editing) {
       await updateSubscription(editing.id, data);
     } else {
@@ -65,58 +70,56 @@ function SubscriptionsContent() {
     <>
     {/* Mobile version */}
     <div className="lg:hidden">
-      <div className="px-5 space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-[18px] font-bold text-white">Subscriptions</h1>
-            <p className="text-[12px] text-[#6b7b8d]">{subscriptions.length} active</p>
-          </div>
-          <div className="text-right">
-            <p className="text-[14px] font-bold text-[#00D09C]">{formatCurrency(totalMonthlyCost, userData?.currency)}<span className="text-[11px] text-[#6b7b8d]">/mo</span></p>
-            <p className="text-[11px] text-[#6b7b8d]">{formatCurrency(totalYearlyCost, userData?.currency)}/yr</p>
-          </div>
-        </div>
+      <MobilePage>
+        <MobilePageHeader
+          title="Subscriptions"
+          subtitle={`${subscriptions.length} active`}
+          right={
+            <div className="text-right">
+              <p className="m-text-amount text-[#00d09c]">{formatCurrency(totalMonthlyCost, userData?.currency)}<span className="m-text-tiny text-[#6b7b8d]">/mo</span></p>
+              <p className="m-text-tiny text-[#6b7b8d]">{formatCurrency(totalYearlyCost, userData?.currency)}/yr</p>
+            </div>
+          }
+        />
         {loading ? (
-          <div className="space-y-2">{[...Array(3)].map((_, i) => <div key={i} className="h-24 bg-[#161a27] rounded-[16px] animate-pulse" />)}</div>
+          <MobileLoadingSkeleton count={3} type="card" />
         ) : subscriptions.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-12 text-center">
-            <Repeat className="h-12 w-12 text-white/10 mb-3" />
-            <p className="text-[14px] font-medium text-white mb-1">No subscriptions</p>
-            <p className="text-[12px] text-[#6b7b8d] mb-4">Add your Netflix, Spotify, bills and other subscriptions.</p>
-          </div>
+          <MobileEmptyState
+            icon={<Repeat className="h-12 w-12" />}
+            title="No subscriptions"
+            description="Add your Netflix, Spotify, bills and other subscriptions."
+          />
         ) : (
-          <div className="space-y-2">
-            {subscriptions.map((sub) => (
-              <div key={sub.id} className="bg-[#161a27] rounded-[20px] border border-white/[0.06] p-3">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-3 min-w-0 flex-1">
-                    <div className="h-10 w-10 rounded-xl bg-[#7C5CFF]/15 flex items-center justify-center shrink-0"><Repeat className="h-4 w-4 text-[#7C5CFF]" /></div>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-[14px] font-medium text-white truncate">{sub.name}</p>
-                      <p className="text-[11px] text-[#6b7b8d]">{sub.category}{sub.customCategory ? ` (${sub.customCategory})` : ''}</p>
-                    </div>
-                  </div>
-                  <span className="text-[14px] font-semibold text-white shrink-0 ml-2">{formatCurrency(sub.monthlyCost, userData?.currency)}<span className="text-[10px] text-[#6b7b8d]">/mo</span></span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="text-[11px] px-2 py-0.5 rounded-full font-medium" style={{ backgroundColor: (statusColors[sub.status] || '#6b7b8d') + '20', color: statusColors[sub.status] || '#6b7b8d' }}>
-                      {statusLabels[sub.status] || sub.status}
-                    </span>
-                    <span className="text-[10px] text-[#6b7b8d]">Renews {formatDate(toDate(sub.renewalDate))}</span>
-                  </div>
-                  <div className="flex gap-1">
-                    {sub.status === 'active' && <button onClick={() => toggleStatus(sub.id, 'paused')} className="px-2 py-1 text-[11px] rounded-lg bg-[#FBBF24]/15 text-[#FBBF24]">Pause</button>}
-                    {sub.status === 'paused' && <button onClick={() => toggleStatus(sub.id, 'active')} className="px-2 py-1 text-[11px] rounded-lg bg-[#00D09C]/15 text-[#00D09C]">Resume</button>}
-                    <button onClick={() => { setEditing(sub); setDialogOpen(true); }} className="p-1.5 rounded-lg hover:bg-white/5"><Repeat className="h-3 w-3 text-[#7C5CFF]" /></button>
-                    <button onClick={() => handleDelete(sub.id)} className="p-1.5 rounded-lg hover:bg-white/5"><Trash2 className="h-3 w-3 text-[#FF5A6E]" /></button>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+          <MobileSection>
+            <div className="space-y-3">
+              {subscriptions.map((sub) => (
+                <MobileCard
+                  key={sub.id}
+                  icon={<Repeat className="h-[18px] w-[18px]" />}
+                  iconColor="#7c5cff"
+                  title={sub.name}
+                  subtitle={sub.category + (sub.customCategory ? ` (${sub.customCategory})` : '')}
+                  amount={sub.monthlyCost}
+                  currency={userData?.currency}
+                  metadata={[
+                    { label: 'Renews', value: formatDate(toDate(sub.renewalDate)) },
+                  ]}
+                  status={{ label: statusLabels[sub.status] || sub.status, variant: sub.status === 'active' ? 'active' : sub.status === 'paused' ? 'paused' : 'expired' }}
+                  actions={buildDefaultActions({
+                    onEdit: () => { setEditing(sub); setDialogOpen(true); },
+                    onDelete: () => handleDelete(sub.id),
+                    extra: [
+                      sub.status === 'active' ? { key: 'pause', label: 'Pause', onClick: () => toggleStatus(sub.id, 'paused'), color: '#ffb020' }
+                      : sub.status === 'paused' ? { key: 'resume', label: 'Resume', onClick: () => toggleStatus(sub.id, 'active'), color: '#00d09c' }
+                      : undefined,
+                    ].filter(Boolean) as { key: string; label: string; onClick: () => void; color: string }[],
+                  })}
+                />
+              ))}
+            </div>
+          </MobileSection>
         )}
-      </div>
+      </MobilePage>
     </div>
     {/* Desktop version */}
     <div className="hidden lg:block">
@@ -218,7 +221,7 @@ function SubscriptionsContent() {
       open={dialogOpen}
       onOpenChange={(o) => { if (!o) { setDialogOpen(false); setEditing(null); } }}
       onSubmit={handleSubmit}
-      defaultValues={editing}
+      defaultValues={editing ?? undefined}
     />
     <ConfirmDeleteDialog
       open={!!deletingId}

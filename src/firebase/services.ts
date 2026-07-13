@@ -21,8 +21,9 @@ import {
   deleteDoc,
   query,
   where,
+  orderBy,
+  limit as firestoreLimit,
   Timestamp,
-  DocumentData,
   QueryConstraint,
   setDoc,
   onSnapshot,
@@ -193,6 +194,7 @@ export const firebaseService = {
     duplicate: async (expenseId: string): Promise<string> => {
       const snap = await getDoc(doc(db, FIRESTORE_COLLECTIONS.EXPENSES, expenseId));
       if (!snap.exists()) throw new Error('Expense not found');
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { createdAt, updatedAt, ...data } = snap.data() as Record<string, unknown>;
       const docRef = await addDoc(collection(db, FIRESTORE_COLLECTIONS.EXPENSES), {
         ...data,
@@ -223,18 +225,21 @@ export const firebaseService = {
       return data;
     },
 
-    subscribe: (userId: string, callback: (expenses: Expense[]) => void): Unsubscribe => {
-      const q = query(
-        collection(db, FIRESTORE_COLLECTIONS.EXPENSES),
-        where('userId', '==', userId)
-      );
+    subscribe: (userId: string, callback: (expenses: Expense[]) => void, resultLimit?: number): Unsubscribe => {
+      const constraints: QueryConstraint[] = [where('userId', '==', userId)];
+      if (resultLimit) {
+        constraints.push(orderBy('expenseDate', 'desc'), firestoreLimit(resultLimit));
+      }
+      const q = query(collection(db, FIRESTORE_COLLECTIONS.EXPENSES), ...constraints);
       return onSnapshot(q, (snapshot) => {
         const data = snapshot.docs.map((d) => ({ id: d.id, ...d.data() } as Expense));
-        data.sort((a, b) => {
-          const aT = (a.expenseDate as unknown as Timestamp).toMillis();
-          const bT = (b.expenseDate as unknown as Timestamp).toMillis();
-          return bT - aT;
-        });
+        if (!resultLimit) {
+          data.sort((a, b) => {
+            const aT = (a.expenseDate as unknown as Timestamp).toMillis();
+            const bT = (b.expenseDate as unknown as Timestamp).toMillis();
+            return bT - aT;
+          });
+        }
         callback(data);
       });
     },
@@ -287,6 +292,7 @@ export const firebaseService = {
     duplicate: async (incomeId: string): Promise<string> => {
       const snap = await getDoc(doc(db, FIRESTORE_COLLECTIONS.INCOME, incomeId));
       if (!snap.exists()) throw new Error('Income not found');
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { createdAt, updatedAt, ...data } = snap.data() as Record<string, unknown>;
       const docRef = await addDoc(collection(db, FIRESTORE_COLLECTIONS.INCOME), {
         ...data,
@@ -296,18 +302,21 @@ export const firebaseService = {
       return docRef.id;
     },
 
-    subscribe: (userId: string, callback: (incomes: Income[]) => void): Unsubscribe => {
-      const q = query(
-        collection(db, FIRESTORE_COLLECTIONS.INCOME),
-        where('userId', '==', userId)
-      );
+    subscribe: (userId: string, callback: (incomes: Income[]) => void, resultLimit?: number): Unsubscribe => {
+      const constraints: QueryConstraint[] = [where('userId', '==', userId)];
+      if (resultLimit) {
+        constraints.push(orderBy('incomeDate', 'desc'), firestoreLimit(resultLimit));
+      }
+      const q = query(collection(db, FIRESTORE_COLLECTIONS.INCOME), ...constraints);
       return onSnapshot(q, (snapshot) => {
         const data = snapshot.docs.map((d) => ({ id: d.id, ...d.data() } as Income));
-        data.sort((a, b) => {
-          const aT = (a.incomeDate as unknown as Timestamp).toMillis();
-          const bT = (b.incomeDate as unknown as Timestamp).toMillis();
-          return bT - aT;
-        });
+        if (!resultLimit) {
+          data.sort((a, b) => {
+            const aT = (a.incomeDate as unknown as Timestamp).toMillis();
+            const bT = (b.incomeDate as unknown as Timestamp).toMillis();
+            return bT - aT;
+          });
+        }
         callback(data);
       });
     },
@@ -496,7 +505,8 @@ export const firebaseService = {
 
   notifications: {
     add: async (userId: string, data: Omit<Notification, 'id' | 'createdAt'>): Promise<string> => {
-      const clean = Object.fromEntries(Object.entries(data).filter(([_, v]) => v !== undefined));
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const clean = Object.fromEntries(Object.entries(data).filter(([_unused, v]) => v !== undefined));
       const docRef = await addDoc(collection(db, FIRESTORE_COLLECTIONS.NOTIFICATIONS), {
         ...clean,
         userId,
@@ -583,7 +593,8 @@ export const firebaseService = {
 
   recurringTransactions: {
     add: async (userId: string, data: Omit<RecurringTransaction, 'id' | 'userId' | 'createdAt' | 'updatedAt'>): Promise<string> => {
-      const clean = Object.fromEntries(Object.entries(data).filter(([_, v]) => v !== undefined));
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const clean = Object.fromEntries(Object.entries(data).filter(([_unused, v]) => v !== undefined));
       const docRef = await addDoc(collection(db, FIRESTORE_COLLECTIONS.RECURRING_TRANSACTIONS), {
         ...clean,
         userId,
@@ -628,7 +639,8 @@ export const firebaseService = {
     },
 
     update: async (ruleId: string, data: Partial<RecurringTransaction>): Promise<void> => {
-      const clean = Object.fromEntries(Object.entries(data).filter(([_, v]) => v !== undefined));
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const clean = Object.fromEntries(Object.entries(data).filter(([_unused, v]) => v !== undefined));
       const updateData: Record<string, unknown> = { ...clean, updatedAt: serverTimestamp() };
       if (data.nextExecution) updateData.nextExecution = Timestamp.fromDate(new Date(data.nextExecution));
       if (data.lastExecuted) updateData.lastExecuted = Timestamp.fromDate(new Date(data.lastExecuted));
@@ -643,7 +655,8 @@ export const firebaseService = {
 
   subscriptions: {
     add: async (userId: string, data: Omit<Subscription, 'id' | 'userId' | 'createdAt' | 'updatedAt'>): Promise<string> => {
-      const clean = Object.fromEntries(Object.entries(data).filter(([_, v]) => v !== undefined));
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const clean = Object.fromEntries(Object.entries(data).filter(([_unused, v]) => v !== undefined));
       const docRef = await addDoc(collection(db, FIRESTORE_COLLECTIONS.SUBSCRIPTIONS), {
         ...clean,
         userId,
@@ -679,7 +692,8 @@ export const firebaseService = {
     },
 
     update: async (subId: string, data: Partial<Subscription>): Promise<void> => {
-      const clean = Object.fromEntries(Object.entries(data).filter(([_, v]) => v !== undefined));
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const clean = Object.fromEntries(Object.entries(data).filter(([_unused, v]) => v !== undefined));
       const updateData: Record<string, unknown> = { ...clean, updatedAt: serverTimestamp() };
       if (data.renewalDate) updateData.renewalDate = Timestamp.fromDate(new Date(data.renewalDate));
       await updateDoc(doc(db, FIRESTORE_COLLECTIONS.SUBSCRIPTIONS, subId), updateData);
@@ -694,7 +708,8 @@ export const firebaseService = {
     add: async (userId: string, data: Omit<Loan, 'id' | 'userId' | 'createdAt' | 'updatedAt'>): Promise<string> => {
       const toDate = (d: unknown): Date =>
         d instanceof Timestamp ? d.toDate() : new Date(d as Date);
-      const clean = Object.fromEntries(Object.entries(data).filter(([_, v]) => v !== undefined));
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const clean = Object.fromEntries(Object.entries(data).filter(([_unused, v]) => v !== undefined));
       const docRef = await addDoc(collection(db, FIRESTORE_COLLECTIONS.LOANS), {
         ...clean,
         userId,
@@ -738,7 +753,8 @@ export const firebaseService = {
     update: async (loanId: string, data: Partial<Loan>): Promise<void> => {
       const toDate = (d: unknown): Date =>
         d instanceof Timestamp ? d.toDate() : new Date(d as Date);
-      const clean = Object.fromEntries(Object.entries(data).filter(([_, v]) => v !== undefined));
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const clean = Object.fromEntries(Object.entries(data).filter(([_unused, v]) => v !== undefined));
       const updateData: Record<string, unknown> = { ...clean, updatedAt: serverTimestamp() };
       if (data.startDate) updateData.startDate = Timestamp.fromDate(toDate(data.startDate));
       if (data.endDate) updateData.endDate = Timestamp.fromDate(toDate(data.endDate));

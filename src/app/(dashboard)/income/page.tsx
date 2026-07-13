@@ -5,9 +5,13 @@ import { useIncome } from '@/hooks/useIncome';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button, Card, CardContent, Badge, Skeleton, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui';
 import { TransactionDialog } from '@/components/transactions/TransactionDialog';
+import {
+  MobilePage, MobilePageHeader, MobileSection, MobileCard, MobileStatCard,
+  MobileEmptyState, MobileLoadingSkeleton, buildDefaultActions,
+} from '@/components/mobile';
 import { AnimatedContainer, AnimatedItem, TransactionActionMenu, ConfirmDeleteDialog } from '@/components/shared';
 import {
-  Plus, TrendingUp, TrendingDown, Pencil, Trash2, MoreVertical,
+  Plus, TrendingUp, TrendingDown, Pencil, Trash2,
   Wallet, Calendar, ArrowUpDown, ArrowDown,
   Check, X, Download, Star, Copy, Share2,
 } from 'lucide-react';
@@ -40,6 +44,7 @@ function IncomeContent() {
 
   useEffect(() => {
     if (searchParams.get('add') === '1') {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setDialogOpen(true);
     }
   }, [searchParams]);
@@ -121,77 +126,64 @@ function IncomeContent() {
     <>
     {/* Mobile version */}
     <div className="lg:hidden">
-      <div className="px-5 space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-[18px] font-bold text-white">Income</h1>
-            <p className="text-[12px] text-[#6b7b8d]">{incomes.length} entries</p>
-          </div>
-          <div className="text-right">
-            <p className="text-[14px] font-bold text-[#00d09c]">{formatCurrency(totalIncome, userData?.currency)}</p>
-            <p className="text-[11px] text-[#6b7b8d]">Total income</p>
-          </div>
-        </div>
-
-        {/* Stat Cards */}
-        <div className="grid grid-cols-2 gap-3">
-          {[
-            { label: "Average", value: avgIncome, color: '#00d09c' },
-            { label: "Highest", value: highestIncome, color: '#7c5cff' },
-            { label: "Recurring", value: recurringIncome, color: '#ffb020' },
-            { label: "Sources", value: sourceBreakdown.length, color: '#ff5a7a' },
-          ].map((stat) => (
-            <div key={stat.label} className="bg-[#161a27] rounded-[20px] border border-white/[0.06] p-4 card-shadow">
-              {loading ? <><div className="h-6 w-16 bg-white/5 rounded animate-pulse mb-1" /><div className="h-3 w-12 bg-white/5 rounded animate-pulse" /></> : <><p className="text-[17px] font-bold text-white">{typeof stat.value === 'number' ? formatCurrency(stat.value, userData?.currency) : stat.value}</p><p className="text-[11px] text-[#6b7b8d] mt-0.5">{stat.label}</p></>}
+      <MobilePage>
+        <MobilePageHeader
+          title="Income"
+          subtitle={`${incomes.length} entries`}
+          right={
+            <div className="text-right">
+              <p className="m-text-amount text-[#00d09c]">{formatCurrency(totalIncome, userData?.currency)}</p>
+              <p className="m-text-tiny text-[#6b7b8d]">Total income</p>
             </div>
-          ))}
-        </div>
+          }
+        />
 
-        {/* List */}
+        <MobileSection>
+          <div className="grid grid-cols-2 gap-3">
+            <MobileStatCard label="Average" value={avgIncome} isCurrency currency={userData?.currency} loading={loading} iconColor="#00d09c" />
+            <MobileStatCard label="Highest" value={highestIncome} isCurrency currency={userData?.currency} loading={loading} iconColor="#7c5cff" />
+            <MobileStatCard label="Recurring" value={recurringIncome} isCurrency currency={userData?.currency} loading={loading} iconColor="#ffb020" />
+            <MobileStatCard label="Sources" value={sourceBreakdown.length} loading={loading} iconColor="#ff5a7a" />
+          </div>
+        </MobileSection>
+
         {loading ? (
-          <div className="space-y-2">{[...Array(5)].map((_, i) => <div key={i} className="h-[68px] bg-[#161a27] rounded-[16px] animate-pulse" />)}</div>
+          <MobileLoadingSkeleton count={5} type="card" />
         ) : incomes.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-12 text-center">
-            <TrendingUp className="h-12 w-12 text-white/10 mb-3" />
-            <p className="text-[14px] font-medium text-white mb-1">No income recorded</p>
-            <p className="text-[12px] text-[#6b7b8d] mb-4">Start tracking your earnings</p>
-          </div>
+          <MobileEmptyState
+            icon={<TrendingUp className="h-12 w-12" />}
+            title="No income recorded"
+            description="Start tracking your earnings"
+          />
         ) : (
-          <div className="space-y-2">
-            {sorted.map((income) => (
-              <div key={income.id} className="bg-[#161a27] rounded-[16px] border border-white/[0.06] px-4 py-[14px] card-shadow active:scale-[0.98] transition-all">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3 min-w-0 flex-1">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-xl shrink-0 bg-[#00d09c]/15">
-                      <TrendingUp className="h-[18px] w-[18px] text-[#00d09c]" />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-[14px] font-semibold text-white truncate">{income.description}</p>
-                      <div className="flex items-center gap-2 mt-0.5">
-                        <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-white/5 text-[#6b7b8d]">{income.source}</span>
-                        <span className="text-[10px] text-[#6b7b8d] font-medium">{formatDate(income.incomeDate)}</span>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-1 shrink-0 ml-2">
-                    <span className="text-[15px] font-bold text-[#00d09c]">+{formatCurrency(income.amount, userData?.currency)}</span>
-                    <TransactionActionMenu
-                      actions={[
-                        { icon: Pencil, label: 'Edit', onClick: () => setEditingId(income.id), color: '#00d09c' },
-                        { icon: Star, label: (income as any).isFavorite ? 'Remove from Favorites' : 'Add to Favorites', onClick: () => { const newVal = !(income as any).isFavorite; toggleFavoriteIncome(income.id, newVal).catch(() => toast.error('Failed to update favorite')); }, color: '#ffb020' },
-                        { icon: Copy, label: 'Duplicate', onClick: () => duplicateIncome(income.id).catch(() => toast.error('Failed to duplicate')), color: '#3b82f6' },
-                        { icon: Share2, label: 'Share', onClick: () => { if (navigator.share) { navigator.share({ title: 'Income', text: `${income.description}: ${formatCurrency(income.amount, userData?.currency)}` }); } }, color: '#10b981' },
-                        { icon: Trash2, label: 'Delete', onClick: () => setDeletingId(income.id), color: '#ff5a7a', destructive: true },
-                      ]}
-                    />
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+          <MobileSection>
+            <div className="space-y-2.5">
+              {sorted.map((income) => (
+                <MobileCard
+                  key={income.id}
+                  icon={<TrendingUp className="h-[18px] w-[18px]" />}
+                  iconColor="#00d09c"
+                  title={income.description}
+                  subtitle={formatDate(income.incomeDate)}
+                  amount={income.amount}
+                  amountColor="success"
+                  amountPrefix="+"
+                  currency={userData?.currency}
+                  tags={[income.source]}
+                  actions={buildDefaultActions({
+                    onEdit: () => setEditingId(income.id),
+                    onDelete: () => setDeletingId(income.id),
+                    onDuplicate: () => duplicateIncome(income.id).catch(() => toast.error('Failed to duplicate')),
+                    onToggleFavorite: () => { const newVal = !income.isFavorite; toggleFavoriteIncome(income.id, newVal).catch(() => toast.error('Failed to update favorite')); },
+                    isFavorite: income.isFavorite,
+                    onShare: () => { if (navigator.share) { navigator.share({ title: 'Income', text: `${income.description}: ${formatCurrency(income.amount, userData?.currency)}` }); } },
+                  })}
+                />
+              ))}
+            </div>
+          </MobileSection>
         )}
-      </div>
+      </MobilePage>
     </div>
     {/* Desktop version */}
     <div className="hidden lg:block">
@@ -313,7 +305,7 @@ function IncomeContent() {
                       <TransactionActionMenu
                         actions={[
                           { icon: Pencil, label: 'Edit', onClick: () => setEditingId(income.id), color: '#00d09c' },
-                          { icon: Star, label: (income as any).isFavorite ? 'Remove from Favorites' : 'Add to Favorites', onClick: () => { const newVal = !(income as any).isFavorite; toggleFavoriteIncome(income.id, newVal).catch(() => toast.error('Failed to update favorite')); }, color: '#ffb020' },
+                          { icon: Star, label: income.isFavorite ? 'Remove from Favorites' : 'Add to Favorites', onClick: () => { const newVal = !income.isFavorite; toggleFavoriteIncome(income.id, newVal).catch(() => toast.error('Failed to update favorite')); }, color: '#ffb020' },
                           { icon: Copy, label: 'Duplicate', onClick: () => duplicateIncome(income.id).catch(() => toast.error('Failed to duplicate')), color: '#3b82f6' },
                           { icon: Share2, label: 'Share', onClick: () => { if (navigator.share) { navigator.share({ title: 'Income', text: `${income.description}: ${formatCurrency(income.amount, userData?.currency)}` }); } }, color: '#10b981' },
                           { icon: Trash2, label: 'Delete', onClick: () => setDeletingId(income.id), color: '#ff5a7a', destructive: true },
@@ -375,7 +367,7 @@ function IncomeContent() {
                       <TransactionActionMenu
                         actions={[
                           { icon: Pencil, label: 'Edit', onClick: () => setEditingId(income.id), color: '#00d09c' },
-                          { icon: Star, label: (income as any).isFavorite ? 'Remove from Favorites' : 'Add to Favorites', onClick: () => { const newVal = !(income as any).isFavorite; toggleFavoriteIncome(income.id, newVal).catch(() => toast.error('Failed to update favorite')); }, color: '#ffb020' },
+                          { icon: Star, label: income.isFavorite ? 'Remove from Favorites' : 'Add to Favorites', onClick: () => { const newVal = !income.isFavorite; toggleFavoriteIncome(income.id, newVal).catch(() => toast.error('Failed to update favorite')); }, color: '#ffb020' },
                           { icon: Copy, label: 'Duplicate', onClick: () => duplicateIncome(income.id).catch(() => toast.error('Failed to duplicate')), color: '#3b82f6' },
                           { icon: Share2, label: 'Share', onClick: () => { if (navigator.share) { navigator.share({ title: 'Income', text: `${income.description}: ${formatCurrency(income.amount, userData?.currency)}` }); } }, color: '#10b981' },
                           { icon: Trash2, label: 'Delete', onClick: () => setDeletingId(income.id), color: '#ff5a7a', destructive: true },
@@ -394,7 +386,7 @@ function IncomeContent() {
     </div>
     
     <TransactionDialog type="income" open={dialogOpen} onOpenChange={setDialogOpen}
-      onSubmit={async (data) => { try { await addIncome(data as any); } catch (e) { console.warn('[Income] Add failed', e); } }} />
+      onSubmit={async (data) => { try { await addIncome(data as Omit<Income, 'id' | 'createdAt' | 'updatedAt'>); } catch (e) { console.warn('[Income] Add failed', e); } }} />
     {editingIncome && (
       <TransactionDialog type="income" open={true} onOpenChange={() => setEditingId(null)}
         defaultValues={{

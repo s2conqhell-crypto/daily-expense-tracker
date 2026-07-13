@@ -39,7 +39,7 @@ export async function isMobile(page: Page): Promise<boolean> {
   return width < 1024;
 }
 
-export async function clickMobileMenuItem(page: Page, label: string) {
+export async function clickMobileMenuItem(page: Page, _label: string) { // eslint-disable-line @typescript-eslint/no-unused-vars
   const mobile = await isMobile(page);
   if (mobile) {
     const moreBtn = page.locator('button[aria-label="More"]');

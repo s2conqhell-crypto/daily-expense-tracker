@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, memo } from 'react';
 import {
   TrendingUp, TrendingDown, MoreVertical,
   Pencil, Trash2, Copy, Star, Share2,
@@ -13,7 +13,7 @@ import { motion } from 'framer-motion';
 interface MobileTransactionItemProps {
   description: string;
   amount: number;
-  date: any;
+  date: string | Date;
   type: 'expense' | 'income';
   category?: string;
   currency?: string;
@@ -25,7 +25,7 @@ interface MobileTransactionItemProps {
   onShare?: () => void;
 }
 
-export function MobileTransactionItem({
+export const MobileTransactionItem = memo(function MobileTransactionItem({
   description, amount, date, type, category, currency, isFavorite, onEdit, onDelete, onDuplicate, onToggleFavorite, onShare,
 }: MobileTransactionItemProps) {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -141,4 +141,4 @@ export function MobileTransactionItem({
         </SheetContent>
       </Sheet>
   );
-}
+});

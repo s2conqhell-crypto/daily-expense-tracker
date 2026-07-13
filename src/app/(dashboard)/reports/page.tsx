@@ -4,6 +4,10 @@ import { useState, Suspense } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, Button, Tabs, TabsList, TabsTrigger, TabsContent, Select, SelectTrigger, SelectValue, SelectContent, SelectItem, Skeleton } from '@/components/ui';
 import { StatCard } from '@/components/shared/StatCard';
 import { Download, Printer, Share2, FileSpreadsheet, FileJson, Calendar, TrendingUp, CreditCard, PiggyBank, Wallet, FileText } from 'lucide-react';
+import {
+  MobilePage, MobilePageHeader, MobileSection, MobileStatCard,
+  MobileLoadingSkeleton,
+} from '@/components/mobile';
 import { useAuth } from '@/contexts/AuthContext';
 import { useDashboard } from '@/hooks/useDashboard';
 import { formatCurrency } from '@/utils/format';
@@ -90,82 +94,65 @@ function ReportsContent() {
     <>
     {/* Mobile version */}
     <div className="lg:hidden">
-      <div className="px-5 space-y-6 min-h-dvh bg-[#09090b]" style={{ paddingBottom: 'calc(90px + env(safe-area-inset-bottom, 0px))' }}>
-        {/* Header */}
-        <div className="flex items-center justify-between pt-1">
-          <div>
-            <h1 className="text-[18px] font-bold text-white">Reports</h1>
-            <p className="text-[12px] text-[#6b7b8d]">Financial overview</p>
-          </div>
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#7c5cff]/15">
-            <FileText className="h-[18px] w-[18px] text-[#7c5cff]" />
-          </div>
-        </div>
-
-        {/* Summary KPIs */}
+      <MobilePage>
+        <MobilePageHeader
+          title="Reports"
+          subtitle="Financial overview"
+          right={
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#7c5cff]/15">
+              <FileText className="h-[18px] w-[18px] text-[#7c5cff]" />
+            </div>
+          }
+        />
         <div className="grid grid-cols-2 gap-3">
-          <div className="bg-[#161a27] rounded-[20px] border border-white/[0.06] p-4 card-shadow">
-            <p className="text-[11px] text-[#6b7b8d] font-medium uppercase tracking-wider">Income</p>
-            <p className="text-[17px] font-bold text-white mt-1">{formatCurrency(summary.totalIncome, userData?.currency)}</p>
-          </div>
-          <div className="bg-[#161a27] rounded-[20px] border border-white/[0.06] p-4 card-shadow">
-            <p className="text-[11px] text-[#6b7b8d] font-medium uppercase tracking-wider">Expenses</p>
-            <p className="text-[17px] font-bold text-[#ff5a7a] mt-1">{formatCurrency(summary.totalExpenses, userData?.currency)}</p>
-          </div>
-          <div className="bg-[#161a27] rounded-[20px] border border-white/[0.06] p-4 card-shadow">
-            <p className="text-[11px] text-[#6b7b8d] font-medium uppercase tracking-wider">Savings</p>
-            <p className="text-[17px] font-bold text-[#00d09c] mt-1">{formatCurrency(summary.savings, userData?.currency)}</p>
-          </div>
-          <div className="bg-[#161a27] rounded-[20px] border border-white/[0.06] p-4 card-shadow">
-            <p className="text-[11px] text-[#6b7b8d] font-medium uppercase tracking-wider">Balance</p>
-            <p className="text-[17px] font-bold text-[#7c5cff] mt-1">{formatCurrency(summary.currentBalance, userData?.currency)}</p>
-          </div>
+          <MobileStatCard label="Income" value={summary.totalIncome} isCurrency currency={userData?.currency} loading={loading} iconColor="#ffffff" />
+          <MobileStatCard label="Expenses" value={summary.totalExpenses} isCurrency currency={userData?.currency} loading={loading} iconColor="#ff5a7a" />
+          <MobileStatCard label="Savings" value={summary.savings} isCurrency currency={userData?.currency} loading={loading} iconColor="#00d09c" />
+          <MobileStatCard label="Balance" value={summary.currentBalance} isCurrency currency={userData?.currency} loading={loading} iconColor="#7c5cff" />
         </div>
-
-        {/* Category breakdown */}
-        <div className="bg-[#161a27] rounded-[20px] border border-white/[0.06] p-5 card-shadow">
-          <h2 className="text-[15px] font-bold text-white mb-3">Category Breakdown</h2>
-          {loading ? (
-            <div className="space-y-3">
-              {[1,2,3].map((i) => <div key={i} className="h-10 bg-white/5 rounded-xl animate-pulse" />)}
+        <MobileSection>
+          <div className="bg-[#161a27] rounded-[20px] border border-white/[0.06] p-5">
+            <h2 className="text-[15px] font-bold text-white mb-3">Category Breakdown</h2>
+            {loading ? (
+              <MobileLoadingSkeleton count={3} type="list" />
+            ) : categoryBreakdown.length === 0 ? (
+              <p className="text-[13px] text-[#6b7b8d] text-center py-4">No expenses yet</p>
+            ) : (
+              <div className="space-y-2">
+                {categoryBreakdown.slice(0, 5).map((cat, i) => (
+                  <div key={i} className="flex items-center justify-between py-2 border-b border-white/[0.06] last:border-0">
+                    <span className="text-[14px] text-white font-medium">{cat.category}</span>
+                    <span className="text-[14px] font-semibold text-white">{formatCurrency(cat.amount, userData?.currency)}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </MobileSection>
+        <MobileSection>
+          <div className="bg-[#161a27] rounded-[20px] border border-white/[0.06] p-5">
+            <h2 className="text-[15px] font-bold text-white mb-3">Export</h2>
+            <div className="grid grid-cols-3 gap-2">
+              <button onClick={printReport} className="flex flex-col items-center gap-1.5 rounded-xl bg-white/5 p-3 active:scale-95 transition-all min-h-[44px]"><Printer className="h-5 w-5 text-white/70" /><span className="text-[10px] text-[#6b7b8d] font-medium">Print</span></button>
+              <button onClick={exportCSV} className="flex flex-col items-center gap-1.5 rounded-xl bg-white/5 p-3 active:scale-95 transition-all min-h-[44px]"><FileSpreadsheet className="h-5 w-5 text-[#00d09c]" /><span className="text-[10px] text-[#6b7b8d] font-medium">CSV</span></button>
+              <button onClick={exportJSON} className="flex flex-col items-center gap-1.5 rounded-xl bg-white/5 p-3 active:scale-95 transition-all min-h-[44px]"><FileJson className="h-5 w-5 text-[#ffb020]" /><span className="text-[10px] text-[#6b7b8d] font-medium">JSON</span></button>
+              <button onClick={exportPDF} className="flex flex-col items-center gap-1.5 rounded-xl bg-white/5 p-3 active:scale-95 transition-all min-h-[44px]"><Download className="h-5 w-5 text-[#ff5a7a]" /><span className="text-[10px] text-[#6b7b8d] font-medium">PDF</span></button>
+              <button onClick={exportXLSX} className="flex flex-col items-center gap-1.5 rounded-xl bg-white/5 p-3 active:scale-95 transition-all min-h-[44px]"><Download className="h-5 w-5 text-[#7c5cff]" /><span className="text-[10px] text-[#6b7b8d] font-medium">Excel</span></button>
+              <button onClick={shareReport} className="flex flex-col items-center gap-1.5 rounded-xl bg-white/5 p-3 active:scale-95 transition-all min-h-[44px]"><Share2 className="h-5 w-5 text-[#3b82f6]" /><span className="text-[10px] text-[#6b7b8d] font-medium">Share</span></button>
             </div>
-          ) : categoryBreakdown.length === 0 ? (
-            <p className="text-[13px] text-[#6b7b8d] text-center py-4">No expenses yet</p>
-          ) : (
-            <div className="space-y-2">
-              {categoryBreakdown.slice(0, 5).map((cat, i) => (
-                <div key={i} className="flex items-center justify-between py-2 border-b border-white/[0.06] last:border-0">
-                  <span className="text-[14px] text-white font-medium">{cat.category}</span>
-                  <span className="text-[14px] font-semibold text-white">{formatCurrency(cat.amount, userData?.currency)}</span>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Export actions */}
-        <div className="bg-[#161a27] rounded-[20px] border border-white/[0.06] p-5 card-shadow">
-          <h2 className="text-[15px] font-bold text-white mb-3">Export</h2>
-          <div className="grid grid-cols-3 gap-2">
-            <button onClick={printReport} className="touch-target flex flex-col items-center gap-1.5 rounded-xl bg-white/5 p-3 active:scale-95 transition-all"><Printer className="h-5 w-5 text-white/70" /><span className="text-[10px] text-[#6b7b8d] font-medium">Print</span></button>
-            <button onClick={exportCSV} className="touch-target flex flex-col items-center gap-1.5 rounded-xl bg-white/5 p-3 active:scale-95 transition-all"><FileSpreadsheet className="h-5 w-5 text-[#00d09c]" /><span className="text-[10px] text-[#6b7b8d] font-medium">CSV</span></button>
-            <button onClick={exportJSON} className="touch-target flex flex-col items-center gap-1.5 rounded-xl bg-white/5 p-3 active:scale-95 transition-all"><FileJson className="h-5 w-5 text-[#ffb020]" /><span className="text-[10px] text-[#6b7b8d] font-medium">JSON</span></button>
-            <button onClick={exportPDF} className="touch-target flex flex-col items-center gap-1.5 rounded-xl bg-white/5 p-3 active:scale-95 transition-all"><Download className="h-5 w-5 text-[#ff5a7a]" /><span className="text-[10px] text-[#6b7b8d] font-medium">PDF</span></button>
-            <button onClick={exportXLSX} className="touch-target flex flex-col items-center gap-1.5 rounded-xl bg-white/5 p-3 active:scale-95 transition-all"><Download className="h-5 w-5 text-[#7c5cff]" /><span className="text-[10px] text-[#6b7b8d] font-medium">Excel</span></button>
-            <button onClick={shareReport} className="touch-target flex flex-col items-center gap-1.5 rounded-xl bg-white/5 p-3 active:scale-95 transition-all"><Share2 className="h-5 w-5 text-[#3b82f6]" /><span className="text-[10px] text-[#6b7b8d] font-medium">Share</span></button>
           </div>
-        </div>
-
-        {/* Desktop note */}
-        <div className="bg-[#161a27] rounded-[20px] border border-white/[0.06] p-5 card-shadow">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#ffb020]/15">
-              <FileText className="h-4 w-4 text-[#ffb020]" />
+        </MobileSection>
+        <MobileSection>
+          <div className="bg-[#161a27] rounded-[20px] border border-white/[0.06] p-5">
+            <div className="flex items-center gap-3">
+              <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#ffb020]/15">
+                <FileText className="h-4 w-4 text-[#ffb020]" />
+              </div>
+              <p className="text-[13px] text-[#6b7b8d] font-medium">Detailed charts and breakdowns are available on desktop.</p>
             </div>
-            <p className="text-[13px] text-[#6b7b8d] font-medium">Detailed charts and breakdowns are available on desktop.</p>
           </div>
-        </div>
-      </div>
+        </MobileSection>
+      </MobilePage>
     </div>
 
     <div className="hidden lg:block p-4 sm:p-6 lg:p-8 space-y-5 animate-fade-in print:p-0 max-w-[1200px] mx-auto">

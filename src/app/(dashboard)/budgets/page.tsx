@@ -3,12 +3,15 @@
 import { useState, useMemo, useEffect, Suspense } from 'react';
 import { useBudgets } from '@/hooks/useBudgets';
 import { useAuth } from '@/contexts/AuthContext';
-import { Button, Card, CardContent, Progress, Badge, Skeleton, Input, Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui';
-import { UniversalFormDialog, FormField } from '@/components/shared';
+import { Button, Card, CardContent, Progress, Badge, Skeleton } from '@/components/ui';
+import { UniversalFormDialog } from '@/components/shared';
 import { TransactionActionMenu, ConfirmDeleteDialog } from '@/components/shared';
 import { CurrencyInput, FormInput, FormSelect } from '@/components/ui/forms';
-import { cn } from '@/utils/helpers';
 import { Plus, Wallet, Target, AlertTriangle, Clock, CalendarDays, Trash2, Pencil } from 'lucide-react';
+import {
+  MobilePage, MobilePageHeader, MobileSection, MobileCard,
+  MobileEmptyState, MobileLoadingSkeleton, buildDefaultActions,
+} from '@/components/mobile';
 import { formatCurrency } from '@/utils/format';
 import { EXPENSE_CATEGORIES } from '@/constants';
 import { motion } from 'framer-motion';
@@ -43,6 +46,7 @@ function BudgetsContent() {
 
   useEffect(() => {
     if (searchParams.get('add') === '1') {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setShowCreate(true);
     }
   }, [searchParams]);
@@ -89,63 +93,47 @@ function BudgetsContent() {
     <>
     {/* Mobile version */}
     <div className="lg:hidden">
-      <div className="px-5 space-y-6">
-        <div className="flex items-center justify-between">
-          <h1 className="text-[18px] font-bold text-white">Budgets</h1>
-          <span className="text-[12px] text-[#6b7b8d]">{totalBudget > 0 ? `${((totalSpent / totalBudget) * 100).toFixed(0)}% used` : 'No budget set'}</span>
-        </div>
+      <MobilePage>
+        <MobilePageHeader
+          title="Budgets"
+          subtitle={totalBudget > 0 ? `${((totalSpent / totalBudget) * 100).toFixed(0)}% used` : 'No budget set'}
+        />
         {loading ? (
-          <div className="space-y-2">{[...Array(3)].map((_, i) => <div key={i} className="h-28 bg-[#161a27] rounded-[20px] animate-pulse" />)}</div>
+          <MobileLoadingSkeleton count={3} type="card" />
         ) : budgets.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-12 text-center">
-            <Target className="h-12 w-12 text-white/10 mb-3" />
-            <p className="text-[14px] font-medium text-white mb-1">No budgets set</p>
-            <p className="text-[12px] text-[#6b7b8d] mb-4">Create your first budget to start tracking</p>
-          </div>
+          <MobileEmptyState
+            icon={<Target className="h-12 w-12" />}
+            title="No budgets set"
+            description="Create your first budget to start tracking"
+          />
         ) : (
-          <div className="space-y-2">
-            {budgets.map((budget) => {
-              const util = budget.amount > 0 ? (budget.spent / budget.amount) * 100 : 0;
-              const remaining = budget.amount - budget.spent;
-              return (
-                <div key={budget.id} className="bg-[#161a27] rounded-[20px] border border-white/[0.06] p-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 rounded-xl bg-[#7C5CFF]/15 flex items-center justify-center"><Wallet className="h-4 w-4 text-[#7C5CFF]" /></div>
-                      <span className="text-[14px] font-medium text-white">{budget.category}</span>
-                    </div>
-                    <TransactionActionMenu
-                      actions={[
-                        { icon: Pencil, label: 'Edit', onClick: () => { setEditingId(budget.id); }, color: '#7c5cff' },
-                        { icon: Trash2, label: 'Delete', onClick: () => setDeletingId(budget.id), color: '#ff5a7a', destructive: true },
-                      ]}
-                    />
-                  </div>
-                  <div className="flex justify-between mb-1.5">
-                    <span className="text-[12px] text-[#6b7b8d]">Spent</span>
-                    <span className="text-[12px] font-medium text-white">{formatCurrency(budget.spent, userData?.currency)} / {formatCurrency(budget.amount, userData?.currency)}</span>
-                  </div>
-                  <div className="h-2.5 rounded-full bg-white/5 overflow-hidden">
-                    <div className="h-full rounded-full transition-all" style={{ width: `${Math.min(util, 100)}%`, backgroundColor: util > 100 ? '#FF5A6E' : util > 80 ? '#FBBF24' : '#00D09C' }} />
-                  </div>
-                  <div className="flex justify-between mt-1.5">
-                    <span className="text-[11px] text-[#6b7b8d]">{util.toFixed(0)}%</span>
-                    <span className="text-[11px]" style={{ color: remaining >= 0 ? '#00D09C' : '#FF5A6E' }}>
-                      {remaining >= 0 ? `${formatCurrency(remaining, userData?.currency)} left` : `${formatCurrency(Math.abs(remaining), userData?.currency)} over`}
-                    </span>
-                  </div>
-                  <div className="mt-2 pt-2 border-t border-white/[0.06] flex justify-between text-[11px]">
-                    <span className="text-[#6b7b8d]">{dateInfo.daysLeft} days left</span>
-                    <span className={util > 100 ? 'text-[#FF5A6E]' : util > 80 ? 'text-[#FBBF24]' : 'text-[#00D09C]'}>
-                      {util > 100 ? 'Over budget' : util > 80 ? 'Near limit' : 'On track'}
-                    </span>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+          <MobileSection>
+            <div className="space-y-3">
+              {budgets.map((budget) => {
+                const util = budget.amount > 0 ? (budget.spent / budget.amount) * 100 : 0;
+                return (
+                  <MobileCard
+                    key={budget.id}
+                    icon={<Wallet className="h-[18px] w-[18px]" />}
+                    iconColor="#7c5cff"
+                    title={budget.category}
+                    progress={{ current: budget.spent, max: budget.amount, color: util > 100 ? '#FF5A6E' : util > 80 ? '#FBBF24' : '#00D09C' }}
+                    metadata={[
+                      { label: 'Spent', value: formatCurrency(budget.spent, userData?.currency) },
+                      { label: 'Budget', value: formatCurrency(budget.amount, userData?.currency) },
+                      { label: 'Status', value: util > 100 ? 'Over budget' : util > 80 ? 'Near limit' : 'On track', valueColor: util > 100 ? 'text-[#FF5A6E]' : util > 80 ? 'text-[#FBBF24]' : 'text-[#00D09C]' },
+                    ]}
+                    actions={buildDefaultActions({
+                      onEdit: () => setEditingId(budget.id),
+                      onDelete: () => setDeletingId(budget.id),
+                    })}
+                  />
+                );
+              })}
+            </div>
+          </MobileSection>
         )}
-      </div>
+      </MobilePage>
     </div>
     {/* Desktop version */}
     <div className="hidden lg:block">

@@ -1,7 +1,12 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { X, Download, WifiOff } from 'lucide-react';
+import { X, WifiOff } from 'lucide-react';
+
+interface BeforeInstallPromptEvent extends Event {
+  prompt: () => Promise<void>;
+  userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
+}
 
 export function PWARegistration() {
   const [installPrompt, setInstallPrompt] = useState<Event | null>(null);
@@ -45,6 +50,7 @@ export function PWARegistration() {
     const handleOffline = () => setOffline(true);
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setOffline(!navigator.onLine);
 
     return () => {
@@ -56,8 +62,8 @@ export function PWARegistration() {
 
   const handleInstall = async () => {
     if (!installPrompt) return;
-    (installPrompt as any).prompt();
-    const result = await (installPrompt as any).userChoice;
+    (installPrompt as BeforeInstallPromptEvent).prompt();
+    const result = await (installPrompt as BeforeInstallPromptEvent).userChoice;
     if (result.outcome === 'accepted') setShowInstall(false);
     setInstallPrompt(null);
   };

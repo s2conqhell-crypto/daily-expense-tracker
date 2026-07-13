@@ -7,8 +7,12 @@ import { Button, Card, CardContent, Input, Select, SelectTrigger, SelectValue, S
 import { TransactionDialog } from '@/components/transactions/TransactionDialog';
 import { AnimatedContainer, AnimatedItem, TransactionActionMenu, ConfirmDeleteDialog } from '@/components/shared';
 import { Search as SearchIcon, Receipt, X, Pencil, Trash2, Star, Copy, Share2 } from 'lucide-react';
+import {
+  MobilePage, MobilePageHeader, MobileSection, MobileCard, MobileSearchBar,
+  MobileFilterBar, MobileEmptyState, MobileLoadingSkeleton, buildDefaultActions,
+} from '@/components/mobile';
 import { formatCurrency, formatDate } from '@/utils/format';
-import { toDate, safeDateInput } from '@/utils/helpers';
+import { safeDateInput } from '@/utils/helpers';
 import { EXPENSE_CATEGORIES, PAYMENT_METHODS } from '@/constants';
 import type { Expense } from '@/types';
 
@@ -54,104 +58,66 @@ export default function SearchPage() {
     <>
     {/* Mobile version */}
     <div className="lg:hidden">
-      <div className="px-5 space-y-6">
-        <div>
-          <h1 className="text-[18px] font-bold text-white">Search</h1>
-          <p className="text-[12px] text-[#6b7b8d]">Find any transaction instantly</p>
-        </div>
-
-        <div className="relative">
-          <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-[#6b7b8d]" />
-          <Input
-            placeholder="Search by description, category, notes..."
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            className="pl-11 pr-10 h-[52px] rounded-[16px] bg-[#161a27] border-white/[0.06] text-white placeholder:text-[#6b7b8d] text-[16px]"
-            autoFocus
-          />
-          {query && (
-            <button onClick={() => setQuery('')} className="absolute right-4 top-1/2 -translate-y-1/2 text-[#6b7b8d]">
-              <X className="h-4 w-4" />
-            </button>
-          )}
-        </div>
-
-        <div className="flex gap-2">
-          <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-            <SelectTrigger className="flex-1 bg-[#161a27] border-white/[0.06] text-white h-11 rounded-[14px]"><SelectValue placeholder="Category" /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Categories</SelectItem>
-              {EXPENSE_CATEGORIES.map((cat) => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
-            </SelectContent>
-          </Select>
-          <Select value={methodFilter} onValueChange={setMethodFilter}>
-            <SelectTrigger className="flex-1 bg-[#161a27] border-white/[0.06] text-white h-11 rounded-[14px]"><SelectValue placeholder="Payment" /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Methods</SelectItem>
-              {PAYMENT_METHODS.map((m) => <SelectItem key={m} value={m}>{m}</SelectItem>)}
-            </SelectContent>
-          </Select>
-        </div>
-
+      <MobilePage>
+        <MobilePageHeader title="Search" subtitle="Find any transaction instantly" />
+        <MobileSearchBar
+          value={query}
+          onChange={(v) => setQuery(v)}
+          placeholder="Search by description, category, notes..."
+        />
+        <MobileFilterBar
+          chips={[
+            { key: 'all', label: 'All' },
+            ...EXPENSE_CATEGORIES.map((cat) => ({ key: cat, label: cat })),
+          ]}
+          activeKey={categoryFilter}
+          onChange={(key) => setCategoryFilter(key)}
+        />
         {hasFilters && (
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between px-1">
             <span className="text-[12px] text-[#6b7b8d]">{filteredExpenses.length} result{filteredExpenses.length !== 1 ? 's' : ''} found</span>
             <button onClick={clearFilters} className="text-[12px] font-medium text-[#7C5CFF]">Clear filters</button>
           </div>
         )}
-
         {loading ? (
-          <div className="space-y-2">
-            {[...Array(5)].map((_, i) => <div key={i} className="h-[68px] bg-[#161a27] rounded-[16px] animate-pulse" />)}
-          </div>
+          <MobileLoadingSkeleton count={5} type="card" />
         ) : filteredExpenses.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-12 text-center">
-            <SearchIcon className="h-12 w-12 text-white/10 mb-3" />
-            <p className="text-[14px] font-medium text-white mb-1">No results found</p>
-            <p className="text-[12px] text-[#6b7b8d] mb-4">Try adjusting your search or filters</p>
-            {hasFilters && <button onClick={clearFilters} className="px-4 py-2 text-[13px] font-medium rounded-xl bg-[#7C5CFF]/20 text-[#7C5CFF]">Clear filters</button>}
-          </div>
+          <MobileEmptyState
+            icon={<SearchIcon className="h-12 w-12" />}
+            title="No results found"
+            description="Try adjusting your search or filters"
+            action={hasFilters ? <button onClick={clearFilters} className="px-4 py-2 text-[13px] font-medium rounded-xl bg-[#7C5CFF]/20 text-[#7C5CFF]">Clear filters</button> : undefined}
+          />
         ) : (
-          <div className="space-y-2">
-            {filteredExpenses.slice(0, 50).map((expense) => (
-              <div key={expense.id} className="bg-[#161a27] rounded-[20px] border border-white/[0.06] p-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3 min-w-0 flex-1">
-                    <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-                      <Receipt className="h-5 w-5 text-primary" />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-[14px] font-medium text-white truncate">{highlightMatch(expense.description)}</p>
-                      <div className="flex items-center gap-2 text-[11px] text-[#6b7b8d] mt-0.5 flex-wrap">
-                        <span className="bg-white/10 text-white text-[10px] px-1.5 py-0.5 rounded-full">{highlightMatch(expense.category)}</span>
-                        {expense.paymentMethod && (
-                          <span className="border border-white/[0.06] text-[#6b7b8d] text-[10px] px-1.5 py-0.5 rounded-full">{highlightMatch(expense.paymentMethod)}</span>
-                        )}
-                        <span>{formatDate(expense.expenseDate)}</span>
-                      </div>
-                      {expense.notes && (
-                        <p className="text-[11px] text-[#6b7b8d] mt-0.5 truncate">{highlightMatch(expense.notes)}</p>
-                      )}
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-1 shrink-0 ml-2">
-                    <span className="text-[14px] font-semibold text-[#ff5a7a]">-{formatCurrency(expense.amount, userData?.currency)}</span>
-                    <TransactionActionMenu
-                      actions={[
-                        { icon: Pencil, label: 'Edit', onClick: () => setEditingId(expense.id), color: '#7c5cff' },
-                        { icon: Star, label: (expense as any).isFavorite ? 'Remove from Favorites' : 'Add to Favorites', onClick: () => { const newVal = !(expense as any).isFavorite; toggleFavoriteExpense(expense.id, newVal).catch(() => {}); }, color: '#ffb020' },
-                        { icon: Copy, label: 'Duplicate', onClick: () => duplicateExpense(expense.id).catch(() => {}), color: '#3b82f6' },
-                        { icon: Share2, label: 'Share', onClick: () => { if (navigator.share) { navigator.share({ title: 'Expense', text: `${expense.description}: ${formatCurrency(expense.amount, userData?.currency)}` }); } }, color: '#10b981' },
-                        { icon: Trash2, label: 'Delete', onClick: () => setDeletingId(expense.id), color: '#ff5a7a', destructive: true },
-                      ]}
-                    />
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+          <MobileSection>
+            <div className="space-y-3">
+              {filteredExpenses.slice(0, 50).map((expense) => (
+                <MobileCard
+                  key={expense.id}
+                  icon={<Receipt className="h-[18px] w-[18px]" />}
+                  title={expense.description}
+                  subtitle={expense.category + (expense.paymentMethod ? ` · ${expense.paymentMethod}` : '')}
+                  metadata={[
+                    { label: formatDate(expense.expenseDate), value: '' },
+                  ]}
+                  amount={-expense.amount}
+                  amountColor="danger"
+                  currency={userData?.currency}
+                  actions={buildDefaultActions({
+                    onEdit: () => setEditingId(expense.id),
+                    onDelete: () => setDeletingId(expense.id),
+                    extra: [
+                      { key: 'favorite', label: (expense as Expense).isFavorite ? 'Remove from Favorites' : 'Add to Favorites', onClick: () => { const newVal = !(expense as Expense).isFavorite; toggleFavoriteExpense(expense.id, newVal).catch(() => {}); }, color: '#ffb020' },
+                      { key: 'duplicate', label: 'Duplicate', onClick: () => duplicateExpense(expense.id).catch(() => {}), color: '#3b82f6' },
+                      { key: 'share', label: 'Share', onClick: () => { if (navigator.share) { navigator.share({ title: 'Expense', text: `${expense.description}: ${formatCurrency(expense.amount, userData?.currency)}` }); } }, color: '#10b981' },
+                    ],
+                  })}
+                />
+              ))}
+            </div>
+          </MobileSection>
         )}
-      </div>
+      </MobilePage>
     </div>
     {/* Desktop version */}
     <div className="hidden lg:block">
@@ -250,7 +216,7 @@ export default function SearchPage() {
                       <TransactionActionMenu
                         actions={[
                           { icon: Pencil, label: 'Edit', onClick: () => setEditingId(expense.id), color: '#7c5cff' },
-                          { icon: Star, label: (expense as any).isFavorite ? 'Remove from Favorites' : 'Add to Favorites', onClick: () => { const newVal = !(expense as any).isFavorite; toggleFavoriteExpense(expense.id, newVal).catch(() => {}); }, color: '#ffb020' },
+                          { icon: Star, label: (expense as Expense).isFavorite ? 'Remove from Favorites' : 'Add to Favorites', onClick: () => { const newVal = !(expense as Expense).isFavorite; toggleFavoriteExpense(expense.id, newVal).catch(() => {}); }, color: '#ffb020' },
                           { icon: Copy, label: 'Duplicate', onClick: () => duplicateExpense(expense.id).catch(() => {}), color: '#3b82f6' },
                           { icon: Share2, label: 'Share', onClick: () => { if (navigator.share) { navigator.share({ title: 'Expense', text: `${expense.description}: ${formatCurrency(expense.amount, userData?.currency)}` }); } }, color: '#10b981' },
                           { icon: Trash2, label: 'Delete', onClick: () => setDeletingId(expense.id), color: '#ff5a7a', destructive: true },

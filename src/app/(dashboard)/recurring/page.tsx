@@ -7,10 +7,14 @@ import { RecurringRuleDialog } from '@/components/recurring/RecurringRuleDialog'
 import { EmptyState, ConfirmDeleteDialog } from '@/components/shared';
 import { Button } from '@/components/ui';
 import { Plus, Repeat, Pause, Play, Trash2, SkipForward, Calendar, Clock, ArrowUpDown } from 'lucide-react';
+import {
+  MobilePage, MobilePageHeader, MobileSection, MobileCard,
+  MobileEmptyState, MobileLoadingSkeleton, buildDefaultActions, MobileFilterBar,
+} from '@/components/mobile';
+import type { RecurringTransaction } from '@/types';
 import { formatCurrency, formatDate } from '@/utils/format';
 import { toDate } from '@/utils/helpers';
 import { motion } from 'framer-motion';
-import toast from 'react-hot-toast';
 import { useSearchParams } from 'next/navigation';
 
 export default function RecurringPage() {
@@ -26,12 +30,13 @@ function RecurringContent() {
   const { rules, upcoming, loading, addRule, updateRule, deleteRule, toggleRule, skipNext } = useRecurringTransactions();
   const searchParams = useSearchParams();
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [editing, setEditing] = useState<any>(null);
+  const [editing, setEditing] = useState<RecurringTransaction | null>(null);
   const [filter, setFilter] = useState<'all' | 'expense' | 'income'>('all');
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
   useEffect(() => {
     if (searchParams.get('add') === '1') {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setDialogOpen(true);
     }
   }, [searchParams]);
@@ -40,12 +45,12 @@ function RecurringContent() {
     rules.filter((r) => filter === 'all' || r.type === filter),
   [rules, filter]);
 
-  const handleEdit = (rule: any) => {
+  const handleEdit = (rule: RecurringTransaction) => {
     setEditing(rule);
     setDialogOpen(true);
   };
 
-  const handleSubmit = async (data: any) => {
+  const handleSubmit = async (data: Omit<RecurringTransaction, 'id' | 'userId' | 'createdAt' | 'updatedAt'>) => {
     if (editing) {
       await updateRule(editing.id, data);
     } else {
@@ -73,66 +78,75 @@ function RecurringContent() {
     <>
     {/* Mobile version */}
     <div className="lg:hidden">
-      <div className="px-5 space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-[18px] font-bold text-white">Recurring</h1>
-            <p className="text-[12px] text-[#6b7b8d]">{rules.length} rule{rules.length !== 1 ? 's' : ''}</p>
-          </div>
-          <div className="text-right">
-            <p className="text-[14px] font-bold text-white">{upcoming.length} upcoming</p>
-            <p className="text-[11px] text-[#6b7b8d]">Next 30 days</p>
-          </div>
-        </div>
-        {/* Filter Chips */}
-        <div className="flex gap-1.5">
-          {(['all', 'expense', 'income'] as const).map((f) => (
-            <button key={f} onClick={() => setFilter(f)} className={`px-3 py-1 text-[12px] font-medium rounded-full transition-all ${filter === f ? 'bg-[#7C5CFF]/20 text-[#7C5CFF]' : 'bg-white/5 text-[#6b7b8d] hover:bg-white/10'}`}>
-              {f === 'all' ? 'All' : f.charAt(0).toUpperCase() + f.slice(1)}
-            </button>
-          ))}
-        </div>
+      <MobilePage>
+        <MobilePageHeader
+          title="Recurring"
+          subtitle={`${rules.length} rule${rules.length !== 1 ? 's' : ''}`}
+          right={
+            <div className="text-right">
+              <p className="m-text-amount text-white">{upcoming.length} upcoming</p>
+              <p className="m-text-tiny text-[#6b7b8d]">Next 30 days</p>
+            </div>
+          }
+        />
+        <MobileFilterBar
+          chips={[
+            { key: 'all', label: 'All' },
+            { key: 'expense', label: 'Expense' },
+            { key: 'income', label: 'Income' },
+          ]}
+          activeKey={filter}
+          onChange={(v) => setFilter(v as 'all' | 'expense' | 'income')}
+        />
         {loading ? (
-          <div className="space-y-2">{[...Array(3)].map((_, i) => <div key={i} className="h-20 bg-[#161a27] rounded-[16px] animate-pulse" />)}</div>
+          <MobileLoadingSkeleton count={3} type="card" />
         ) : filtered.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-12 text-center">
-            <Repeat className="h-12 w-12 text-white/10 mb-3" />
-            <p className="text-[14px] font-medium text-white mb-1">No recurring rules</p>
-            <p className="text-[12px] text-[#6b7b8d] mb-4">Set up automatic transactions for bills, income, and more.</p>
-          </div>
+          <MobileEmptyState
+            icon={<Repeat className="h-12 w-12" />}
+            title="No recurring rules"
+            description="Set up automatic transactions for bills, income, and more."
+          />
         ) : (
-          <div className="space-y-2">
-            {filtered.map((rule) => (
-              <div key={rule.id} className="bg-[#161a27] rounded-[20px] border border-white/[0.06] p-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3 min-w-0 flex-1">
-                    <div className={`h-10 w-10 rounded-xl flex items-center justify-center shrink-0 ${rule.type === 'expense' ? 'bg-[#FF5A6E]/15' : 'bg-[#00D09C]/15'}`}>
-                      <ArrowUpDown className={`h-4 w-4 ${rule.type === 'expense' ? 'text-[#FF5A6E]' : 'text-[#00D09C]'}`} />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-[14px] font-medium text-white truncate">{rule.description}</p>
-                      <div className="flex items-center gap-2 text-[11px] text-[#6b7b8d]">
-                        <span>{intervalLabel(rule.interval)}</span>
-                        <span>&middot;</span>
-                        <span>Next: {formatDate(toDate(rule.nextExecution))}</span>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-1 shrink-0 ml-2">
-                    <span className={`text-[14px] font-semibold ${rule.type === 'expense' ? 'text-[#FF5A6E]' : 'text-[#00D09C]'}`}>
-                      {rule.type === 'expense' ? '-' : '+'}{formatCurrency(rule.amount, userData?.currency)}
-                    </span>
-                    <button onClick={() => toggleRule(rule.id, !rule.isActive)} className="px-2 py-1 text-[11px] rounded-lg bg-[#FBBF24]/15 text-[#FBBF24]">{rule.isActive ? 'Pause' : 'Resume'}</button>
-                    <button onClick={() => skipNext(rule)} className="px-2 py-1 text-[11px] rounded-lg bg-white/5 text-[#6b7b8d]">Skip</button>
-                    <button onClick={() => { setEditing(rule); setDialogOpen(true); }} className="p-1.5 rounded-lg hover:bg-white/5"><Repeat className="h-3 w-3 text-[#7C5CFF]" /></button>
-                    <button onClick={() => handleDelete(rule.id)} className="p-1.5 rounded-lg hover:bg-white/5"><Trash2 className="h-3 w-3 text-[#FF5A6E]" /></button>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+          <MobileSection>
+            <div className="space-y-3">
+              {filtered.map((rule) => (
+                <MobileCard
+                  key={rule.id}
+                  icon={<ArrowUpDown className="h-[18px] w-[18px]" />}
+                  iconColor={rule.type === 'expense' ? '#ff5a7a' : '#00d09c'}
+                  title={rule.description}
+                  subtitle={rule.isActive ? intervalLabel(rule.interval) : 'Paused'}
+                  amount={rule.type === 'expense' ? -rule.amount : rule.amount}
+                  amountPrefix={rule.type === 'expense' ? '-' : '+'}
+                  amountColor={rule.type === 'expense' ? 'danger' : 'success'}
+                  currency={userData?.currency}
+                  status={rule.isActive ? { label: 'Active', variant: 'active' } : { label: 'Paused', variant: 'paused' }}
+                  nextDate={formatDate(toDate(rule.nextExecution))}
+                  nextDateLabel="Next"
+                  actions={buildDefaultActions({
+                    onEdit: () => { setEditing(rule); setDialogOpen(true); },
+                    onDelete: () => handleDelete(rule.id),
+                    extra: [
+                      {
+                        key: rule.isActive ? 'pause' : 'resume',
+                        label: rule.isActive ? 'Pause' : 'Resume',
+                        onClick: () => toggleRule(rule.id, !rule.isActive),
+                        color: rule.isActive ? '#ffb020' : '#00d09c',
+                      },
+                      {
+                        key: 'skip',
+                        label: 'Skip Next',
+                        onClick: () => skipNext(rule),
+                        color: '#6b7b8d',
+                      },
+                    ],
+                  })}
+                />
+              ))}
+            </div>
+          </MobileSection>
         )}
-      </div>
+      </MobilePage>
     </div>
     {/* Desktop version */}
     <div className="hidden lg:block">
@@ -249,7 +263,7 @@ function RecurringContent() {
       open={dialogOpen}
       onOpenChange={(o) => { if (!o) { setDialogOpen(false); setEditing(null); } }}
       onSubmit={handleSubmit}
-      defaultValues={editing}
+      defaultValues={editing ?? undefined}
     />
     <ConfirmDeleteDialog
       open={!!deletingId}

@@ -34,7 +34,7 @@ export function useExpenses() {
     const unsubscribe = firebaseService.expenses.subscribe(user.uid, (data) => {
       setExpenses(data);
       setLoading(false);
-    });
+    }, 100);
     return unsubscribe;
   }, [user]);
 

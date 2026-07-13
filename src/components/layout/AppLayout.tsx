@@ -30,6 +30,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
   }, []);
 
@@ -44,7 +45,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
       </div>
 
       <div className="lg:ml-[240px] transition-all duration-300">
-        <main className="lg:pt-6 min-h-dvh" style={{ paddingBottom: 'calc(90px + env(safe-area-inset-bottom, 0px))' }}>
+        <main id="main-content" className="lg:pt-6 min-h-dvh" style={{ paddingBottom: 'calc(90px + env(safe-area-inset-bottom, 0px))' }}>
           {mounted ? (
             <AnimatePresence mode="wait">
               <motion.div

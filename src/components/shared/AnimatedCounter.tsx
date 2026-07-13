@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, memo } from 'react';
 
 interface AnimatedCounterProps {
   value: number;
@@ -11,7 +11,7 @@ interface AnimatedCounterProps {
   formatter?: (value: number) => string;
 }
 
-export function AnimatedCounter({ value, duration = 800, prefix = '', suffix = '', decimals = 0, formatter }: AnimatedCounterProps) {
+export const AnimatedCounter = memo(function AnimatedCounter({ value, duration = 800, prefix = '', suffix = '', decimals = 0, formatter }: AnimatedCounterProps) {
   const [display, setDisplay] = useState(0);
   const startRef = useRef<number | null>(null);
   const fromRef = useRef(0);
@@ -30,11 +30,11 @@ export function AnimatedCounter({ value, duration = 800, prefix = '', suffix = '
     };
     rafRef.current = requestAnimationFrame(animate);
     return () => { if (rafRef.current) cancelAnimationFrame(rafRef.current); };
-  }, [value, duration]);
+  }, [value, duration, display]);
 
   const formatted = formatter
     ? formatter(display)
     : display.toFixed(decimals);
 
   return <>{prefix}{formatted}{suffix}</>;
-}
+});

@@ -3,17 +3,20 @@
 import { useState, useMemo, useEffect, Suspense } from 'react';
 import { useSavingsGoals } from '@/hooks/useSavingsGoals';
 import { useAuth } from '@/contexts/AuthContext';
-import { Button, Card, CardContent, Progress, Skeleton, Input, Label, Select, SelectTrigger, SelectValue, SelectContent, SelectItem, Badge } from '@/components/ui';
-import { UniversalFormDialog, FormField } from '@/components/shared';
+import { Button, Card, CardContent, Progress, Skeleton, Badge } from '@/components/ui';
+import { UniversalFormDialog } from '@/components/shared';
 import { TransactionActionMenu, ConfirmDeleteDialog } from '@/components/shared';
-import { CurrencyInput, FormInput, FormDatePicker, FormSelect, FormTextarea } from '@/components/ui/forms';
-import { cn } from '@/utils/helpers';
+import { CurrencyInput, FormInput, FormDatePicker, FormSelect } from '@/components/ui/forms';
 import { Plus, PiggyBank, Target, Trash2, TrendingUp, CheckCircle, Pencil } from 'lucide-react';
 import { formatCurrency, formatDate } from '@/utils/format';
 import { toDate, safeDateInput } from '@/utils/helpers';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
 import { useSearchParams } from 'next/navigation';
+import {
+  MobilePage, MobilePageHeader, MobileSection, MobileCard,
+  MobileEmptyState, MobileLoadingSkeleton, buildDefaultActions,
+} from '@/components/mobile';
 
 const PRESET_GOALS = [
   { name: 'Emergency Fund', icon: '🛡️', desc: '3-6 months of expenses', color: '#FF5A6E' },
@@ -46,6 +49,7 @@ function SavingsContent() {
 
   useEffect(() => {
     if (searchParams.get('add') === '1') {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setShowCreate(true);
     }
   }, [searchParams]);
@@ -97,89 +101,77 @@ function SavingsContent() {
     <>
     {/* Mobile version */}
     <div className="lg:hidden">
-      <div className="px-5 space-y-6">
-        <div className="flex items-center justify-between">
-          <h1 className="text-[18px] font-bold text-white">Savings Goals</h1>
-          <span className="text-[12px] text-[#6b7b8d]">{goals.length} goal{goals.length !== 1 ? 's' : ''}</span>
-        </div>
+      <MobilePage>
+        <MobilePageHeader
+          title="Savings Goals"
+          subtitle={`${goals.length} goal${goals.length !== 1 ? 's' : ''}`}
+        />
         {/* Overall Progress */}
-        <div className="bg-gradient-to-br from-[#7C5CFF]/10 to-purple-600/10 rounded-[20px] border border-[#7C5CFF]/20 p-4">
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-2">
-               <div className="h-10 w-10 rounded-xl bg-[#7C5CFF]/15 flex items-center justify-center"><PiggyBank className="h-4 w-4 text-[#7C5CFF]" /></div>
-               <span className="text-[13px] font-medium text-white">Total Savings</span>
-            </div>
-            <span className="text-[14px] font-bold text-[#7C5CFF]">{overallProgress.toFixed(1)}%</span>
-          </div>
-          <p className="text-[12px] text-[#6b7b8d] mb-2">{formatCurrency(totalSaved, userData?.currency)} / {formatCurrency(totalTarget, userData?.currency)}</p>
-          <div className="h-2 rounded-full bg-white/5 overflow-hidden"><div className="h-full rounded-full bg-[#7C5CFF] transition-all" style={{ width: `${Math.min(overallProgress, 100)}%` }} /></div>
-        </div>
+        <MobileCard
+          icon={<PiggyBank className="h-[18px] w-[18px]" />}
+          iconColor="#7c5cff"
+          title="Total Savings"
+          progress={{ current: totalSaved, max: totalTarget, color: '#7c5cff' }}
+          metadata={[
+            { label: 'Progress', value: `${overallProgress.toFixed(1)}%`, valueColor: 'text-[#7c5cff]' },
+          ]}
+        />
         {loading ? (
-          <div className="space-y-2">{[...Array(3)].map((_, i) => <div key={i} className="h-32 bg-[#161a27] rounded-[16px] animate-pulse" />)}</div>
+          <MobileLoadingSkeleton count={3} type="card" />
         ) : goals.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-12 text-center">
-            <Target className="h-12 w-12 text-white/10 mb-3" />
-            <p className="text-[14px] font-medium text-white mb-1">No savings goals</p>
-            <p className="text-[12px] text-[#6b7b8d] mb-4">Set your first savings goal</p>
-          </div>
+          <MobileEmptyState
+            icon={<Target className="h-12 w-12" />}
+            title="No savings goals"
+            description="Set your first savings goal"
+          />
         ) : (
-          <div className="space-y-2">
-            {goals.filter((g) => !g.isCompleted).map((goal) => {
-              const progress = goal.targetAmount > 0 ? (goal.currentAmount / goal.targetAmount) * 100 : 0;
-              const daysLeft = Math.max(0, Math.ceil((toDate(goal.targetDate).getTime() - now.getTime()) / (1000 * 60 * 60 * 24)));
-              return (
-                <div key={goal.id} className="bg-[#161a27] rounded-[20px] border border-white/[0.06] p-4">
-                   <div className="flex items-center justify-between mb-2">
-                     <div className="flex items-center gap-3">
-                       <div className="h-10 w-10 rounded-xl bg-[#7C5CFF]/15 flex items-center justify-center"><PiggyBank className="h-4 w-4 text-[#7C5CFF]" /></div>
-                      <span className="text-[14px] font-medium text-white">{goal.name}</span>
-                    </div>
-                    <TransactionActionMenu
-                      actions={[
-                        { icon: Pencil, label: 'Edit', onClick: () => setEditingId(goal.id), color: '#7c5cff' },
-                        { icon: CheckCircle, label: 'Mark Complete', onClick: async () => { try { await updateGoal(goal.id, { isCompleted: true } as any); toast.success('Goal completed!'); } catch (e) { console.warn('[Savings] Mark complete failed', e); } }, color: '#00d09c' },
-                        { icon: Trash2, label: 'Delete', onClick: () => setDeletingId(goal.id), color: '#ff5a7a', destructive: true },
-                      ]}
+          <MobileSection>
+            <div className="space-y-3">
+              {goals.filter((g) => !g.isCompleted).map((goal) => {
+                const daysLeft = Math.max(0, Math.ceil((toDate(goal.targetDate).getTime() - now.getTime()) / (1000 * 60 * 60 * 24)));
+                return (
+                  <MobileCard
+                    key={goal.id}
+                    icon={<PiggyBank className="h-[18px] w-[18px]" />}
+                    iconColor="#7c5cff"
+                    title={goal.name}
+                    subtitle={`Target: ${formatCurrency(goal.targetAmount, userData?.currency)}`}
+                    progress={{ current: goal.currentAmount, max: goal.targetAmount, color: '#7c5cff' }}
+                    metadata={[
+                      { label: 'Days left', value: daysLeft > 0 ? `${daysLeft}d` : 'Past due', valueColor: daysLeft <= 0 ? 'text-[#FF5A6E]' : 'text-white' },
+                      { label: 'Target date', value: formatDate(toDate(goal.targetDate)) },
+                    ]}
+                    actions={buildDefaultActions({
+                      onEdit: () => setEditingId(goal.id),
+                      onDelete: () => setDeletingId(goal.id),
+                      extra: [
+                        { key: 'complete', label: 'Mark Complete', onClick: async () => { try { await updateGoal(goal.id, { isCompleted: true } as const); toast.success('Goal completed!'); } catch (e) { console.warn('[Savings] Mark complete failed', e); } }, color: '#00d09c' },
+                      ],
+                    })}
+                  />
+                );
+              })}
+              {/* Completed */}
+              {goals.filter((g) => g.isCompleted).length > 0 && (
+                <div className="pt-2">
+                  <p className="m-text-h2 text-white mb-3">Completed</p>
+                  {goals.filter((g) => g.isCompleted).map((goal) => (
+                    <MobileCard
+                      key={goal.id}
+                      icon={<TrendingUp className="h-[18px] w-[18px]" />}
+                      iconColor="#00d09c"
+                      title={goal.name}
+                      amount={goal.targetAmount}
+                      amountColor="success"
+                      currency={userData?.currency}
                     />
-                  </div>
-                  <div className="flex justify-between mb-1.5">
-                    <span className="text-[12px] text-[#6b7b8d]">Saved</span>
-                    <span className="text-[12px] font-medium text-white">{formatCurrency(goal.currentAmount, userData?.currency)} / {formatCurrency(goal.targetAmount, userData?.currency)}</span>
-                  </div>
-                  <div className="h-2.5 rounded-full bg-white/5 overflow-hidden">
-                    <div className="h-full rounded-full bg-[#7C5CFF] transition-all" style={{ width: `${Math.min(progress, 100)}%` }} />
-                  </div>
-                  <div className="flex justify-between mt-1.5 text-[11px]">
-                    <span className="text-[#6b7b8d]">{progress.toFixed(0)}% complete</span>
-                    <span className={daysLeft <= 0 ? 'text-[#FF5A6E]' : 'text-[#6b7b8d]'}>{daysLeft > 0 ? `${daysLeft}d left` : 'Past due'}</span>
-                  </div>
-                  <div className="mt-2 pt-2 border-t border-white/[0.06] flex justify-between text-[11px]">
-                    <span className="text-[#6b7b8d]">Target: {formatCurrency(goal.targetAmount, userData?.currency)}</span>
-                    <span className="text-[#6b7b8d]">By: {formatDate(toDate(goal.targetDate))}</span>
-                  </div>
+                  ))}
                 </div>
-              );
-            })}
-            {/* Completed */}
-            {goals.filter((g) => g.isCompleted).length > 0 && (
-              <div className="pt-2">
-                <p className="text-[13px] font-medium text-white mb-2">Completed</p>
-                {goals.filter((g) => g.isCompleted).map((goal) => (
-                  <div key={goal.id} className="bg-[#161a27] rounded-[20px] border border-[#00D09C]/30 p-3 mb-2">
-                     <div className="flex items-center justify-between">
-                       <div className="flex items-center gap-3">
-                         <div className="h-10 w-10 rounded-xl bg-[#00D09C]/15 flex items-center justify-center"><TrendingUp className="h-4 w-4 text-[#00D09C]" /></div>
-                        <span className="text-[14px] font-medium text-white">{goal.name}</span>
-                      </div>
-                      <span className="text-[14px] font-bold text-[#00D09C]">{formatCurrency(goal.targetAmount, userData?.currency)}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+              )}
+            </div>
+          </MobileSection>
         )}
-      </div>
+      </MobilePage>
     </div>
     {/* Desktop version */}
     <div className="hidden lg:block">
@@ -277,7 +269,7 @@ function SavingsContent() {
                         <TransactionActionMenu
                           actions={[
                             { icon: Pencil, label: 'Edit', onClick: () => setEditingId(goal.id), color: '#7c5cff' },
-                            ...(goal.isCompleted ? [] : [{ icon: CheckCircle as any, label: 'Mark Complete', onClick: async () => { try { await updateGoal(goal.id, { isCompleted: true } as any); toast.success('Goal completed!'); } catch { toast.error('Failed'); } }, color: '#00d09c' }]),
+                            ...(goal.isCompleted ? [] : [{ icon: CheckCircle, label: 'Mark Complete', onClick: async () => { try { await updateGoal(goal.id, { isCompleted: true } as const); toast.success('Goal completed!'); } catch { toast.error('Failed'); } }, color: '#00d09c' }]),
                             { icon: Trash2, label: 'Delete', onClick: () => setDeletingId(goal.id), color: '#ff5a7a', destructive: true },
                           ]}
                         />
@@ -469,7 +461,7 @@ function SavingsContent() {
               targetDate: newGoal.targetDate ? new Date(newGoal.targetDate) : editingGoal.targetDate,
               monthlyContribution: parseFloat(newGoal.monthlyContribution) || undefined,
               priority: newGoal.priority as 'low' | 'medium' | 'high',
-            } as any);
+            } as Record<string, unknown>);
             setEditingId(null);
             setNewGoal({ name: '', description: '', targetAmount: '', targetDate: '', monthlyContribution: '', priority: 'medium' });
           }

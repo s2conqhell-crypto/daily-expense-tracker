@@ -1,6 +1,5 @@
 'use client';
 
-import type { ReactElement } from 'react';
 import { Card, CardContent, Skeleton } from '@/components/ui';
 import { TrendingUp, TrendingDown } from 'lucide-react';
 import { cn } from '@/utils/helpers';

@@ -43,7 +43,11 @@ export function SubscriptionDialog({ open, onOpenChange, onSubmit, defaultValues
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (open) { setForm(defaultForm(defaultValues)); setErrors({}); }
+    if (open) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setForm(defaultForm(defaultValues));
+      setErrors({});
+    }
   }, [open, defaultValues]);
 
   const set = (field: string, value: string | boolean) => {
@@ -70,7 +74,7 @@ export function SubscriptionDialog({ open, onOpenChange, onSubmit, defaultValues
       const yearlyCost = parseFloat(form.yearlyCost as string);
       await onSubmit({
         name: stripHtml(form.name as string),
-        category: stripHtml(form.category as any) as any,
+        category: stripHtml(form.category as string) as Subscription['category'],
         customCategory: form.category === 'Custom' ? stripHtml(form.customCategory as string) : undefined,
         monthlyCost,
         yearlyCost: isNaN(yearlyCost) ? monthlyCost * 12 : yearlyCost,

@@ -1,5 +1,6 @@
 'use client';
 
+import { memo } from 'react';
 import { TrendingUp, CreditCard, Landmark, Wallet } from 'lucide-react';
 import { formatCurrency } from '@/utils/format';
 import { AnimatedCounter } from '@/components/shared';
@@ -13,7 +14,7 @@ interface MobileQuickStatsProps {
   loading?: boolean;
 }
 
-export function MobileQuickStats({ totalIncome, monthlySpending, savingsRate, currentBalance, currency, loading }: MobileQuickStatsProps) {
+export const MobileQuickStats = memo(function MobileQuickStats({ totalIncome, monthlySpending, savingsRate, currentBalance, currency, loading }: MobileQuickStatsProps) {
   const stats = [
     { label: 'Income', value: totalIncome, icon: TrendingUp, color: '#00d09c', isCurrency: true },
     { label: 'Expenses', value: monthlySpending, icon: CreditCard, color: '#ff5a7a', isCurrency: true },
@@ -51,4 +52,4 @@ export function MobileQuickStats({ totalIncome, monthlySpending, savingsRate, cu
       ))}
     </div>
   );
-}
+});

@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { navigateAndWait, ROUTES, expectNoHorizontalScroll } from './helpers';
+import { navigateAndWait, ROUTES } from './helpers';
 
 test.describe('Overall Application Health', () => {
   test('All auth pages load without console errors @fast', async ({ page }) => {

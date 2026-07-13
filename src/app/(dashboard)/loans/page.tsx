@@ -7,6 +7,11 @@ import { LoanDialog } from '@/components/loans/LoanDialog';
 import { EmptyState, StatCard, ConfirmDeleteDialog } from '@/components/shared';
 import { Button, Progress } from '@/components/ui';
 import { Plus, Banknote, Trash2, CreditCard, Calendar, TrendingUp, Wallet, CheckCircle } from 'lucide-react';
+import {
+  MobilePage, MobilePageHeader, MobileSection, MobileCard, MobileStatCard,
+  MobileEmptyState, MobileLoadingSkeleton, buildDefaultActions,
+} from '@/components/mobile';
+import type { Loan } from '@/types';
 import { formatCurrency, formatDate } from '@/utils/format';
 import { toDate } from '@/utils/helpers';
 import { motion } from 'framer-motion';
@@ -26,17 +31,18 @@ function LoansContent() {
   const { loans, loading, activeLoans, totalOutstanding, upcomingEmis, totalEmiPerMonth, addLoan, updateLoan, deleteLoan, recordPayment } = useLoans();
   const searchParams = useSearchParams();
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [editing, setEditing] = useState<any>(null);
+  const [editing, setEditing] = useState<Loan | null>(null);
   const [payingLoan, setPayingLoan] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
   useEffect(() => {
     if (searchParams.get('add') === '1') {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setDialogOpen(true);
     }
   }, [searchParams]);
 
-  const handleSubmit = async (data: any) => {
+  const handleSubmit = async (data: Omit<Loan, 'id' | 'userId' | 'createdAt' | 'updatedAt'>) => {
     if (editing) {
       await updateLoan(editing.id, data);
     } else {
@@ -72,82 +78,63 @@ function LoansContent() {
     <>
     {/* Mobile version */}
     <div className="lg:hidden">
-      <div className="px-5 space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-[18px] font-bold text-white">Loans & EMI</h1>
-            <p className="text-[12px] text-[#6b7b8d]">{loans.length} loan{loans.length !== 1 ? 's' : ''}</p>
-          </div>
-          <div className="text-right">
-            <p className="text-[14px] font-bold text-[#FF5A6E]">{formatCurrency(totalOutstanding, userData?.currency)}</p>
-            <p className="text-[11px] text-[#6b7b8d]">Outstanding</p>
-          </div>
-        </div>
+      <MobilePage>
+        <MobilePageHeader
+          title="Loans & EMI"
+          subtitle={`${loans.length} loan${loans.length !== 1 ? 's' : ''}`}
+          right={
+            <div className="text-right">
+              <p className="m-text-amount text-[#FF5A6E]">{formatCurrency(totalOutstanding, userData?.currency)}</p>
+              <p className="m-text-tiny text-[#6b7b8d]">Outstanding</p>
+            </div>
+          }
+        />
         <div className="grid grid-cols-2 gap-3">
-          <div className="bg-[#161a27] rounded-[20px] border border-white/[0.06] p-3">
-            <p className="text-[11px] text-[#6b7b8d]">Active</p>
-            <p className="text-[14px] font-bold text-white">{loading ? '...' : activeLoans.length}</p>
-          </div>
-          <div className="bg-[#161a27] rounded-[20px] border border-white/[0.06] p-3">
-            <p className="text-[11px] text-[#6b7b8d]">Monthly EMI</p>
-            <p className="text-[14px] font-bold text-[#FBBF24]">{loading ? '...' : formatCurrency(totalEmiPerMonth, userData?.currency)}</p>
-          </div>
+          <MobileStatCard label="Active" value={loading ? '...' : activeLoans.length} loading={loading} iconColor="#7c5cff" />
+          <MobileStatCard label="Monthly EMI" value={totalEmiPerMonth} isCurrency currency={userData?.currency} loading={loading} iconColor="#ffb020" />
         </div>
         {loading ? (
-          <div className="space-y-2">{[...Array(3)].map((_, i) => <div key={i} className="h-28 bg-[#161a27] rounded-[16px] animate-pulse" />)}</div>
+          <MobileLoadingSkeleton count={3} type="card" />
         ) : loans.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-12 text-center">
-            <Banknote className="h-12 w-12 text-white/10 mb-3" />
-            <p className="text-[14px] font-medium text-white mb-1">No loans</p>
-            <p className="text-[12px] text-[#6b7b8d] mb-4">Add your home loan, car loan, personal loan EMIs here.</p>
-          </div>
+          <MobileEmptyState
+            icon={<Banknote className="h-12 w-12" />}
+            title="No loans"
+            description="Add your home loan, car loan, personal loan EMIs here."
+          />
         ) : (
-          <div className="space-y-2">
-            {loans.map((loan) => {
-              const progress = loan.totalEmi > 0 ? (loan.paidEmi / loan.totalEmi) * 100 : 0;
-              return (
-                <div key={loan.id} className="bg-[#161a27] rounded-[20px] border border-white/[0.06] p-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 rounded-xl bg-[#7C5CFF]/15 flex items-center justify-center"><Banknote className="h-4 w-4 text-[#7C5CFF]" /></div>
-                      <div>
-                        <p className="text-[14px] font-medium text-white">{loan.name}</p>
-                        <p className="text-[11px] text-[#6b7b8d]">{loan.paidEmi}/{loan.totalEmi} EMIs paid</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <span className={`text-[11px] px-2 py-0.5 rounded-full font-medium ${loan.status === 'active' ? 'bg-[#00D09C]/15 text-[#00D09C]' : 'bg-[#6b7b8d]/15 text-[#6b7b8d]'}`}>
-                        {loan.status === 'active' ? 'Active' : loan.status === 'completed' ? 'Paid' : 'Defaulted'}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-3 gap-3 mb-2">
-                    <div><p className="text-[10px] text-[#6b7b8d]">Principal</p><p className="text-[12px] font-semibold text-white">{formatCurrency(loan.principalAmount, userData?.currency)}</p></div>
-                    <div><p className="text-[10px] text-[#6b7b8d]">Outstanding</p><p className="text-[12px] font-semibold text-[#FF5A6E]">{formatCurrency(loan.outstandingBalance, userData?.currency)}</p></div>
-                    <div><p className="text-[10px] text-[#6b7b8d]">EMI</p><p className="text-[12px] font-semibold text-white">{formatCurrency(loan.emiAmount, userData?.currency)}</p></div>
-                  </div>
-                  <div className="h-2 rounded-full bg-white/5 overflow-hidden mb-1">
-                    <div className="h-full rounded-full transition-all" style={{ width: `${Math.min(progress, 100)}%`, backgroundColor: loan.status === 'completed' ? '#00D09C' : progress > 50 ? '#7C5CFF' : '#FBBF24' }} />
-                  </div>
-                  <div className="flex justify-between text-[11px]">
-                    <span className="text-[#6b7b8d]">{progress.toFixed(0)}%</span>
-                    {loan.status === 'active' && loan.nextEmiDate && <span className="text-[#FBBF24]">Next: {formatDate(toDate(loan.nextEmiDate))}</span>}
-                  </div>
-                  <div className="mt-2 pt-2 border-t border-white/[0.06] flex justify-end gap-1">
-                    {loan.status === 'active' && (
-                      <button onClick={() => handlePayEMI(loan.id)} disabled={payingLoan === loan.id} className="bg-emerald-500/20 text-emerald-400 text-[13px] px-3 py-1.5 rounded-xl font-medium disabled:opacity-50">
-                        {payingLoan === loan.id ? '...' : 'Pay EMI'}
-                      </button>
-                    )}
-                    <button onClick={() => { setEditing(loan); setDialogOpen(true); }} className="px-2 py-1 text-[11px] rounded-lg bg-white/5 text-[#6b7b8d]">Edit</button>
-                    <button onClick={() => handleDelete(loan.id)} className="px-2 py-1 text-[11px] rounded-lg bg-white/5 text-[#FF5A6E]">Delete</button>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+          <MobileSection>
+            <div className="space-y-3">
+              {loans.map((loan) => {
+                const progress = loan.totalEmi > 0 ? (loan.paidEmi / loan.totalEmi) * 100 : 0;
+                return (
+                  <MobileCard
+                    key={loan.id}
+                    icon={<Banknote className="h-[18px] w-[18px]" />}
+                    iconColor="#7c5cff"
+                    title={loan.name}
+                    subtitle={`${loan.paidEmi}/${loan.totalEmi} EMIs paid`}
+                    status={{ label: loan.status === 'active' ? 'Active' : loan.status === 'completed' ? 'Paid' : 'Defaulted', variant: loan.status === 'active' ? 'active' : 'completed' }}
+                    progress={{ current: loan.paidEmi, max: loan.totalEmi, color: loan.status === 'completed' ? '#00D09C' : progress > 50 ? '#7C5CFF' : '#FBBF24' }}
+                    nextDate={loan.status === 'active' && loan.nextEmiDate ? formatDate(toDate(loan.nextEmiDate)) : undefined}
+                    nextDateLabel="Next EMI"
+                    metadata={[
+                      { label: 'Outstanding', value: formatCurrency(loan.outstandingBalance, userData?.currency), valueColor: 'text-[#FF5A6E]' },
+                      { label: 'EMI', value: formatCurrency(loan.emiAmount, userData?.currency) },
+                    ]}
+                    actions={buildDefaultActions({
+                      onEdit: () => { setEditing(loan); setDialogOpen(true); },
+                      onDelete: () => handleDelete(loan.id),
+                      extra: loan.status === 'active' ? [
+                        { key: 'pay-emi', label: 'Pay EMI', onClick: () => handlePayEMI(loan.id), color: '#00d09c', icon: <CheckCircle className="h-[18px] w-[18px]" /> },
+                      ] : undefined,
+                    })}
+                  />
+                );
+              })}
+            </div>
+          </MobileSection>
         )}
-      </div>
+      </MobilePage>
     </div>
     {/* Desktop version */}
     <div className="hidden lg:block">
@@ -276,7 +263,7 @@ function LoansContent() {
       open={dialogOpen}
       onOpenChange={(o) => { if (!o) { setDialogOpen(false); setEditing(null); } }}
       onSubmit={handleSubmit}
-      defaultValues={editing}
+      defaultValues={editing ?? undefined}
     />
     <ConfirmDeleteDialog
       open={!!deletingId}

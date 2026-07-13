@@ -1,6 +1,6 @@
 'use client';
 
-import { forwardRef, useState, useRef, useEffect } from 'react';
+import { forwardRef, useRef, useEffect } from 'react';
 import { cn } from '@/utils/helpers';
 import { ValidationMessage } from './ValidationMessage';
 
@@ -13,7 +13,6 @@ interface FormTextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaEle
 
 export const FormTextarea = forwardRef<HTMLTextAreaElement, FormTextareaProps>(
   ({ className, label, error, charCount, hideCharUntilTyping = true, id, ...props }, forwardedRef) => {
-    const [focused, setFocused] = useState(false);
     const internalRef = useRef<HTMLTextAreaElement>(null);
     const resolvedRef = (forwardedRef || internalRef) as React.RefObject<HTMLTextAreaElement>;
 
@@ -40,8 +39,6 @@ export const FormTextarea = forwardRef<HTMLTextAreaElement, FormTextareaProps>(
             error ? 'border-[#FF5A6E]/60' : 'border-white/[0.08] hover:border-white/[0.15]',
             className
           )}
-          onFocus={() => setFocused(true)}
-          onBlur={() => setFocused(false)}
           aria-invalid={!!error}
           rows={2}
           {...props}

@@ -10,9 +10,10 @@ export function useSubscriptions() {
   const { user } = useAuth();
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error] = useState<string | null>(null);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (!user) { setLoading(false); return; }
     setLoading(true);
     const unsub = firebaseService.subscriptions.subscribe(user.uid, (data) => {

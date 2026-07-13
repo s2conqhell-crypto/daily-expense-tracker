@@ -2,10 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import { UniversalFormDialog } from '@/components/shared';
-import { CurrencyInput, FormInput, FormSelect, FormDatePicker, FormSwitch, FormTextarea, FormSection } from '@/components/ui/forms';
+import { CurrencyInput, FormInput, FormSelect, FormDatePicker, FormSwitch, FormTextarea } from '@/components/ui/forms';
 import { EXPENSE_CATEGORIES, INCOME_SOURCES, PAYMENT_METHODS } from '@/constants';
-import type { RecurringTransaction } from '@/types';
-import { toDate, stripHtml, safeDateInput } from '@/utils/helpers';
+import type { RecurringTransaction, PaymentMethod } from '@/types';
+import { stripHtml, safeDateInput } from '@/utils/helpers';
 import toast from 'react-hot-toast';
 
 interface RecurringRuleDialogProps {
@@ -53,7 +53,11 @@ export function RecurringRuleDialog({ open, onOpenChange, onSubmit, defaultValue
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (open) { setForm(defaultForm(defaultValues)); setErrors({}); }
+    if (open) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setForm(defaultForm(defaultValues));
+      setErrors({});
+    }
   }, [open, defaultValues]);
 
   const set = (field: string, value: string | boolean) => {
@@ -81,12 +85,12 @@ export function RecurringRuleDialog({ open, onOpenChange, onSubmit, defaultValue
       await onSubmit({
         type: form.type as 'expense' | 'income',
         amount,
-        ...(form.type === 'expense' ? { category: stripHtml(form.category as any) } : {}),
-        ...(form.type === 'income' ? { source: stripHtml(form.source as any) } : {}),
+        ...(form.type === 'expense' ? { category: stripHtml(form.category as string) } : {}),
+        ...(form.type === 'income' ? { source: stripHtml(form.source as string) } : {}),
         description: stripHtml(form.description as string),
         ...(form.notes ? { notes: stripHtml(form.notes as string) } : {}),
-        paymentMethod: form.paymentMethod as any,
-        interval: form.interval as any,
+        paymentMethod: form.paymentMethod as PaymentMethod,
+        interval: form.interval as RecurringTransaction['interval'],
         ...(dayOfMonth >= 1 ? { dayOfMonth } : {}),
         nextExecution: new Date(form.nextExecution as string),
         isActive: form.isActive as boolean,

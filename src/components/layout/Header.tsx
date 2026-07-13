@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
@@ -34,12 +34,7 @@ export function Header() {
   const pathname = usePathname();
   const isMobile = useIsMobile();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [pageTitle, setPageTitle] = useState('Dashboard');
-
-  useEffect(() => {
-    const title = pathname.split('/').filter(Boolean).pop()?.replace(/-/g, ' ')?.replace(/\b\w/g, (c: string) => c.toUpperCase()) || 'Dashboard';
-    setPageTitle(title);
-  }, [pathname]);
+  const pageTitle = pathname.split('/').filter(Boolean).pop()?.replace(/-/g, ' ')?.replace(/\b\w/g, (c: string) => c.toUpperCase()) || 'Dashboard';
 
   const toggleTheme = () => {
     setTheme(resolvedTheme === 'dark' ? 'light' : 'dark');

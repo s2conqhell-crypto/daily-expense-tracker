@@ -3,16 +3,17 @@
 import { useState, useEffect, useCallback } from 'react';
 import { firebaseService } from '@/firebase/services';
 import { useAuth } from '@/contexts/AuthContext';
-import type { RecurringTransaction } from '@/types';
+import type { RecurringTransaction, Expense, Income } from '@/types';
 import toast from 'react-hot-toast';
 
 export function useRecurringTransactions() {
   const { user } = useAuth();
   const [rules, setRules] = useState<RecurringTransaction[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error] = useState<string | null>(null);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (!user) { setLoading(false); return; }
     setLoading(true);
     const unsub = firebaseService.recurringTransactions.subscribe(user.uid, (data) => {
@@ -44,8 +45,7 @@ export function useRecurringTransactions() {
   }, []);
 
   const skipNext = useCallback(async (rule: RecurringTransaction) => {
-    const now = new Date();
-    let next = new Date(rule.nextExecution);
+    const next = new Date(rule.nextExecution);
     switch (rule.interval) {
       case 'daily': next.setDate(next.getDate() + 1); break;
       case 'weekly': next.setDate(next.getDate() + 7); break;
@@ -76,7 +76,7 @@ export function useRecurringTransactions() {
             isRecurring: true,
             recurringInterval: rule.interval,
             isFavorite: false,
-          } as any);
+          } as unknown as Omit<Expense, 'id' | 'createdAt' | 'updatedAt'>);
         } else {
           await firebaseService.income.add(user.uid, {
             amount: rule.amount,
@@ -89,10 +89,10 @@ export function useRecurringTransactions() {
             isRecurring: true,
             recurringInterval: rule.interval,
             isFavorite: false,
-          } as any);
+          } as unknown as Omit<Income, 'id' | 'createdAt' | 'updatedAt'>);
         }
 
-        let next = new Date(rule.nextExecution);
+        const next = new Date(rule.nextExecution);
         switch (rule.interval) {
           case 'daily': next.setDate(next.getDate() + 1); break;
           case 'weekly': next.setDate(next.getDate() + 7); break;

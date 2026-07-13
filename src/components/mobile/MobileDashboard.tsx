@@ -8,11 +8,10 @@ import { useIncome } from '@/hooks/useIncome';
 import { firebaseService } from '@/firebase/services';
 import { useRouter } from 'next/navigation';
 import {
-  TrendingUp, Target, Repeat, Banknote, Clock, PiggyBank,
-  Receipt, BarChart3, ChevronRight, Plus,
-  
+  Target, Repeat, Banknote, Clock, PiggyBank,
+  Receipt, ChevronRight,
 } from 'lucide-react';
-import { formatCurrency, formatDate } from '@/utils/format';
+import { formatCurrency } from '@/utils/format';
 import { toDate, safeDateInput } from '@/utils/helpers';
 import { AnimatedCounter, ConfirmDeleteDialog } from '@/components/shared';
 import { TransactionDialog } from '@/components/transactions/TransactionDialog';
@@ -20,9 +19,11 @@ import { MobileBalanceCard } from './MobileBalanceCard';
 import { MobileQuickStats } from './MobileQuickStats';
 import { MobileTransactionItem } from './MobileTransactionItem';
 
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import dynamic from 'next/dynamic';
 import { motion } from 'framer-motion';
-import type { Expense, Income } from '@/types';
+
+const MobileChartSection = dynamic(() => import('@/components/charts/MobileChartSection'), { ssr: false });
+import type { Expense, Income, RecurringTransaction, Subscription, Loan, Budget } from '@/types';
 
 const container = {
   hidden: { opacity: 0 },
@@ -37,16 +38,28 @@ const itemAnim = {
   show: { opacity: 1, y: 0, transition: { duration: 0.35, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] } },
 };
 
-
+interface ExtraData {
+  upcomingRules: RecurringTransaction[];
+  upcomingSubs: Subscription[];
+  upcomingEmis: Loan[];
+  subTotal: number;
+  budgetData: Budget | null;
+}
 
 export function MobileDashboard() {
   const { summary, monthlyTrend, loading } = useDashboard();
   const { user, userData } = useAuth();
   const router = useRouter();
-  const [todayStr, setTodayStr] = useState('');
-  const [greeting, setGreeting] = useState('');
+  const getGreeting = () => {
+    const h = new Date().getHours();
+    if (h < 12) return 'Good Morning';
+    if (h < 17) return 'Good Afternoon';
+    return 'Good Evening';
+  };
+  const greeting = getGreeting();
+  const todayStr = new Date().toLocaleDateString('en-US', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
   const [txCount, setTxCount] = useState(5);
-  const [extraData, setExtraData] = useState<any>({ upcomingRules: [], upcomingSubs: [], upcomingEmis: [], subTotal: 0, budgetData: null });
+  const [extraData, setExtraData] = useState<ExtraData>({ upcomingRules: [], upcomingSubs: [], upcomingEmis: [], subTotal: 0, budgetData: null });
   const [editingTx, setEditingTx] = useState<Expense | Income | null>(null);
   const [deletingTx, setDeletingTx] = useState<Expense | Income | null>(null);
   const { updateExpense, deleteExpense, duplicateExpense, toggleFavoriteExpense } = useExpenses();
@@ -75,15 +88,6 @@ export function MobileDashboard() {
     };
     load();
   }, [user]);
-
-  useEffect(() => {
-    const h = new Date().getHours();
-    let g = 'Good Evening';
-    if (h < 12) g = 'Good Morning';
-    else if (h < 17) g = 'Good Afternoon';
-    setGreeting(g);
-    setTodayStr(new Date().toLocaleDateString('en-US', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }));
-  }, []);
 
   const userName = (userData?.name?.split(' ') || [])[0] || 'User';
   const savingsRate = summary.totalIncome > 0 ? (summary.savings / summary.totalIncome) * 100 : 0;
@@ -128,48 +132,7 @@ export function MobileDashboard() {
           />
         </motion.div>
 
-        {/* Trend Card */}
-        <motion.div variants={itemAnim}>
-          <div className="bg-[#161a27] rounded-[20px] border border-white/[0.06] p-5 card-shadow">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2">
-                <div className="flex h-8 w-8 items-center justify-center rounded-[10px] bg-[#7c5cff]/15">
-                  <BarChart3 className="h-[18px] w-[18px] text-[#7c5cff]" />
-                </div>
-                <span className="text-[15px] font-semibold text-white">Spending Trend</span>
-              </div>
-              {monthlyTrend.length > 0 && (
-                <button onClick={() => router.push('/analytics')} className="text-[12px] font-semibold text-[#7c5cff] flex items-center gap-1 active:opacity-70 transition-opacity">
-                  Analytics <ChevronRight className="h-4 w-4" />
-                </button>
-              )}
-            </div>
-            {loading ? (
-              <div className="h-[140px] rounded-xl bg-white/5 animate-pulse" />
-            ) : monthlyTrend.length === 0 ? (
-              <div className="h-[140px] flex flex-col items-center justify-center rounded-xl bg-white/[0.02] border border-dashed border-white/[0.06]">
-                <BarChart3 className="h-8 w-8 text-white/10 mb-2" />
-                <p className="text-[12px] text-[#6b7b8d] font-medium">No data yet</p>
-              </div>
-            ) : (
-              <div style={{ minHeight: 140, width: '100%' }}>
-              <ResponsiveContainer width="100%" height={140}>
-                <BarChart data={monthlyTrend} barGap={4}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
-                  <XAxis dataKey="month" tick={{ fontSize: 10, fill: '#6b7b8d', fontWeight: 500 }} axisLine={false} tickLine={false} dy={4} />
-                  <YAxis hide />
-                  <Tooltip
-                    contentStyle={{ background: '#161a27', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '14px', fontSize: '12px', color: '#fff', boxShadow: '0 8px 32px rgba(0,0,0,0.5)' }}
-                    cursor={{ fill: 'rgba(255,255,255,0.03)' }}
-                  />
-                  <Bar dataKey="income" fill="#00d09c" radius={[4, 4, 0, 0]} maxBarSize={20} name="Income" />
-                  <Bar dataKey="expenses" fill="#ff5a7a" radius={[4, 4, 0, 0]} maxBarSize={20} name="Expenses" />
-                </BarChart>
-              </ResponsiveContainer>
-              </div>
-            )}
-          </div>
-        </motion.div>
+        <MobileChartSection monthlyTrend={monthlyTrend} loading={loading} />
 
         {/* Recent Transactions */}
         <motion.div variants={itemAnim}>
@@ -193,11 +156,11 @@ export function MobileDashboard() {
                   key={i}
                   description={'description' in tx ? tx.description : ''}
                   amount={tx.amount}
-                  date={tx.createdAt || (tx as any).expenseDate || (tx as any).incomeDate}
+                  date={tx.createdAt || (tx as Expense).expenseDate || (tx as Income).incomeDate}
                   type={'type' in tx && tx.type === 'income' ? 'income' : 'expense'}
-                  category={(tx as any).category}
+                  category={(tx as Expense).category}
                   currency={userData?.currency}
-                  isFavorite={(tx as any).isFavorite}
+                  isFavorite={(tx as Expense).isFavorite}
                   onEdit={() => setEditingTx(tx)}
                   onDelete={() => setDeletingTx(tx)}
                   onDuplicate={async () => {
@@ -206,7 +169,7 @@ export function MobileDashboard() {
                   }}
                   onToggleFavorite={async () => {
                     const isIncome = 'type' in tx && tx.type === 'income';
-                    const newVal = !(tx as any).isFavorite;
+                    const newVal = !(tx as Expense).isFavorite;
                     if (isIncome) { await toggleFavoriteIncome(tx.id, newVal); } else { await toggleFavoriteExpense(tx.id, newVal); }
                   }}
                   onShare={() => {
@@ -346,14 +309,14 @@ export function MobileDashboard() {
           defaultValues={{
             amount: String(editingTx.amount),
             description: editingTx.description,
-            notes: (editingTx as any).notes || '',
-            category: (editingTx as any).category || '',
-            source: (editingTx as any).source || '',
-            expenseDate: safeDateInput((editingTx as any).expenseDate || editingTx.createdAt),
-            incomeDate: safeDateInput((editingTx as any).incomeDate || editingTx.createdAt),
-            paymentMethod: (editingTx as any).paymentMethod || 'Cash',
-            isRecurring: (editingTx as any).isRecurring || false,
-            recurringInterval: (editingTx as any).recurringInterval || 'monthly',
+            notes: (editingTx as Expense).notes || '',
+            category: (editingTx as Expense).category || '',
+            source: (editingTx as Income).source || '',
+            expenseDate: safeDateInput((editingTx as Expense).expenseDate || editingTx.createdAt),
+            incomeDate: safeDateInput((editingTx as Income).incomeDate || editingTx.createdAt),
+            paymentMethod: (editingTx as Expense).paymentMethod || 'Cash',
+            isRecurring: (editingTx as Expense).isRecurring || false,
+            recurringInterval: (editingTx as Expense).recurringInterval || 'monthly',
           }}
           onSubmit={async (data) => {
             try {

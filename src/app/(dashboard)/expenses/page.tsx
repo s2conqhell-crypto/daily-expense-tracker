@@ -9,7 +9,7 @@ import { AnimatedContainer, AnimatedItem, TransactionActionMenu, ConfirmDeleteDi
 import {
   Plus, Search, Filter, Pencil, Trash2, Receipt,
   TrendingDown, CreditCard, ArrowUpDown, ArrowDown,
-  Check, X, Download, Clock, MoreVertical, Star, Copy, Share2,
+  Check, X, Download, Clock, Star, Copy, Share2,
 } from 'lucide-react';
 import { formatCurrency, formatDate } from '@/utils/format';
 import { toDate, safeDateInput } from '@/utils/helpers';
@@ -19,6 +19,11 @@ import type { Expense, SortOption } from '@/types';
 import toast from 'react-hot-toast';
 import { motion } from 'framer-motion';
 import { useSearchParams } from 'next/navigation';
+import {
+  MobilePage, MobilePageHeader, MobileSection, MobileCard, MobileStatCard,
+  MobileSearchBar, MobileFilterBar, buildDefaultActions,
+  MobileEmptyState, MobileLoadingSkeleton,
+} from '@/components/mobile';
 
 const PAGE_SIZE = 10;
 
@@ -42,12 +47,14 @@ function ExpensesContent() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  const selectedExpenses = expenses.filter((e) => selected.has(e.id));
   const [dateFilter, setDateFilter] = useState<'all' | 'today' | 'week' | 'month'>('all');
 
   const searchParams = useSearchParams();
 
   useEffect(() => {
     if (searchParams.get('add') === '1') {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setDialogOpen(true);
     }
   }, [searchParams]);
@@ -94,7 +101,7 @@ function ExpensesContent() {
     a.href = url; a.download = 'expenses-export.json'; a.click();
     URL.revokeObjectURL(url);
     toast.success('Exported successfully');
-  }, [selected]);
+  }, [selectedExpenses]);
 
   const toggleSelect = (id: string) => {
     setSelected((prev) => {
@@ -141,7 +148,6 @@ function ExpensesContent() {
     [expenses, categoryFilter, search, dateFilter, sort]
   );
 
-  const selectedExpenses = expenses.filter((e) => selected.has(e.id));
   const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
   const paged = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
@@ -169,101 +175,88 @@ function ExpensesContent() {
     <>
     {/* Mobile version */}
     <div className="lg:hidden">
-      <div className="px-5 space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-[18px] font-bold text-white">Expenses</h1>
-            <p className="text-[12px] text-[#6b7b8d]">{filtered.length} of {expenses.length} transactions</p>
-          </div>
-          <div className="text-right">
-            <p className="text-[14px] font-bold text-white">{formatCurrency(expenses.reduce((s, e) => s + e.amount, 0), userData?.currency)}</p>
-            <p className="text-[11px] text-[#6b7b8d]">Total spent</p>
-          </div>
-        </div>
-
-        {/* Stat Cards */}
-        <div className="grid grid-cols-2 gap-3">
-          {[
-            { label: "Today", value: todayExpenses.reduce((s, e) => s + e.amount, 0), color: '#ff5a7a' },
-            { label: "Month", value: monthlyExpenses.reduce((s, e) => s + e.amount, 0), color: '#7c5cff' },
-            { label: "Highest", value: highestExpense, color: '#ffb020' },
-            { label: "Average", value: avgExpense, color: '#00d09c' },
-          ].map((stat) => (
-            <div key={stat.label} className="bg-[#161a27] rounded-[20px] border border-white/[0.06] p-4 card-shadow">
-              {loading ? <><div className="h-6 w-16 bg-white/5 rounded animate-pulse mb-1" /><div className="h-3 w-12 bg-white/5 rounded animate-pulse" /></> : <><p className="text-[17px] font-bold text-white">{formatCurrency(stat.value, userData?.currency)}</p><p className="text-[11px] text-[#6b7b8d] mt-0.5">{stat.label}</p></>}
+      <MobilePage>
+        <MobilePageHeader
+          title="Expenses"
+          subtitle={`${filtered.length} of ${expenses.length} transactions`}
+          right={
+            <div className="text-right">
+              <p className="m-text-amount text-white">{formatCurrency(expenses.reduce((s, e) => s + e.amount, 0), userData?.currency)}</p>
+              <p className="m-text-tiny text-[#6b7b8d]">Total spent</p>
             </div>
-          ))}
-        </div>
+          }
+        />
 
-        {/* Search */}
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#6b7b8d]" />
-          <Input placeholder="Search expenses..." value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} className="pl-9 h-[52px] text-[14px] bg-[#161a27] border-white/[0.06] text-white rounded-[16px] placeholder:text-[#6b7b8d]" />
-        </div>
+        <MobileSection>
+          <div className="grid grid-cols-2 gap-3">
+            <MobileStatCard label="Today" value={todayExpenses.reduce((s, e) => s + e.amount, 0)} isCurrency currency={userData?.currency} loading={loading} iconColor="#ff5a7a" />
+            <MobileStatCard label="Month" value={monthlyExpenses.reduce((s, e) => s + e.amount, 0)} isCurrency currency={userData?.currency} loading={loading} iconColor="#7c5cff" />
+            <MobileStatCard label="Highest" value={highestExpense} isCurrency currency={userData?.currency} loading={loading} iconColor="#ffb020" />
+            <MobileStatCard label="Average" value={avgExpense} isCurrency currency={userData?.currency} loading={loading} iconColor="#00d09c" />
+          </div>
+        </MobileSection>
 
-        {/* Filter Chips */}
-        <div className="flex gap-1.5 overflow-x-auto -mx-4 px-4 scrollbar-hide">
-          {(['all', 'today', 'week', 'month'] as const).map((f) => (
-            <button key={f} onClick={() => { setDateFilter(f); setPage(1); }} className={`shrink-0 px-4 py-1.5 text-[12px] font-medium rounded-full transition-all ${dateFilter === f ? 'bg-[#7c5cff]/20 text-[#7c5cff]' : 'bg-white/5 text-[#6b7b8d] hover:bg-white/10'}`}>{f === 'all' ? 'All Time' : f.charAt(0).toUpperCase() + f.slice(1)}</button>
-          ))}
-        </div>
+        <MobileSearchBar value={search} onChange={(v) => { setSearch(v); setPage(1); }} placeholder="Search expenses..." />
 
-        {/* List */}
+        <MobileFilterBar
+          chips={[
+            { key: 'all', label: 'All Time' },
+            { key: 'today', label: 'Today' },
+            { key: 'week', label: 'Week' },
+            { key: 'month', label: 'Month' },
+          ]}
+          activeKey={dateFilter}
+          onChange={(key) => { setDateFilter(key as typeof dateFilter); setPage(1); }}
+        />
+
         {loading ? (
-          <div className="space-y-2">{[...Array(5)].map((_, i) => <div key={i} className="h-[68px] bg-[#161a27] rounded-[16px] animate-pulse" />)}</div>
+          <MobileLoadingSkeleton count={5} type="card" />
         ) : filtered.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-12 text-center">
-            <Receipt className="h-12 w-12 text-white/10 mb-3" />
-            <p className="text-[14px] font-medium text-white mb-1">No expenses found</p>
-            <p className="text-[12px] text-[#6b7b8d] mb-4">{search || categoryFilter !== 'all' || dateFilter !== 'all' ? 'Try adjusting your filters' : 'Start tracking your spending'}</p>
-          </div>
+          <MobileEmptyState
+            icon={<Receipt className="h-12 w-12" />}
+            title="No expenses found"
+            description={search || categoryFilter !== 'all' || dateFilter !== 'all' ? 'Try adjusting your filters' : 'Start tracking your spending'}
+          />
         ) : (
-          <div className="space-y-2">
-            {paged.map((expense) => (
-              <div key={expense.id} className="bg-[#161a27] rounded-[16px] border border-white/[0.06] px-4 py-[14px] card-shadow active:scale-[0.98] transition-all">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3 min-w-0 flex-1">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-xl shrink-0 bg-[#ff5a7a]/15">
-                      <Receipt className="h-[18px] w-[18px] text-[#ff5a7a]" />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-[14px] font-semibold text-white truncate">{expense.description}</p>
-                      <div className="flex items-center gap-2 mt-0.5">
-                        <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-white/5 text-[#6b7b8d]">{expense.category}</span>
-                        <span className="text-[10px] text-[#6b7b8d] font-medium">{formatDate(expense.expenseDate)}</span>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-1 shrink-0 ml-2">
-                    <span className="text-[15px] font-bold text-[#ff5a7a]">-{formatCurrency(expense.amount, userData?.currency)}</span>
-                    <TransactionActionMenu
-                      actions={[
-                        { icon: Pencil, label: 'Edit', onClick: () => setEditingId(expense.id), color: '#7c5cff' },
-                        { icon: Star, label: (expense as any).isFavorite ? 'Remove from Favorites' : 'Add to Favorites', onClick: () => { const newVal = !(expense as any).isFavorite; toggleFavoriteExpense(expense.id, newVal).catch(() => toast.error('Failed to update favorite')); }, color: '#ffb020' },
-                        { icon: Copy, label: 'Duplicate', onClick: () => duplicateExpense(expense.id).catch(() => toast.error('Failed to duplicate')), color: '#3b82f6' },
-                        { icon: Share2, label: 'Share', onClick: () => { if (navigator.share) { navigator.share({ title: 'Expense', text: `${expense.description}: ${formatCurrency(expense.amount, userData?.currency)}` }); } }, color: '#10b981' },
-                        { icon: Trash2, label: 'Delete', onClick: () => setDeletingId(expense.id), color: '#ff5a7a', destructive: true },
-                      ]}
-                    />
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+          <MobileSection>
+            <div className="space-y-2.5">
+              {paged.map((expense) => (
+                <MobileCard
+                  key={expense.id}
+                  icon={<Receipt className="h-[18px] w-[18px]" />}
+                  iconColor="#ff5a7a"
+                  title={expense.description}
+                  subtitle={formatDate(expense.expenseDate)}
+                  amount={expense.amount}
+                  amountColor="danger"
+                  amountPrefix="-"
+                  currency={userData?.currency}
+                  tags={[expense.category]}
+                  actions={buildDefaultActions({
+                    onEdit: () => setEditingId(expense.id),
+                    onDelete: () => setDeletingId(expense.id),
+                    onDuplicate: () => duplicateExpense(expense.id).catch(() => toast.error('Failed to duplicate')),
+                    onToggleFavorite: () => { const newVal = !expense.isFavorite; toggleFavoriteExpense(expense.id, newVal).catch(() => toast.error('Failed to update favorite')); },
+                    isFavorite: expense.isFavorite,
+                    onShare: () => { if (navigator.share) { navigator.share({ title: 'Expense', text: `${expense.description}: ${formatCurrency(expense.amount, userData?.currency)}` }); } },
+                  })}
+                />
+              ))}
+            </div>
+          </MobileSection>
         )}
 
         {/* Pagination */}
         {totalPages > 1 && (
           <div className="flex items-center justify-between">
-            <p className="text-[11px] text-[#6b7b8d]">Page {page} of {totalPages}</p>
+            <p className="m-text-tiny text-[#6b7b8d]">Page {page} of {totalPages}</p>
             <div className="flex gap-1">
-              <button onClick={() => setPage(Math.max(1, page - 1))} disabled={page === 1} className="h-10 w-10 rounded-xl bg-white/5 text-white text-sm font-medium disabled:opacity-30 active:scale-90 transition-all">&lt;</button>
-              <button onClick={() => setPage(Math.min(totalPages, page + 1))} disabled={page === totalPages} className="h-10 w-10 rounded-xl bg-white/5 text-white text-sm font-medium disabled:opacity-30 active:scale-90 transition-all">&gt;</button>
+              <button onClick={() => setPage(Math.max(1, page - 1))} disabled={page === 1} className="m-touch rounded-xl bg-white/5 text-white text-sm font-medium disabled:opacity-30 active:scale-90 transition-all">&lt;</button>
+              <button onClick={() => setPage(Math.min(totalPages, page + 1))} disabled={page === totalPages} className="m-touch rounded-xl bg-white/5 text-white text-sm font-medium disabled:opacity-30 active:scale-90 transition-all">&gt;</button>
             </div>
           </div>
         )}
-      </div>
+      </MobilePage>
     </div>
     {/* Desktop version */}
     <div className="hidden lg:block">
@@ -486,7 +479,7 @@ function ExpensesContent() {
                       <TransactionActionMenu
                         actions={[
                           { icon: Pencil, label: 'Edit', onClick: () => setEditingId(expense.id), color: '#7c5cff' },
-                          { icon: Star, label: (expense as any).isFavorite ? 'Remove from Favorites' : 'Add to Favorites', onClick: () => { const newVal = !(expense as any).isFavorite; toggleFavoriteExpense(expense.id, newVal).catch(() => toast.error('Failed to update favorite')); }, color: '#ffb020' },
+                          { icon: Star, label: expense.isFavorite ? 'Remove from Favorites' : 'Add to Favorites', onClick: () => { const newVal = !expense.isFavorite; toggleFavoriteExpense(expense.id, newVal).catch(() => toast.error('Failed to update favorite')); }, color: '#ffb020' },
                           { icon: Copy, label: 'Duplicate', onClick: () => duplicateExpense(expense.id).catch(() => toast.error('Failed to duplicate')), color: '#3b82f6' },
                           { icon: Share2, label: 'Share', onClick: () => { if (navigator.share) { navigator.share({ title: 'Expense', text: `${expense.description}: ${formatCurrency(expense.amount, userData?.currency)}` }); } }, color: '#10b981' },
                           { icon: Trash2, label: 'Delete', onClick: () => setDeletingId(expense.id), color: '#ff5a7a', destructive: true },
@@ -536,7 +529,7 @@ function ExpensesContent() {
     
     {/* Dialogs */}
     <TransactionDialog type="expense" open={dialogOpen} onOpenChange={setDialogOpen}
-      onSubmit={async (data) => { try { await addExpense(data as any); } catch (e) { console.warn('[Expenses] Add failed', e); } }} />
+      onSubmit={async (data) => { try { await addExpense(data as Omit<Expense, 'id' | 'createdAt' | 'updatedAt'>); } catch (e) { console.warn('[Expenses] Add failed', e); } }} />
     {editingExpense && (
       <TransactionDialog
         type="expense" open={true} onOpenChange={() => setEditingId(null)}

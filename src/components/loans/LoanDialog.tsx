@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { UniversalFormDialog } from '@/components/shared';
 import { CurrencyInput, FormInput, FormDatePicker, FormTextarea, FormSection } from '@/components/ui/forms';
 import type { Loan } from '@/types';
-import { toDate, stripHtml, safeDateInput, cn } from '@/utils/helpers';
+import { stripHtml, safeDateInput } from '@/utils/helpers';
 import toast from 'react-hot-toast';
 
 interface LoanDialogProps {
@@ -34,7 +34,11 @@ export function LoanDialog({ open, onOpenChange, onSubmit, defaultValues }: Loan
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (open) { setForm(defaultForm(defaultValues)); setErrors({}); }
+    if (open) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setForm(defaultForm(defaultValues));
+      setErrors({});
+    }
   }, [open, defaultValues]);
 
   const set = (field: string, value: string) => {

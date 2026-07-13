@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { Plus, TrendingDown, ArrowUpFromLine, PiggyBank, Repeat, Target, Wallet, Landmark } from 'lucide-react';
+import { Plus, TrendingDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetClose } from '@/components/ui/sheet';
 

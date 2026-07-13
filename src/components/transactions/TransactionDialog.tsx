@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { UniversalFormDialog } from '@/components/shared';
-import { CurrencyInput, FormInput, FormSelect, FormDatePicker, FormSwitch, FormSection } from '@/components/ui/forms';
+import { CurrencyInput, FormInput, FormSelect, FormDatePicker, FormSwitch } from '@/components/ui/forms';
 import { EXPENSE_CATEGORIES, INCOME_SOURCES, PAYMENT_METHODS, RECURRING_INTERVALS } from '@/constants';
 import { stripHtml } from '@/utils/helpers';
 import toast from 'react-hot-toast';
@@ -45,7 +45,11 @@ export function TransactionDialog({ type, open, onOpenChange, onSubmit, defaultV
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (open) { setForm(defaultForm(type, defaultValues)); setErrors({}); }
+    if (open) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setForm(defaultForm(type, defaultValues));
+      setErrors({});
+    }
   }, [open, type, defaultValues]);
 
   const validate = (): boolean => {

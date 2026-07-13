@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import {
-  Wallet, Bell, LayoutDashboard, TrendingDown, ArrowUpFromLine,
+  Wallet, LayoutDashboard, TrendingDown, ArrowUpFromLine,
   Target, PiggyBank, Banknote, Repeat, Clock, BarChart3, FileText,
   Calendar, Search, Settings, LogOut, X, ChevronRight,
 } from 'lucide-react';
