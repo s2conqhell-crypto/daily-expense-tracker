@@ -7,3 +7,6 @@ export type { ActionMenuItem } from './TransactionActionMenu';
 export { ConfirmDeleteDialog } from './ConfirmDeleteDialog';
 export { UniversalFormDialog } from './UniversalFormDialog';
 export { FormField } from './FormField';
+export { UniversalSearchBar } from './UniversalSearchBar';
+export { UniversalFilterChip } from './UniversalFilterChip';
+export { UniversalTransactionCard } from './UniversalTransactionCard';
