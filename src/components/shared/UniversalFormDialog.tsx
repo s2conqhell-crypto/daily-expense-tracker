@@ -57,7 +57,7 @@ export function UniversalFormDialog({
 
   const body = (
     <div className="flex flex-col flex-1 overflow-hidden">
-      <div className="flex-1 overflow-y-auto overscroll-contain px-5 py-4 space-y-4">
+      <div className="flex-1 overflow-y-auto overscroll-contain px-5 py-2 space-y-3">
         {children}
       </div>
     </div>
@@ -73,7 +73,7 @@ export function UniversalFormDialog({
   );
 
   const submitFooter = (
-    <div className="shrink-0 px-5 py-4 border-t border-white/[0.06] bg-[#0E1116]">
+    <div className="shrink-0 px-5 py-4 border-t border-white/[0.06] bg-[#0E1116]/95 backdrop-blur-2xl" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 16px)' }}>
       {defaultFooter}
     </div>
   );
@@ -108,12 +108,16 @@ export function UniversalFormDialog({
               boxShadow: '0 -8px 40px rgba(0, 0, 0, 0.4)',
             }}
           >
-            <SheetHeader className="shrink-0 px-5 pt-5 pb-3 border-b border-white/[0.06]">
+            <SheetHeader className="shrink-0 px-5 pt-9 pb-3 border-b border-white/[0.06]">
+              {/* Handle bar */}
+              <div className="flex justify-center -mt-5 mb-4">
+                <div className="h-[4px] w-[36px] rounded-full bg-white/[0.12]" />
+              </div>
               <div className="flex items-start justify-between gap-4">
                 <div className="min-w-0 flex-1">
-                  <SheetTitle className="text-[18px] font-bold text-white leading-tight tracking-tight">{title}</SheetTitle>
+                  <SheetTitle className="text-[22px] font-bold text-white leading-tight tracking-tight">{title}</SheetTitle>
                   {description && (
-                    <p className="text-[12px] text-white/40 mt-1 leading-relaxed">{description}</p>
+                    <p className="text-[13px] text-white/40 mt-2 leading-relaxed">{description}</p>
                   )}
                 </div>
                 <SheetClose asChild>
@@ -124,10 +128,6 @@ export function UniversalFormDialog({
                     <X className="h-[18px] w-[18px]" />
                   </button>
                 </SheetClose>
-              </div>
-              {/* Handle bar */}
-              <div className="flex justify-center -mb-1 mt-1">
-                <div className="h-[4px] w-[36px] rounded-full bg-white/[0.12]" />
               </div>
             </SheetHeader>
             {content}
@@ -145,12 +145,12 @@ export function UniversalFormDialog({
             onPointerDownOutside={(e) => { if (dirty && confirmClose && !window.confirm(confirmClose)) e.preventDefault(); }}
             onOpenAutoFocus={(e) => { e.preventDefault(); document.querySelector<HTMLElement>('[data-autofocus]')?.focus(); }}
           >
-            <DialogHeader className="shrink-0 px-6 py-4 border-b border-white/[0.08]">
+            <DialogHeader className="shrink-0 px-6 pt-9 pb-3 border-b border-white/[0.08]">
               <div className="flex items-start justify-between gap-4">
                 <div className="min-w-0 flex-1">
-                  <DialogTitle className="text-[18px] font-bold leading-tight tracking-tight text-white">{title}</DialogTitle>
+                  <DialogTitle className="text-[22px] font-bold leading-tight tracking-tight text-white">{title}</DialogTitle>
                   {description && (
-                    <DialogDescription className="text-[12px] mt-1 leading-relaxed text-white/40">{description}</DialogDescription>
+                    <DialogDescription className="text-[13px] mt-2 leading-relaxed text-white/40">{description}</DialogDescription>
                   )}
                 </div>
                 <DialogClose asChild>

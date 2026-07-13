@@ -16,14 +16,14 @@ const SelectTrigger = React.forwardRef<
   <SelectPrimitive.Trigger
     ref={ref}
     className={cn(
-      'flex h-10 w-full items-center justify-between rounded-lg border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1 transition-all duration-200',
+      'flex h-[52px] w-full items-center justify-between rounded-[16px] border bg-[#1E2235]/80 px-4 text-[15px] text-white ring-offset-background placeholder:text-white/25 focus:outline-none focus:ring-2 focus:ring-[#7c5cff]/40 focus:border-[#7c5cff]/60 disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1 transition-all duration-200 border-white/[0.08] hover:border-white/[0.15]',
       className
     )}
     {...props}
   >
     {children}
     <SelectPrimitive.Icon asChild>
-      <ChevronDown className="h-4 w-4 opacity-50" />
+      <ChevronDown className="h-[18px] w-[18px] text-white/40" />
     </SelectPrimitive.Icon>
   </SelectPrimitive.Trigger>
 ));

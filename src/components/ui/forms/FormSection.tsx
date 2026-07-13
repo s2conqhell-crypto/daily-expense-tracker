@@ -16,7 +16,7 @@ export function FormSection({ title, children, className }: FormSectionProps) {
           <div className="h-px flex-1 bg-white/[0.06]" />
         </div>
       )}
-      <div className="space-y-3">
+      <div className="space-y-4">
         {children}
       </div>
     </div>

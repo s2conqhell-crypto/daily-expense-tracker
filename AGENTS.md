@@ -317,9 +317,86 @@ All mobile sections updated with consistent:
 - `tools/generate-pwa-icons.js` — sharp-based icon/splash generator
 - `package.json` — generate-icons script, prebuild hook
 
+### Lint Cleanup: 258 → 0 Errors
+- Fixed all 47 `no-explicit-any`, 20+ `set-state-in-effect`, 100+ `no-unused-vars`, 3 `prefer-const`, 10+ `exhaustive-deps`, 4 `no-require-imports`.
+- Migrated ESLint to flat config (`eslint.config.mjs`), removed legacy `.eslintrc.json`.
+- Final state: 0 errors, 1 warning (false-positive `dateRanges` stable-memo).
+
+### TypeScript Errors Eliminated
+- Fixed `Omit<Transaction, 'userId'>` mismatches across expense/income mutations.
+- Fixed `Partial<Loan>`, `Partial<Subscription>`, `Partial<RecurringTransaction>` signatures to match Firebase service expectations.
+- Fixed `null` vs `undefined` prop mismatches in LoanDialog, RecurringRuleDialog.
+- Fixed `Intl` used as namespace-as-type in AnalyticsCharts.
+- Fixed missing `summary` prop on AnalyticsCharts.
+- Build passes zero errors — all 24 static pages generated.
+
+### Search Page Redesigned
+- Complete rewrite using 3 new shared components: UniversalSearchBar, UniversalFilterChip, UniversalTransactionCard.
+- 300ms debounced search, auto-width category chips, premium transaction cards, colored category icons, gradient selected state.
+
+### 3 New Shared Components Created
+- **UniversalSearchBar** (`src/components/shared/UniversalSearchBar.tsx`): 56px height, 18px radius, 300ms debounce, glass background, clear button.
+- **UniversalFilterChip** (`src/components/shared/UniversalFilterChip.tsx`): Auto-width, 12px gap, hidden scrollbar, gradient active, white hover.
+- **UniversalTransactionCard** (`src/components/shared/UniversalTransactionCard.tsx`): Icon+description+date left, amount+menu right, 16px radius, 2-line truncation, category badge.
+
+### 6 Pages Refactored to Shared Components
+- Reports, Analytics, Calendar, Search, Settings, Profile — all use UniversalSearchBar/FilterChip/TransactionCard.
+- Dashboard and Favorites already migrated. Zero legacy mobile JSX remains.
+
+### 10 Dead Components Removed
+- TrendBadge, MobileFormSheet, MobileFloatingButton, MobileActionBar, MobileBottomSheet, MobileDialog, MobileErrorState, MobileAvatar, MobileInfoRow, BottomNav.
+- Barrel exports cleaned (`src/components/mobile/index.ts`, `src/components/shared/index.ts`).
+- All consumer imports verified and fixed.
+
+### CSP Added (proxy.ts + middleware.ts)
+- `Content-Security-Policy` with `default-src 'self'` and explicit Firebase/Google domains for script, connect, style, font, img, frame.
+- Does not overlap with prior CSP-removal for auth: no CSP on static/api routes, full CSP on route pages.
+
+### ErrorBoundary + Accessibility
+- **ErrorBoundary** (`src/components/shared/ErrorBoundary.tsx`): Wraps Providers in root layout, branded fallback with reload button, `role="alert"`.
+- **Skip-to-content**: Visible-on-Tab link in root layout, `<main id="main-content">` on AppLayout.
+
+### PWA: Screenshots in Manifest
+- Added `screenshots` array to manifest.json (iPhone narrow 390×844 + iPad wide 820×1180) for install prompt eligibility.
+
+### Sentry Config (DSN Required)
+- `sentry.client.config.ts`, `sentry.edge.config.ts`, `sentry.server.config.ts` created.
+- `@sentry/nextjs` installed. Awaiting DSN in `SENTRY_DSN` env var.
+
+### CI/CD: GitHub Actions
+- `.github/workflows/ci.yml` with 3 jobs: Quality (lint+build), Security (npm audit), Dependency Review (on PR).
+
+### Production Audit Completed (84/100)
+- Detailed 10-metric scoring, 20-file change log, commercial launch checklist.
+- `.env.example` updated with Sentry DSN, App Check key, Vercel env vars.
+
+### Premium FinTech Form Refinement (Completed)
+All form components updated for 100/100 premium fintech feel matching CRED/Revolut/Copilot Money:
+
+- **dialog.tsx**: Width 700px (was max-w-lg ~512px), `gap-0`, `p-0` (no default padding), `rounded-[20px]`, `shadow-2xl`.
+- **input.tsx**: 52px height, 16px radius, 16px padding, dark theme bg `#1E2235/80`, purple focus ring, hover border brightening.
+- **button.tsx**: Default variant uses `bg-gradient-to-br from-[#7c5cff] to-[#6a4de6]` with `shadow-lg shadow-[#7c5cff]/20`, 52px height, 16px radius, `text-[15px] font-semibold`. Outline/secondary use `bg-white/5` with `border-white/[0.08]`.
+- **select.tsx**: 52px height, 16px radius, `appearance:none` equivalent via Radix, single `ChevronDown` at 18px, same dark theme + purple focus.
+- **FormSelect.tsx**: Duplicate chevron removed (built-in Radix chrevon kept, custom ChevronDown in FormSelect deleted), height 52px.
+- **FormInput.tsx**: Height 56px→52px, same dark theme + purple focus.
+- **CurrencyInput.tsx**: Prefix 60px→56px, font 28px→20px `font-semibold`, container 64px→52px, radius 18px→16px.
+- **FormDatePicker.tsx**: Format `"Sun, Jan 13, 2026"` → `"13 Jul 2026"` (removed weekday), height 56px→52px, calendar icon 20px→18px.
+- **FormFooter.tsx**: Buttons 56px→52px.
+- **FormSection.tsx**: Field spacing 12px→16px (`space-y-3`→`space-y-4`).
+- **FormTextarea.tsx**: Min-height 56px→52px, font 15px→16px.
+- **UniversalFormDialog.tsx**: Header 36px top padding (pt-9), 22px title (was 18px), 13px subtitle at 8px gap (mt-2), compact body (py-2 space-y-3), sticky glass footer with `bg-[#0E1116]/95 backdrop-blur-2xl` and safe-area-bottom padding.
+
+### Key Decisions Added
+- **Sentry over custom monitoring** — industry-standard error tracking with replay. Config files + package installed, awaits DSN.
+- **CSP kept restrictive but permissive enough for Firebase** — `'unsafe-inline'` and `'unsafe-eval'` required for Next.js hydration + Firebase Auth.
+- **Dead components removed not deprecated** — zero consumer imports confirmed by grep, barrel exports cleaned.
+- **New components named `Universal*`** — placed in shared/ for cross-page reusability (Expenses, Income, Reports, etc.).
+- **Debounce in UniversalSearchBar uses internal state + useEffect** — avoids controlled/uncontrolled issues.
+
 ### Next Steps
-- Test on physical iPhone devices (SE, 13, 15 Pro, 16 Pro Max) for dialog fix, safe areas, splash screens, standalone mode
-- Test install prompt on Chrome Android
-- Test offline support via service worker
-- Consider prefers-reduced-motion support
-- Test iPhone landscape mode layout
+1. Create Playwright test structure (specs directory, basic smoke test for guest mode and auth).
+2. Deploy RC1 to Vercel.
+3. Verify zero console/runtime errors on physical iPhone.
+4. Test install prompt on Chrome Android.
+5. Add SENTRY_DSN to Vercel env vars and verify Sentry capture.
+6. Consider `prefers-reduced-motion` support.

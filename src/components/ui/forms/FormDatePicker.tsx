@@ -68,8 +68,8 @@ export function FormDatePicker({ id, label, value, onChange, error, required, mi
   const daysInMonth = getDaysInMonth(viewYear, viewMonth);
   const firstDay = getFirstDayOfMonth(viewYear, viewMonth);
   const displayValue = selectedDate
-    ? `${DAYS[selectedDate.getDay()]}, ${MONTHS[selectedDate.getMonth()]} ${selectedDate.getDate()}, ${selectedDate.getFullYear()}`
-    : '';
+        ? `${selectedDate.getDate()} ${MONTHS[selectedDate.getMonth()]} ${selectedDate.getFullYear()}`
+        : '';
 
   const isDisabled = (day: number) => {
     const d = new Date(viewYear, viewMonth, day);
@@ -91,12 +91,12 @@ export function FormDatePicker({ id, label, value, onChange, error, required, mi
         type="button"
         onClick={() => setOpen(!open)}
         className={cn(
-          'flex h-[56px] w-full items-center gap-3 rounded-[16px] border px-4 text-[15px] text-left transition-all duration-200 bg-[#1E2235]/80',
+          'flex h-[52px] w-full items-center gap-3 rounded-[16px] border px-4 text-[15px] text-left transition-all duration-200 bg-[#1E2235]/80',
           'hover:border-white/[0.15]',
           error ? 'border-[#FF5A6E]/60' : open ? 'border-[#7c5cff]/60' : 'border-white/[0.08]',
         )}
       >
-        <Calendar className="h-5 w-5 text-white/40 shrink-0" />
+        <Calendar className="h-[18px] w-[18px] text-white/40 shrink-0" />
         <span className={displayValue ? 'text-white' : 'text-white/25'}>{displayValue || 'Select date'}</span>
       </button>
 

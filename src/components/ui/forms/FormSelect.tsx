@@ -35,7 +35,7 @@ export function FormSelect({ id, label, value, onValueChange, options, placehold
         <SelectTrigger
           id={id}
           className={cn(
-            'flex h-[56px] w-full rounded-[16px] border px-4 text-[15px] text-white transition-all duration-200 bg-[#1E2235]/80',
+            'flex h-[52px] w-full rounded-[16px] border px-4 text-[15px] text-white transition-all duration-200 bg-[#1E2235]/80',
             'focus:outline-none focus:ring-2 focus:ring-[#7c5cff]/40 focus:border-[#7c5cff]/60',
             error ? 'border-[#FF5A6E]/60' : 'border-white/[0.08] hover:border-white/[0.15]',
             'data-[state=open]:border-[#7c5cff]/60',
@@ -44,7 +44,6 @@ export function FormSelect({ id, label, value, onValueChange, options, placehold
           aria-invalid={!!error}
         >
           <SelectValue placeholder={placeholder} />
-          <ChevronDown className={cn('h-4 w-4 text-white/40 transition-transform duration-200', open && 'rotate-180')} />
         </SelectTrigger>
         <SelectContent className="bg-[#1E2235] border border-white/[0.08] rounded-[16px] shadow-2xl shadow-black/40">
           {options.map((opt) => (
