@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, memo } from 'react';
+import { useState, useRef, memo, useCallback } from 'react';
 import {
   TrendingUp, TrendingDown, MoreVertical,
   Pencil, Trash2, Copy, Star, Share2,
@@ -25,47 +25,60 @@ interface MobileTransactionItemProps {
   onShare?: () => void;
 }
 
+const SWIPE_THRESHOLD = 60;
+
 export const MobileTransactionItem = memo(function MobileTransactionItem({
   description, amount, date, type, category, currency, isFavorite, onEdit, onDelete, onDuplicate, onToggleFavorite, onShare,
 }: MobileTransactionItemProps) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [swiped, setSwiped] = useState<'left' | 'right' | null>(null);
+  const constraintsRef = useRef<HTMLDivElement>(null);
   const isIncome = type === 'income';
   const color = isIncome ? '#00d09c' : '#ff5a7a';
-  const constraintsRef = useRef<HTMLDivElement>(null);
+
+  const handleDragEnd = useCallback((_: unknown, info: { offset: { x: number } }) => {
+    const offset = info.offset.x;
+    if (offset > SWIPE_THRESHOLD) {
+      setSwiped('right');
+      setTimeout(() => { onEdit?.(); setSwiped(null); }, 200);
+    } else if (offset < -SWIPE_THRESHOLD) {
+      setSwiped('left');
+      setTimeout(() => { onDelete?.(); setSwiped(null); }, 200);
+    }
+  }, [onEdit, onDelete]);
 
   return (
     <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
       <div ref={constraintsRef} className="relative overflow-hidden rounded-[16px]">
-        {/* Swipe action backgrounds */}
-        <div className="absolute inset-y-0 left-0 flex items-center justify-start pl-5 w-full bg-[#7c5cff] rounded-[16px]">
+        <div
+          className="absolute inset-y-0 left-0 flex items-center justify-start pl-5 w-full bg-[#7c5cff] rounded-[16px]"
+          style={{ opacity: swiped === 'right' ? 1 : 0, transition: 'opacity 0.2s' }}
+        >
           <div className="flex items-center gap-2">
             <Pencil className="h-5 w-5 text-white" />
             <span className="text-[13px] font-semibold text-white">Edit</span>
           </div>
         </div>
-        <div className="absolute inset-y-0 right-0 flex items-center justify-end pr-5 w-full bg-[#ff5a7a] rounded-[16px]">
+        <div
+          className="absolute inset-y-0 right-0 flex items-center justify-end pr-5 w-full bg-[#ff5a7a] rounded-[16px]"
+          style={{ opacity: swiped === 'left' ? 1 : 0, transition: 'opacity 0.2s' }}
+        >
           <div className="flex items-center gap-2">
             <span className="text-[13px] font-semibold text-white">Delete</span>
             <Trash2 className="h-5 w-5 text-white" />
           </div>
         </div>
 
-        {/* Card */}
         <motion.div
           drag="x"
           dragConstraints={constraintsRef}
-          dragElastic={{ left: 0.3, right: 0.3 }}
+          dragElastic={{ left: 0.4, right: 0.4 }}
           dragDirectionLock
-          whileDrag={{ scale: 0.98 }}
-          onDragEnd={(_, info) => {
-            const offset = info.offset.x;
-            if (offset > 50) {
-              onEdit?.();
-            } else if (offset < -50) {
-              onDelete?.();
-            }
-          }}
-          className="relative bg-[#161a27] border border-white/[0.06] px-4 py-[14px] card-shadow active:scale-[0.98] transition-all rounded-[16px]"
+          whileDrag={{ scale: 0.97 }}
+          onDragEnd={handleDragEnd}
+          animate={{ x: 0 }}
+          transition={{ type: 'spring', stiffness: 400, damping: 35 }}
+          className="relative bg-[#161a27] border border-white/[0.06] px-4 py-[14px] card-shadow rounded-[16px]"
           style={{ touchAction: 'pan-y' }}
         >
           <div className="flex items-center justify-between">

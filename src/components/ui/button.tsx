@@ -17,7 +17,7 @@ const Button = React.forwardRef<
     link: 'text-[#7c5cff] underline-offset-4 hover:underline',
   };
   const sizes: Record<string, string> = {
-    default: 'h-[52px] px-6 py-2 text-[16px] rounded-[16px]',
+    default: 'h-[56px] px-6 py-2 text-[16px] rounded-[16px]',
     sm: 'h-9 rounded-[12px] px-3 text-sm',
     lg: 'h-11 rounded-[14px] px-8',
     icon: 'h-10 w-10 rounded-[12px]',
@@ -25,7 +25,7 @@ const Button = React.forwardRef<
   return (
     <button
       className={cn(
-        'inline-flex items-center justify-center whitespace-nowrap text-[15px] font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7c5cff]/40 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 active:scale-[0.97]',
+        'inline-flex items-center justify-center whitespace-nowrap text-[15px] font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7c5cff]/40 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 active:scale-[0.97] hover:-translate-y-[1px]',
         variants[variant],
         sizes[size],
         className

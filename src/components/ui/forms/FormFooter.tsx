@@ -18,7 +18,7 @@ export function FormFooter({ loading, submitLabel = 'Save', cancelLabel = 'Cance
           type="button"
           onClick={onCancel}
           disabled={loading}
-          className="flex-1 h-[52px] rounded-[16px] text-[15px] font-semibold bg-white/5 text-white/70 hover:bg-white/10 active:scale-[0.98] transition-all disabled:opacity-50"
+          className="flex-1 h-[56px] rounded-[16px] text-[15px] font-semibold bg-white/5 text-white/70 hover:bg-white/10 active:scale-[0.98] transition-all disabled:opacity-50"
         >
           {cancelLabel}
         </button>
@@ -26,7 +26,7 @@ export function FormFooter({ loading, submitLabel = 'Save', cancelLabel = 'Cance
       <button
         type="submit"
         disabled={loading || disabled}
-        className="flex-1 h-[52px] rounded-[16px] text-[15px] font-semibold text-white bg-gradient-to-br from-[#7c5cff] to-[#6a4de6] hover:from-[#8d72ff] hover:to-[#7c5cff] active:scale-[0.98] transition-all disabled:opacity-50 shadow-lg shadow-[#7c5cff]/20"
+        className="flex-1 h-[56px] rounded-[16px] text-[15px] font-semibold text-white bg-gradient-to-br from-[#7c5cff] to-[#6a4de6] hover:from-[#8d72ff] hover:to-[#7c5cff] active:scale-[0.98] transition-all disabled:opacity-50 shadow-lg shadow-[#7c5cff]/20"
       >
         {loading ? (
           <span className="flex items-center justify-center gap-2">

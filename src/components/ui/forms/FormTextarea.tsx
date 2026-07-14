@@ -26,7 +26,7 @@ export const FormTextarea = forwardRef<HTMLTextAreaElement, FormTextareaProps>(
     return (
       <div className="space-y-1">
         {label && (
-          <label htmlFor={id} className="block text-[13px] font-semibold text-white/80 mb-1.5 px-0.5">
+          <label htmlFor={id} className="block text-[13px] font-semibold text-white/80 mb-2 px-0.5">
             {label}
           </label>
         )}
@@ -34,7 +34,7 @@ export const FormTextarea = forwardRef<HTMLTextAreaElement, FormTextareaProps>(
           id={id}
           ref={resolvedRef}
           className={cn(
-            'flex w-full rounded-[16px] border px-4 py-3.5 text-[16px] text-white placeholder:text-white/25 transition-all duration-200 bg-[#1E2235]/80 resize-none min-h-[52px] leading-relaxed',
+            'flex w-full rounded-[16px] border px-4 py-3.5 text-[16px] text-white placeholder:text-white/25 transition-all duration-200 bg-[#1E2235]/80 resize-none min-h-[56px] leading-relaxed',
             'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7c5cff]/40 focus-visible:border-[#7c5cff]/60',
             error ? 'border-[#FF5A6E]/60' : 'border-white/[0.08] hover:border-white/[0.15]',
             className

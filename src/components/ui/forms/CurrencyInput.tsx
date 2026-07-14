@@ -24,14 +24,14 @@ export const CurrencyInput = forwardRef<HTMLInputElement, CurrencyInputProps>(
     return (
       <div className="space-y-1">
         {label && (
-          <label htmlFor={id} className="block text-[13px] font-semibold text-white/80 mb-1.5 px-0.5">
+          <label htmlFor={id} className="block text-[13px] font-semibold text-white/80 mb-2 px-0.5">
             {label}
             {required && <span className="text-[#FF5A6E] ml-0.5">*</span>}
           </label>
         )}
         <div className="relative">
           <div className={cn(
-            'flex h-[52px] w-full rounded-[16px] border bg-[#1E2235]/80 transition-all duration-200 overflow-hidden',
+            'flex h-[56px] w-full rounded-[16px] border bg-[#1E2235]/80 transition-all duration-200 overflow-hidden',
             error ? 'border-[#FF5A6E]/60' : focused ? 'border-[#7c5cff]/60' : 'border-white/[0.08] hover:border-white/[0.15]',
           )}>
             <div className="flex items-center justify-center w-[56px] shrink-0 bg-white/[0.04] border-r border-white/[0.06]">
