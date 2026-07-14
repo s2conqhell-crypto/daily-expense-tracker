@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import { useDashboard } from '@/hooks/useDashboard';
 import { useAuth } from '@/contexts/AuthContext';
 import { useExpenses } from '@/hooks/useExpenses';
@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 import { formatCurrency } from '@/utils/format';
 import { toDate, safeDateInput } from '@/utils/helpers';
-import { AnimatedCounter, ConfirmDeleteDialog } from '@/components/shared';
+import { AnimatedCounter, ConfirmDeleteDialog, ErrorBanner } from '@/components/shared';
 import { TransactionDialog } from '@/components/transactions/TransactionDialog';
 import { MobileBalanceCard } from './MobileBalanceCard';
 import { MobileQuickStats } from './MobileQuickStats';
@@ -62,32 +62,36 @@ export function MobileDashboard() {
   const [extraData, setExtraData] = useState<ExtraData>({ upcomingRules: [], upcomingSubs: [], upcomingEmis: [], subTotal: 0, budgetData: null });
   const [editingTx, setEditingTx] = useState<Expense | Income | null>(null);
   const [deletingTx, setDeletingTx] = useState<Expense | Income | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const { updateExpense, deleteExpense, duplicateExpense, toggleFavoriteExpense } = useExpenses();
   const { updateIncome, deleteIncome, duplicateIncome, toggleFavoriteIncome } = useIncome();
 
+  const loadExtraData = useCallback(async (uid: string) => {
+    try {
+      setLoadError(null);
+      const [rules, subs, loans, budgets] = await Promise.all([
+        firebaseService.recurringTransactions.getAll(uid),
+        firebaseService.subscriptions.getAll(uid),
+        firebaseService.loans.getAll(uid),
+        firebaseService.budgets.getAll(uid),
+      ]);
+      const now = new Date();
+      const next30 = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+      setExtraData({
+        upcomingRules: rules.filter((r) => r.isActive && toDate(r.nextExecution) <= next30).sort((a, b) => toDate(a.nextExecution).getTime() - toDate(b.nextExecution).getTime()).slice(0, 2),
+        upcomingSubs: subs.filter((s) => s.status === 'active' && toDate(s.renewalDate) >= now && toDate(s.renewalDate) <= next30).sort((a, b) => toDate(a.renewalDate).getTime() - toDate(b.renewalDate).getTime()).slice(0, 2),
+        upcomingEmis: loans.filter((l) => l.status === 'active' && l.nextEmiDate && toDate(l.nextEmiDate) >= now && toDate(l.nextEmiDate) <= next30).sort((a, b) => toDate(a.nextEmiDate!).getTime() - toDate(b.nextEmiDate!).getTime()).slice(0, 2),
+        subTotal: subs.filter((s) => s.status === 'active').reduce((sum, s) => sum + s.monthlyCost, 0),
+        budgetData: budgets[0] || null,
+      });
+    } catch (e) { console.warn('[MobileDashboard] Failed to load extra data', e); setLoadError('Failed to load dashboard data'); }
+  }, []);
+
   useEffect(() => {
     if (!user) return;
-    const load = async () => {
-      try {
-        const [rules, subs, loans, budgets] = await Promise.all([
-          firebaseService.recurringTransactions.getAll(user.uid),
-          firebaseService.subscriptions.getAll(user.uid),
-          firebaseService.loans.getAll(user.uid),
-          firebaseService.budgets.getAll(user.uid),
-        ]);
-        const now = new Date();
-        const next30 = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
-        setExtraData({
-          upcomingRules: rules.filter((r) => r.isActive && toDate(r.nextExecution) <= next30).sort((a, b) => toDate(a.nextExecution).getTime() - toDate(b.nextExecution).getTime()).slice(0, 2),
-          upcomingSubs: subs.filter((s) => s.status === 'active' && toDate(s.renewalDate) >= now && toDate(s.renewalDate) <= next30).sort((a, b) => toDate(a.renewalDate).getTime() - toDate(b.renewalDate).getTime()).slice(0, 2),
-          upcomingEmis: loans.filter((l) => l.status === 'active' && l.nextEmiDate && toDate(l.nextEmiDate) >= now && toDate(l.nextEmiDate) <= next30).sort((a, b) => toDate(a.nextEmiDate!).getTime() - toDate(b.nextEmiDate!).getTime()).slice(0, 2),
-          subTotal: subs.filter((s) => s.status === 'active').reduce((sum, s) => sum + s.monthlyCost, 0),
-          budgetData: budgets[0] || null,
-        });
-      } catch (e) { console.warn('[MobileDashboard] Failed to load extra data', e); }
-    };
-    load();
-  }, [user]);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    loadExtraData(user.uid);
+  }, [user, loadExtraData]);
 
   const userName = (userData?.name?.split(' ') || [])[0] || 'User';
   const savingsRate = summary.totalIncome > 0 ? (summary.savings / summary.totalIncome) * 100 : 0;
@@ -100,6 +104,14 @@ export function MobileDashboard() {
   return (
     <div className="min-h-dvh bg-[#09090b]" style={{ paddingBottom: 'calc(90px + env(safe-area-inset-bottom, 0px))' }}>
       <motion.div className="px-5 space-y-6 pt-4" variants={container} initial="hidden" animate="show">
+        {loadError && (
+          <ErrorBanner
+            message={loadError}
+            onRetry={() => user && loadExtraData(user.uid)}
+            dismissible
+            onDismiss={() => setLoadError(null)}
+          />
+        )}
         {/* Greeting */}
         <motion.div variants={itemAnim}>
           <p className="text-[11px] text-[#6b7b8d] font-semibold uppercase tracking-widest">{todayStr}</p>

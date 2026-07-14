@@ -105,6 +105,7 @@ export function MobileHeader() {
                 <SheetClose asChild>
                   <button
                     className="touch-target flex h-10 w-10 items-center justify-center rounded-xl text-[#6b7b8d] hover:bg-white/5 active:scale-90 transition-all"
+                    aria-label="Close navigation menu"
                   >
                     <X className="h-5 w-5" />
                   </button>

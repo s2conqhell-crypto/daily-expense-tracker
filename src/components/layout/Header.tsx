@@ -49,7 +49,7 @@ export function Header() {
           {isMobile && (
             <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
               <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="rounded-xl text-[#8899AA] hover:text-white hover:bg-white/5 h-9 w-9 sm:h-10 sm:w-10">
+                <Button variant="ghost" size="icon" className="rounded-xl text-[#8899AA] hover:text-white hover:bg-white/5 h-9 w-9 sm:h-10 sm:w-10" aria-label="Open navigation menu">
                   <Menu className="h-[18px] w-[18px] sm:h-5 sm:w-5" />
                 </Button>
               </SheetTrigger>
@@ -90,7 +90,7 @@ export function Header() {
 
         <div className="flex items-center gap-0 sm:gap-1">
           <Link href={ROUTES.SEARCH} className="hidden sm:block">
-            <Button variant="ghost" size="icon" className="rounded-xl text-[#8899AA] hover:text-white hover:bg-white/5 h-9 w-9 sm:h-10 sm:w-10">
+            <Button variant="ghost" size="icon" className="rounded-xl text-[#8899AA] hover:text-white hover:bg-white/5 h-9 w-9 sm:h-10 sm:w-10" aria-label="Search">
               <Search className="h-[18px] w-[18px] sm:h-5 sm:w-5" />
             </Button>
           </Link>
@@ -100,6 +100,7 @@ export function Header() {
             size="icon"
             className="rounded-xl text-[#8899AA] hover:text-white hover:bg-white/5 h-9 w-9 sm:h-10 sm:w-10 hidden sm:flex"
             onClick={toggleTheme}
+            aria-label={resolvedTheme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
           >
             {resolvedTheme === 'dark' ? (
               <Sun className="h-[18px] w-[18px] sm:h-5 sm:w-5" />
@@ -121,7 +122,7 @@ export function Header() {
               <p className="text-sm font-medium leading-tight text-white">{userData?.name || user?.displayName || 'User'}</p>
               <p className="text-xs text-[#8899AA]">{user?.email}</p>
             </div>
-            <Button variant="ghost" size="icon" className="rounded-xl text-[#8899AA] hover:text-white hover:bg-white/5 h-9 w-9 sm:h-10 sm:w-10 ml-0 sm:ml-1 hidden sm:flex" onClick={logOut}>
+            <Button variant="ghost" size="icon" className="rounded-xl text-[#8899AA] hover:text-white hover:bg-white/5 h-9 w-9 sm:h-10 sm:w-10 ml-0 sm:ml-1 hidden sm:flex" onClick={logOut} aria-label="Sign out">
               <LogOut className="h-[18px] w-[18px] sm:h-4 sm:w-4" />
             </Button>
           </div>

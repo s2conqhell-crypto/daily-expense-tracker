@@ -106,7 +106,7 @@ export default function CalendarPage() {
           subtitle="View your transactions by date"
           right={
             <div className="flex items-center gap-2">
-              <button onClick={() => setDialogOpen(true)} className="flex items-center gap-1.5 h-[36px] px-3 rounded-xl bg-[#7c5cff]/20 text-[#7c5cff] text-[12px] font-semibold active:scale-95 transition-all">
+              <button onClick={() => setDialogOpen(true)} className="flex items-center gap-1.5 h-11 px-3 rounded-xl bg-[#7c5cff]/20 text-[#7c5cff] text-[12px] font-semibold active:scale-95 transition-all">
                 <Plus className="h-3.5 w-3.5" /> Add
               </button>
             </div>
@@ -118,11 +118,11 @@ export default function CalendarPage() {
           <div className="bg-[#161a27] rounded-[20px] border border-white/[0.06]">
             {/* Month nav */}
             <div className="flex items-center justify-between px-5 pt-4 pb-2">
-              <button onClick={prevMonth} className="flex h-9 w-9 items-center justify-center rounded-xl text-[#6b7b8d] hover:bg-white/5 active:scale-90 transition-all">
+              <button onClick={prevMonth} className="flex h-9 w-9 items-center justify-center rounded-xl text-[#6b7b8d] hover:bg-white/5 active:scale-90 transition-all" aria-label="Previous month">
                 <ChevronLeft className="h-5 w-5" />
               </button>
               <span className="text-[15px] font-bold text-white">{getMonthName(month)} {year}</span>
-              <button onClick={nextMonth} className="flex h-9 w-9 items-center justify-center rounded-xl text-[#6b7b8d] hover:bg-white/5 active:scale-90 transition-all">
+              <button onClick={nextMonth} className="flex h-9 w-9 items-center justify-center rounded-xl text-[#6b7b8d] hover:bg-white/5 active:scale-90 transition-all" aria-label="Next month">
                 <ChevronRight className="h-5 w-5" />
               </button>
             </div>
@@ -185,7 +185,7 @@ export default function CalendarPage() {
                   <h2 className="text-[15px] font-bold text-white">
                     {selectedDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
                   </h2>
-                  <button onClick={() => setDialogOpen(true)} className="flex items-center gap-1.5 h-[34px] px-3 rounded-xl bg-[#7c5cff]/20 text-[#7c5cff] text-[11px] font-semibold active:scale-95 transition-all">
+                  <button onClick={() => setDialogOpen(true)} className="flex items-center gap-1.5 h-11 px-3 rounded-xl bg-[#7c5cff]/20 text-[#7c5cff] text-[11px] font-semibold active:scale-95 transition-all">
                     <Plus className="h-3 w-3" /> Add Expense
                   </button>
                 </div>
@@ -265,9 +265,9 @@ export default function CalendarPage() {
             <>
               <CardHeader className="pb-2">
                 <div className="flex items-center justify-between">
-                  <Button variant="ghost" size="icon" onClick={prevMonth} className="rounded-xl"><ChevronLeft className="h-5 w-5" /></Button>
+                  <Button variant="ghost" size="icon" onClick={prevMonth} className="rounded-xl" aria-label="Previous month"><ChevronLeft className="h-5 w-5" /></Button>
                   <CardTitle className="text-base">{getMonthName(month)} {year}</CardTitle>
-                  <Button variant="ghost" size="icon" onClick={nextMonth} className="rounded-xl"><ChevronRight className="h-5 w-5" /></Button>
+                  <Button variant="ghost" size="icon" onClick={nextMonth} className="rounded-xl" aria-label="Next month"><ChevronRight className="h-5 w-5" /></Button>
                 </div>
               </CardHeader>
               <CardContent>

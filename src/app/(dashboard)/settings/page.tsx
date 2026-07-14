@@ -279,8 +279,7 @@ export default function SettingsPage() {
       </MobilePage>
     </div>
     {/* Desktop version */}
-    <div className="hidden lg:block">
-    <div className="p-4 sm:p-6 lg:p-8 space-y-5 animate-fade-in max-w-[900px] mx-auto">
+    <div className="hidden lg:block page-container py-6 space-y-5 animate-fade-in">
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Settings</h1>
         <p className="text-sm text-muted-foreground">Manage your preferences</p>
@@ -357,7 +356,7 @@ export default function SettingsPage() {
               <div className="grid grid-cols-3 gap-3">
                 {(['light', 'dark', 'system'] as const).map((t) => (
                   <button key={t} onClick={() => setTheme(t)}
-                    className={`p-4 rounded-xl border-2 text-center transition-all ${
+                    className={`p-4 rounded-xl border-2 text-center transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
                       theme === t ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'
                     }`}
                   >
@@ -445,7 +444,6 @@ export default function SettingsPage() {
           </Card>
         </TabsContent>
       </Tabs>
-    </div>
     </div>
     </>
   );

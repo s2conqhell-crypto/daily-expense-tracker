@@ -115,8 +115,7 @@ export default function ProfilePage() {
       </MobilePage>
     </div>
     {/* Desktop version */}
-    <div className="hidden lg:block">
-    <div className="p-4 sm:p-6 lg:p-8 space-y-6 animate-fade-in max-w-2xl">
+    <div className="hidden lg:block page-container py-6 space-y-6 animate-fade-in">
       <div>
         <h1 className="text-2xl font-bold">Profile</h1>
         <p className="text-muted-foreground">Manage your personal information</p>
@@ -175,7 +174,6 @@ export default function ProfilePage() {
           </div>
         </CardContent>
       </Card>
-    </div>
     </div>
     </>
   );

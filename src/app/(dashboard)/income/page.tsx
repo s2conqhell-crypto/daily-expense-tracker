@@ -216,10 +216,10 @@ function IncomeContent() {
           { label: 'Highest Income', value: highestIncome, icon: TrendingDown, color: '#FBBF24' },
           { label: 'Recurring Income', value: recurringIncome, icon: Calendar, color: '#FF5A6E' },
         ].map((stat) => (
-          <div key={stat.label} className="bg-card rounded-xl border border-border/50 p-4">
+          <div key={stat.label} className="bg-card rounded-2xl border border-border p-4">
             <div className="flex items-center justify-between mb-2">
-              <div className="h-7 w-7 rounded-lg flex items-center justify-center" style={{ backgroundColor: stat.color + '15' }}>
-                <stat.icon className="h-3.5 w-3.5" style={{ color: stat.color }} />
+              <div className="h-8 w-8 rounded-xl flex items-center justify-center" style={{ backgroundColor: stat.color + '15' }}>
+                <stat.icon className="h-4 w-4" style={{ color: stat.color }} />
               </div>
             </div>
             <p className="text-lg font-bold">
@@ -331,11 +331,12 @@ function IncomeContent() {
       ) : (
         <Card>
           <CardContent className="p-0">
+            <div className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead className="w-10">
-                    <button onClick={toggleSelectAll} className="h-4 w-4 rounded border border-border flex items-center justify-center">
+                    <button onClick={toggleSelectAll} className="h-4 w-4 rounded border border-border flex items-center justify-center" aria-label={selected.size === incomes.length && incomes.length > 0 ? 'Deselect all' : 'Select all'}>
                       {selected.size === incomes.length && incomes.length > 0 ? <Check className="h-3 w-3 text-emerald-500" /> : selected.size > 0 && <div className="h-2 w-2 rounded bg-emerald-500/50" />}
                     </button>
                   </TableHead>
@@ -355,7 +356,7 @@ function IncomeContent() {
                 {sorted.map((income) => (
                   <TableRow key={income.id} className={`group ${selected.has(income.id) ? 'bg-emerald-500/5' : ''}`}>
                     <TableCell>
-                      <button onClick={() => toggleSelect(income.id)} className="h-4 w-4 rounded border border-border flex items-center justify-center">
+                      <button onClick={() => toggleSelect(income.id)} className="h-4 w-4 rounded border border-border flex items-center justify-center" aria-label={selected.has(income.id) ? 'Deselect income' : 'Select income'}>
                         {selected.has(income.id) && <Check className="h-3 w-3 text-emerald-500" />}
                       </button>
                     </TableCell>
@@ -388,6 +389,7 @@ function IncomeContent() {
                 ))}
               </TableBody>
             </Table>
+            </div>
           </CardContent>
         </Card>
       )}

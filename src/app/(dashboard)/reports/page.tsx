@@ -155,7 +155,7 @@ function ReportsContent() {
       </MobilePage>
     </div>
 
-    <div className="hidden lg:block p-4 sm:p-6 lg:p-8 space-y-5 animate-fade-in print:p-0 max-w-[1200px] mx-auto">
+    <div className="hidden lg:block page-container py-6 space-y-5 animate-fade-in print:p-0">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 print:hidden">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Reports</h1>
@@ -212,7 +212,7 @@ function ReportsContent() {
                     <p className="text-sm">No expenses yet</p>
                   </div>
                 ) : (
-                  <div className="rounded-xl border overflow-hidden">
+                  <div className="rounded-xl border overflow-x-auto">
                     <table className="w-full text-sm">
                       <thead>
                         <tr className="border-b bg-muted/30">

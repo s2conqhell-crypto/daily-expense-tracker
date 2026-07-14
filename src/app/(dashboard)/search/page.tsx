@@ -158,7 +158,7 @@ export default function SearchPage() {
     </div>
 
     <div className="hidden lg:block">
-      <div className="p-4 sm:p-6 lg:p-8 space-y-5 animate-fade-in max-w-[1000px] mx-auto">
+      <div className="page-container py-6 space-y-5 animate-fade-in">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Search</h1>
           <p className="text-sm text-muted-foreground mt-1">Find any transaction instantly</p>

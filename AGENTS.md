@@ -386,6 +386,23 @@ All form components updated for 100/100 premium fintech feel matching CRED/Revol
 - **FormTextarea.tsx**: Min-height 56px→52px, font 15px→16px.
 - **UniversalFormDialog.tsx**: Header 36px top padding (pt-9), 22px title (was 18px), 13px subtitle at 8px gap (mt-2), compact body (py-2 space-y-3), sticky glass footer with `bg-[#0E1116]/95 backdrop-blur-2xl` and safe-area-bottom padding.
 
+### Milestone 4: Select Dropnow Overflow Fixed
+- Changed `overflow-hidden` → `overflow-y-auto` on `SelectContent` in `select.tsx` so dropdowns with many options scroll properly inside dialogs.
+
+### Milestone 6: Desktop Card Styles Standardized
+- **card.tsx**: Changed from `rounded-xl border border-border/50` → `rounded-2xl border border-border` with `hover:border-white/[0.12] hover:shadow-md`
+- **expenses/page.tsx**: Stat cards updated to `bg-card rounded-2xl border border-border` with `h-8 w-8 rounded-xl` icon containers
+- **income/page.tsx**: Same stat card standardization
+- **loans/page.tsx**: Changed `bg-[#111827]` → `bg-card`, `border-white/[0.06]` → `border-border`
+- **subscriptions/page.tsx**: Same standardization
+- **recurring/page.tsx**: Same standardization
+- Result: All pages now use `bg-card rounded-2xl border border-border` for cards, consistent with the theme variable system.
+
+### Milestone 15: Universal Error Handling with Retry
+- **ErrorBanner** (`src/components/shared/ErrorBanner.tsx`): New shared component with red banner, message, retry button, dismiss option. Exported from shared/index.ts.
+- **dashboard/page.tsx**: Added `loadError` state + `loadExtraData` callback with error/retry. Shows `ErrorBanner` when Firebase data loading fails, with retry button.
+- **MobileDashboard.tsx**: Same error/retry pattern added for mobile dashboard.
+
 ### Key Decisions Added
 - **Sentry over custom monitoring** — industry-standard error tracking with replay. Config files + package installed, awaits DSN.
 - **CSP kept restrictive but permissive enough for Firebase** — `'unsafe-inline'` and `'unsafe-eval'` required for Next.js hydration + Firebase Auth.

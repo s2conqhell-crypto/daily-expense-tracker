@@ -155,7 +155,7 @@ function SubscriptionsContent() {
 
         {/* Upcoming Renewals */}
         {upcomingRenewals.length > 0 && (
-          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-[#111827] rounded-2xl border border-white/[0.06] p-5">
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-card rounded-2xl border border-border p-5">
             <div className="flex items-center gap-2 mb-4">
               <Calendar className="h-4 w-4 text-[#FBBF24]" />
               <span className="text-sm font-semibold text-white">Upcoming Renewals (30 days)</span>
@@ -188,7 +188,7 @@ function SubscriptionsContent() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {subscriptions.map((sub) => (
               <motion.div key={sub.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
-                className="bg-[#111827] rounded-2xl border border-white/[0.06] p-4 hover:border-white/[0.12] transition-all group"
+                className="bg-card rounded-2xl border border-border p-4 hover:border-white/[0.12] transition-all group"
               >
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex items-center gap-3 min-w-0 flex-1">

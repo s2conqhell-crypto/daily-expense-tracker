@@ -293,10 +293,10 @@ function ExpensesContent() {
           { label: 'Highest Expense', value: highestExpense, icon: TrendingDown, color: '#FBBF24' },
           { label: 'Average Expense', value: avgExpense, icon: Receipt, color: '#00D09C' },
         ].map((stat) => (
-          <div key={stat.label} className="bg-card rounded-xl border border-border/50 p-4">
+          <div key={stat.label} className="bg-card rounded-2xl border border-border p-4">
             <div className="flex items-center justify-between mb-2">
-              <div className="h-7 w-7 rounded-lg flex items-center justify-center" style={{ backgroundColor: stat.color + '15' }}>
-                <stat.icon className="h-3.5 w-3.5" style={{ color: stat.color }} />
+              <div className="h-8 w-8 rounded-xl flex items-center justify-center" style={{ backgroundColor: stat.color + '15' }}>
+                <stat.icon className="h-4 w-4" style={{ color: stat.color }} />
               </div>
             </div>
             <p className="text-lg font-bold">
@@ -437,11 +437,12 @@ function ExpensesContent() {
       ) : (
         <Card>
           <CardContent className="p-0">
+            <div className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-10">
-                    <button onClick={toggleSelectAll} className="h-4 w-4 rounded border border-border flex items-center justify-center">
+                    <TableHead className="w-10">
+                    <button onClick={toggleSelectAll} className="h-4 w-4 rounded border border-border flex items-center justify-center" aria-label={selected.size === filtered.length && filtered.length > 0 ? 'Deselect all' : 'Select all'}>
                       {selected.size === filtered.length && filtered.length > 0
                         ? <Check className="h-3 w-3 text-primary" />
                         : selected.size > 0 && <div className="h-2 w-2 rounded bg-primary/50" />
@@ -464,7 +465,7 @@ function ExpensesContent() {
                 {paged.map((expense) => (
                   <TableRow key={expense.id} className={`group ${selected.has(expense.id) ? 'bg-primary/5' : ''}`}>
                     <TableCell>
-                      <button onClick={() => toggleSelect(expense.id)} className="h-4 w-4 rounded border border-border flex items-center justify-center">
+                      <button onClick={() => toggleSelect(expense.id)} className="h-4 w-4 rounded border border-border flex items-center justify-center" aria-label={selected.has(expense.id) ? 'Deselect expense' : 'Select expense'}>
                         {selected.has(expense.id) && <Check className="h-3 w-3 text-primary" />}
                       </button>
                     </TableCell>
@@ -500,6 +501,7 @@ function ExpensesContent() {
                 ))}
               </TableBody>
             </Table>
+            </div>
           </CardContent>
         </Card>
       )}

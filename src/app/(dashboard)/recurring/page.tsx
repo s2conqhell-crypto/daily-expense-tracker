@@ -175,7 +175,7 @@ function RecurringContent() {
 
         {/* Upcoming */}
         {upcoming.length > 0 && (
-          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-[#111827] rounded-2xl border border-white/[0.06] p-5">
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-card rounded-2xl border border-border p-5">
             <div className="flex items-center gap-2 mb-4">
               <Clock className="h-4 w-4 text-[#7C5CFF]" />
               <span className="text-sm font-semibold text-white">Upcoming Executions</span>
@@ -223,7 +223,7 @@ function RecurringContent() {
           <div className="space-y-2">
             {filtered.map((rule) => (
               <motion.div key={rule.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
-                className="bg-[#111827] rounded-2xl border border-white/[0.06] p-4 hover:border-white/[0.12] transition-all group"
+                className="bg-card rounded-2xl border border-border p-4 hover:border-white/[0.12] transition-all group"
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3 min-w-0 flex-1">

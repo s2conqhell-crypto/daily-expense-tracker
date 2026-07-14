@@ -1,12 +1,12 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import { useDashboard } from '@/hooks/useDashboard';
 import { useAuth } from '@/contexts/AuthContext';
 import { firebaseService } from '@/firebase/services';
 
 import { TransactionDialog } from '@/components/transactions/TransactionDialog';
-import { AnimatedCounter } from '@/components/shared';
+import { AnimatedCounter, ErrorBanner } from '@/components/shared';
 import { MobileDashboard } from '@/components/mobile/MobileDashboard';
 import {
   Plus, TrendingUp, TrendingDown, Wallet, PiggyBank, CreditCard,
@@ -45,28 +45,35 @@ export default function DashboardPage() {
   const [dialogType, setDialogType] = useState<'expense' | 'income' | null>(null);
   const [txFilter, setTxFilter] = useState<'all' | 'today' | 'week' | 'month'>('all');
   const [extraData, setExtraData] = useState<{ upcomingRules: RecurringTransaction[]; upcomingSubs: Subscription[]; upcomingEmis: Loan[]; subTotal: number }>({ upcomingRules: [], upcomingSubs: [], upcomingEmis: [], subTotal: 0 });
+  const [loadError, setLoadError] = useState<string | null>(null);
+
+  const loadExtraData = useCallback(async (uid: string) => {
+    try {
+      setLoadError(null);
+      const [rules, subs, loans] = await Promise.all([
+        firebaseService.recurringTransactions.getAll(uid),
+        firebaseService.subscriptions.getAll(uid),
+        firebaseService.loans.getAll(uid),
+      ]);
+      const now = new Date();
+      const next30 = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+      setExtraData({
+        upcomingRules: rules.filter((r) => r.isActive && toDate(r.nextExecution) <= next30).sort((a, b) => toDate(a.nextExecution).getTime() - toDate(b.nextExecution).getTime()).slice(0, 3),
+        upcomingSubs: subs.filter((s) => s.status === 'active' && toDate(s.renewalDate) >= now && toDate(s.renewalDate) <= next30).sort((a, b) => toDate(a.renewalDate).getTime() - toDate(b.renewalDate).getTime()).slice(0, 3),
+        upcomingEmis: loans.filter((l) => l.status === 'active' && l.nextEmiDate && toDate(l.nextEmiDate) >= now && toDate(l.nextEmiDate) <= next30).sort((a, b) => toDate(a.nextEmiDate!).getTime() - toDate(b.nextEmiDate!).getTime()).slice(0, 3),
+        subTotal: subs.filter((s) => s.status === 'active').reduce((sum, s) => sum + s.monthlyCost, 0),
+      });
+    } catch (e) {
+      console.warn('[Dashboard] Failed to load extra data', e);
+      setLoadError('Failed to load dashboard data');
+    }
+  }, []);
 
   useEffect(() => {
     if (!user) return;
-    const load = async () => {
-      try {
-        const [rules, subs, loans] = await Promise.all([
-          firebaseService.recurringTransactions.getAll(user.uid),
-          firebaseService.subscriptions.getAll(user.uid),
-          firebaseService.loans.getAll(user.uid),
-        ]);
-        const now = new Date();
-        const next30 = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
-        setExtraData({
-          upcomingRules: rules.filter((r) => r.isActive && toDate(r.nextExecution) <= next30).sort((a, b) => toDate(a.nextExecution).getTime() - toDate(b.nextExecution).getTime()).slice(0, 3),
-          upcomingSubs: subs.filter((s) => s.status === 'active' && toDate(s.renewalDate) >= now && toDate(s.renewalDate) <= next30).sort((a, b) => toDate(a.renewalDate).getTime() - toDate(b.renewalDate).getTime()).slice(0, 3),
-          upcomingEmis: loans.filter((l) => l.status === 'active' && l.nextEmiDate && toDate(l.nextEmiDate) >= now && toDate(l.nextEmiDate) <= next30).sort((a, b) => toDate(a.nextEmiDate!).getTime() - toDate(b.nextEmiDate!).getTime()).slice(0, 3),
-          subTotal: subs.filter((s) => s.status === 'active').reduce((sum, s) => sum + s.monthlyCost, 0),
-        });
-      } catch (e) { console.warn('[Dashboard] Failed to load extra data', e); }
-    };
-    load();
-  }, [user]);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    loadExtraData(user.uid);
+  }, [user, loadExtraData]);
 
   const userName = (userData?.name?.split(' ') || [])[0] || 'User';
   const savingsRate = summary.totalIncome > 0 ? (summary.savings / summary.totalIncome) * 100 : 0;
@@ -100,6 +107,14 @@ export default function DashboardPage() {
       {/* Desktop Dashboard - unchanged */}
       <div className="hidden lg:block">
       <div className="page-container pb-24 space-y-4 pt-3">
+        {loadError && (
+          <ErrorBanner
+            message={loadError}
+            onRetry={() => user && loadExtraData(user.uid)}
+            dismissible
+            onDismiss={() => setLoadError(null)}
+          />
+        )}
         {/* Greeting + Quick Actions */}
         <div className="flex items-center justify-between gap-3">
           <div className="min-w-0">
@@ -421,6 +436,7 @@ export default function DashboardPage() {
         </div>
       </div>
 
+      </div>
       {dialogType && (
         <TransactionDialog
           type={dialogType}
@@ -439,7 +455,6 @@ export default function DashboardPage() {
           }}
         />
       )}
-      </div>
     </div>
   );
 }
