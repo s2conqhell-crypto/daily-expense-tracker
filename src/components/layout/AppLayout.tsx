@@ -7,6 +7,7 @@ import {
   TrendingDown, ArrowUpFromLine, Target, PiggyBank,
   Repeat, Clock, Landmark,
 } from 'lucide-react';
+import { useAutomation } from '@/hooks/useAutomation';
 import { Sidebar } from './Sidebar';
 import { Header } from './Header';
 import { MobileHeader } from '@/components/mobile/MobileHeader';
@@ -28,6 +29,8 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
+
+  useAutomation();
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect

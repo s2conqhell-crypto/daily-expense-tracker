@@ -65,9 +65,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setUserData(data);
           setSettings(userSettings || { ...DEFAULT_SETTINGS, userId: firebaseUser.uid });
           try {
-            const { processDueRules, checkAndGenerateMonthlySummary } = await import('@/utils/recurringProcessor');
-            await processDueRules(firebaseUser.uid);
-            await checkAndGenerateMonthlySummary(firebaseUser.uid);
+            const { runAutomation } = await import('@/utils/automationEngine');
+            await runAutomation(firebaseUser.uid);
           } catch (e) { console.warn('[Auth] Background processing failed', e); }
         } catch {
           // User document might not exist yet
