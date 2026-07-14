@@ -64,10 +64,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           ]);
           setUserData(data);
           setSettings(userSettings || { ...DEFAULT_SETTINGS, userId: firebaseUser.uid });
-          try {
-            const { runAutomation } = await import('@/utils/automationEngine');
-            await runAutomation(firebaseUser.uid);
-          } catch (e) { console.warn('[Auth] Background processing failed', e); }
+
         } catch {
           // User document might not exist yet
         }

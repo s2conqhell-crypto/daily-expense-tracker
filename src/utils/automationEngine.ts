@@ -1,7 +1,18 @@
 'use client';
 
 import { firebaseService } from '@/firebase/services';
-import type { Expense, Income, RecurringTransaction, Subscription, Loan } from '@/types';
+import { getFirebaseDB } from '@/firebase/config';
+import {
+  doc,
+  collection,
+  runTransaction,
+  Timestamp,
+  getDocs,
+  query,
+  where,
+  serverTimestamp,
+} from 'firebase/firestore';
+import { FIRESTORE_COLLECTIONS } from '@/constants';
 
 interface ProcessResult {
   recurringExpenses: number;
@@ -12,6 +23,9 @@ interface ProcessResult {
 }
 
 const LOG_PREFIX = '[AutomationEngine]';
+
+let isProcessing = false;
+let processingQueue = 0;
 
 function log(...args: unknown[]) {
   if (process.env.NODE_ENV === 'development') {
@@ -27,11 +41,12 @@ function getLocalDate(): string {
   return `${year}-${month}-${day}`;
 }
 
-function isDueOrOverdue(nextDate: Date | string | undefined): boolean {
-  if (!nextDate) return false;
-  const d = typeof nextDate === 'string' ? new Date(nextDate) : nextDate;
-  const today = new Date(getLocalDate() + 'T00:00:00');
-  return d <= today;
+function getTodayStart(): Date {
+  return new Date(getLocalDate() + 'T00:00:00');
+}
+
+function getTodayEnd(): Date {
+  return new Date(getLocalDate() + 'T23:59:59.999');
 }
 
 function advanceDate(current: Date, interval: string): Date {
@@ -47,65 +62,112 @@ function advanceDate(current: Date, interval: string): Date {
   return next;
 }
 
-function computeNextExecution(originalNext: Date, interval: string): Date {
-  let next = new Date(originalNext);
-  const today = new Date(getLocalDate() + 'T00:00:00');
+function computeNextExecution(currentNext: Date, interval: string): Date {
+  let next = new Date(currentNext);
+  const today = getTodayStart();
   while (next <= today) {
     next = advanceDate(next, interval);
   }
   return next;
 }
 
+async function getTodayDescriptionMatch(
+  userId: string,
+  collectionName: string,
+  description: string
+): Promise<boolean> {
+  const start = getTodayStart();
+  const end = getTodayEnd();
+  const dateField = collectionName === FIRESTORE_COLLECTIONS.INCOME ? 'incomeDate' : 'expenseDate';
+  const q = query(
+    collection(getFirebaseDB(), collectionName),
+    where('userId', '==', userId),
+    where(dateField, '>=', Timestamp.fromDate(start)),
+    where(dateField, '<=', Timestamp.fromDate(end))
+  );
+  const snap = await getDocs(q);
+  return snap.docs.some((d) => d.data().description === description);
+}
+
+const db = getFirebaseDB();
+
 export async function processDueSubscriptions(userId: string): Promise<number> {
-  log('Processing subscriptions...');
+  log('Checking subscriptions...');
   const allSubs = await firebaseService.subscriptions.getAll(userId);
-  const due = allSubs.filter((s) => s.status === 'active' && isDueOrOverdue(s.renewalDate));
-  log(`Subscriptions due: ${due.length}`);
+  const activeSubs = allSubs.filter((s) => s.status === 'active');
+  const today = getTodayStart();
+  log(`Active subscriptions: ${activeSubs.length}`);
 
   let count = 0;
-  for (const sub of due) {
+  for (const sub of activeSubs) {
+    const renewal = sub.renewalDate instanceof Timestamp
+      ? (sub.renewalDate as unknown as Timestamp).toDate()
+      : new Date(sub.renewalDate as unknown as Date);
+    if (renewal > today) continue;
+
+    log(`Processing subscription: ${sub.name} (renewal: ${renewal.toISOString()})`);
+
     try {
-      const existingExpenses = await firebaseService.expenses.getAll(userId);
-      const hasDuplicate = existingExpenses.some(
-        (e) => e.description === `${sub.name} (Subscription)` &&
-        new Date(e.expenseDate).toDateString() === new Date().toDateString()
+      const alreadyExists = await getTodayDescriptionMatch(
+        userId,
+        FIRESTORE_COLLECTIONS.EXPENSES,
+        `${sub.name} (Subscription)`
       );
-      if (hasDuplicate) {
-        log(`Skip duplicate subscription: ${sub.name}`);
+      if (alreadyExists) {
+        log(`Duplicate found, skipping: ${sub.name}`);
         continue;
       }
 
-      await firebaseService.expenses.add(userId, {
-        userId,
-        amount: sub.monthlyCost,
-        category: 'Subscription' as const,
-        description: `${sub.name} (Subscription)`,
-        notes: `Auto-renewed subscription`,
-        paymentMethod: 'Bank Transfer' as const,
-        expenseDate: new Date(),
-        tags: ['subscription', 'auto'],
-        isRecurring: true,
-        recurringInterval: 'monthly',
-        isFavorite: false,
-      } as Omit<Expense, 'id' | 'createdAt' | 'updatedAt'>);
+      const subDocRef = doc(db, FIRESTORE_COLLECTIONS.SUBSCRIPTIONS, sub.id);
+      const newExpenseRef = doc(collection(db, FIRESTORE_COLLECTIONS.EXPENSES));
 
-      const nextRenewal = advanceDate(new Date(), 'monthly');
-      await firebaseService.subscriptions.update(sub.id, {
-        renewalDate: nextRenewal,
-        lastRenewed: new Date(),
-      } as Partial<Subscription>);
+      const nextRenewal = advanceDate(renewal, 'monthly');
+
+      await runTransaction(db, async (tx) => {
+        const subSnap = await tx.get(subDocRef);
+        if (!subSnap.exists()) return;
+        const currentRenewal = (subSnap.data() as Record<string, unknown>).renewalDate as Timestamp;
+        if (currentRenewal.toMillis() !== (sub.renewalDate instanceof Timestamp
+          ? (sub.renewalDate as unknown as Timestamp).toMillis()
+          : new Date(sub.renewalDate).getTime())) {
+          log(`Subscription was already updated by another process: ${sub.name}`);
+          return;
+        }
+
+        tx.set(newExpenseRef, {
+          userId,
+          amount: sub.monthlyCost,
+          category: 'Subscription',
+          description: `${sub.name} (Subscription)`,
+          notes: 'Auto-renewed subscription',
+          paymentMethod: 'Bank Transfer',
+          expenseDate: Timestamp.fromDate(new Date()),
+          tags: ['subscription', 'auto'],
+          isRecurring: true,
+          recurringInterval: 'monthly',
+          isFavorite: false,
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
+        });
+
+        tx.update(subDocRef, {
+          renewalDate: Timestamp.fromDate(nextRenewal),
+          lastRenewed: serverTimestamp(),
+          updatedAt: serverTimestamp(),
+        });
+      });
 
       await firebaseService.notifications.add(userId, {
         userId,
         title: 'Subscription Renewed',
         message: `${sub.name} has been renewed automatically.`,
-        type: 'recurring_payment' as const,
+        type: 'recurring_payment',
         isRead: false,
         data: { subscriptionId: sub.id, amount: sub.monthlyCost },
       });
 
       count++;
-      log(`Subscription processed: ${sub.name}`);
+      log(`Subscription processed: ${sub.name} -> next: ${nextRenewal.toISOString()}`);
     } catch (e) {
       console.error(`${LOG_PREFIX} Failed subscription: ${sub.name}`, e);
     }
@@ -114,22 +176,32 @@ export async function processDueSubscriptions(userId: string): Promise<number> {
 }
 
 export async function processDueLoans(userId: string): Promise<number> {
-  log('Processing loans...');
+  log('Checking loans...');
   const allLoans = await firebaseService.loans.getAll(userId);
   const activeLoans = allLoans.filter((l) => l.status === 'active');
-  const due = activeLoans.filter((l) => isDueOrOverdue(l.nextEmiDate));
-  log(`Loan EMIs due: ${due.length}`);
+  const today = getTodayStart();
+  log(`Active loans: ${activeLoans.length}`);
 
   let count = 0;
-  for (const loan of due) {
+  for (const loan of activeLoans) {
+    const loanNextEmiDate = loan.nextEmiDate;
+    if (!loanNextEmiDate) continue;
+    const nextEmiOriginalMs = loanNextEmiDate instanceof Timestamp
+      ? (loanNextEmiDate as unknown as Timestamp).toMillis()
+      : new Date(loanNextEmiDate).getTime();
+    const nextEmi = new Date(nextEmiOriginalMs);
+    if (nextEmi > today) continue;
+
+    log(`Processing loan EMI: ${loan.name} (due: ${nextEmi.toISOString()})`);
+
     try {
-      const existingExpenses = await firebaseService.expenses.getAll(userId);
-      const hasDuplicate = existingExpenses.some(
-        (e) => e.description === `EMI: ${loan.name || 'Loan'}` &&
-        new Date(e.expenseDate).toDateString() === new Date().toDateString()
+      const alreadyExists = await getTodayDescriptionMatch(
+        userId,
+        FIRESTORE_COLLECTIONS.EXPENSES,
+        `EMI: ${loan.name || 'Loan'}`
       );
-      if (hasDuplicate) {
-        log(`Skip duplicate EMI for: ${loan.name}`);
+      if (alreadyExists) {
+        log(`Duplicate found, skipping EMI for: ${loan.name}`);
         continue;
       }
 
@@ -137,52 +209,72 @@ export async function processDueLoans(userId: string): Promise<number> {
       const newOutstanding = Math.max(0, loan.outstandingBalance - loan.emiAmount);
       const isCompleted = newPaidEmi >= loan.totalEmi || newOutstanding <= 0;
 
-      const nextEmi = new Date(loan.nextEmiDate || loan.startDate);
       const targetDay = loan.emiDay || nextEmi.getDate();
-      nextEmi.setMonth(nextEmi.getMonth() + 1);
-      const lastDay = new Date(nextEmi.getFullYear(), nextEmi.getMonth() + 1, 0).getDate();
-      nextEmi.setDate(Math.min(targetDay, lastDay));
-      const nextEmiCatchUp = new Date(nextEmi);
-      const todayDate = new Date(getLocalDate() + 'T00:00:00');
-      while (nextEmiCatchUp <= todayDate) {
+      const nextEmiDate = new Date(nextEmi);
+      nextEmiDate.setMonth(nextEmiDate.getMonth() + 1);
+      const lastDay = new Date(nextEmiDate.getFullYear(), nextEmiDate.getMonth() + 1, 0).getDate();
+      nextEmiDate.setDate(Math.min(targetDay, lastDay));
+      const nextEmiCatchUp = new Date(nextEmiDate);
+      while (nextEmiCatchUp <= today) {
         const nextTargetDay = loan.emiDay || nextEmiCatchUp.getDate();
         nextEmiCatchUp.setMonth(nextEmiCatchUp.getMonth() + 1);
         const lastDay2 = new Date(nextEmiCatchUp.getFullYear(), nextEmiCatchUp.getMonth() + 1, 0).getDate();
         nextEmiCatchUp.setDate(Math.min(nextTargetDay, lastDay2));
       }
 
-      await firebaseService.expenses.add(userId, {
-        userId,
-        amount: loan.emiAmount,
-        category: 'Loan',
-        description: `EMI: ${loan.name || 'Loan'}`,
-        notes: `Auto-generated EMI payment`,
-        paymentMethod: 'Bank Transfer' as const,
-        expenseDate: new Date(),
-        tags: ['loan', 'emi', 'auto'],
-        isRecurring: false,
-        isFavorite: false,
-      } as Omit<Expense, 'id' | 'createdAt' | 'updatedAt'>);
+      const loanDocRef = doc(db, FIRESTORE_COLLECTIONS.LOANS, loan.id);
+      const newExpenseRef = doc(collection(db, FIRESTORE_COLLECTIONS.EXPENSES));
 
-      await firebaseService.loans.update(loan.id, {
-        paidEmi: newPaidEmi,
-        outstandingBalance: newOutstanding,
-        status: isCompleted ? 'completed' : 'active',
-        ...(isCompleted ? {} : { nextEmiDate: nextEmiCatchUp }),
-        ...(isCompleted ? { endDate: new Date() } : {}),
-      } as Partial<Loan>);
+      await runTransaction(db, async (tx) => {
+        const loanSnap = await tx.get(loanDocRef);
+        if (!loanSnap.exists()) return;
+        const currentNextEmi = (loanSnap.data() as Record<string, unknown>).nextEmiDate as Timestamp | null;
+        if (currentNextEmi && currentNextEmi.toMillis() !== nextEmiOriginalMs) {
+          log(`Loan was already updated by another process: ${loan.name}`);
+          return;
+        }
+
+        tx.set(newExpenseRef, {
+          userId,
+          amount: loan.emiAmount,
+          category: 'Loan',
+          description: `EMI: ${loan.name || 'Loan'}`,
+          notes: 'Auto-generated EMI payment',
+          paymentMethod: 'Bank Transfer',
+          expenseDate: Timestamp.fromDate(new Date()),
+          tags: ['loan', 'emi', 'auto'],
+          isRecurring: false,
+          isFavorite: false,
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
+        });
+
+        const updateData: Record<string, unknown> = {
+          paidEmi: newPaidEmi,
+          outstandingBalance: newOutstanding,
+          status: isCompleted ? 'completed' : 'active',
+          updatedAt: serverTimestamp(),
+        };
+        if (!isCompleted) {
+          updateData.nextEmiDate = Timestamp.fromDate(nextEmiCatchUp);
+        } else {
+          updateData.endDate = serverTimestamp();
+          updateData.nextEmiDate = null;
+        }
+        tx.update(loanDocRef, updateData);
+      });
 
       await firebaseService.notifications.add(userId, {
         userId,
         title: 'EMI Processed',
         message: `EMI payment of ${loan.emiAmount} processed for ${loan.name || 'Loan'}.`,
-        type: 'recurring_payment' as const,
+        type: 'recurring_payment',
         isRead: false,
         data: { loanId: loan.id, amount: loan.emiAmount, remaining: newOutstanding },
       });
 
       count++;
-      log(`EMI processed: ${loan.name}`);
+      log(`EMI processed: ${loan.name} -> remaining: ${newOutstanding}, next: ${isCompleted ? 'completed' : nextEmiCatchUp.toISOString()}`);
     } catch (e) {
       console.error(`${LOG_PREFIX} Failed EMI for: ${loan.name}`, e);
     }
@@ -191,89 +283,97 @@ export async function processDueLoans(userId: string): Promise<number> {
 }
 
 export async function processDueRecurringRules(userId: string): Promise<{ expenses: number; income: number }> {
-  log('Processing recurring rules...');
+  log('Checking recurring rules...');
   const allRules = await firebaseService.recurringTransactions.getAll(userId);
-  const due = allRules.filter((r) => r.isActive && isDueOrOverdue(r.nextExecution));
-  log(`Recurring rules due: ${due.length}`);
+  const activeRules = allRules.filter((r) => r.isActive);
+  const today = getTodayStart();
+  log(`Active recurring rules: ${activeRules.length}`);
 
   let expenseCount = 0;
   let incomeCount = 0;
 
-  for (const rule of due) {
+  for (const rule of activeRules) {
+    const nextExecution = rule.nextExecution instanceof Timestamp
+      ? (rule.nextExecution as unknown as Timestamp).toDate()
+      : new Date(rule.nextExecution as unknown as Date);
+    if (nextExecution > today) continue;
+
+    log(`Processing rule: ${rule.description} (next: ${nextExecution.toISOString()})`);
+
     try {
-      const originalNext = new Date(rule.nextExecution);
-      const today = new Date(getLocalDate() + 'T00:00:00');
-      let cursor = new Date(originalNext);
+      const expenseColl = FIRESTORE_COLLECTIONS.EXPENSES;
+      const incomeColl = FIRESTORE_COLLECTIONS.INCOME;
+      const collName = rule.type === 'expense' ? expenseColl : incomeColl;
 
-      const existingExpenses = rule.type === 'expense' ? await firebaseService.expenses.getAll(userId) : [];
-      const existingIncomes = rule.type === 'income' ? await firebaseService.income.getAll(userId) : [];
+      const alreadyExists = await getTodayDescriptionMatch(userId, collName, rule.description);
+      if (alreadyExists) {
+        log(`Duplicate found, skipping rule: ${rule.description}`);
+        continue;
+      }
 
-      let batchCount = 0;
-      while (cursor <= today) {
-        const dateStr = cursor.toISOString().split('T')[0];
-        const hasDuplicate = rule.type === 'expense'
-          ? existingExpenses.some((e) => e.description === rule.description && new Date(e.expenseDate).toISOString().startsWith(dateStr))
-          : existingIncomes.some((i) => i.description === rule.description && new Date(i.incomeDate).toISOString().startsWith(dateStr));
+      const ruleDocRef = doc(db, FIRESTORE_COLLECTIONS.RECURRING_TRANSACTIONS, rule.id);
+      const newTransRef = doc(collection(db, collName));
 
-        if (!hasDuplicate) {
-          if (rule.type === 'expense') {
-            await firebaseService.expenses.add(userId, {
-              userId,
-              amount: rule.amount,
-              category: rule.category || 'Other',
-              description: rule.description,
-              notes: rule.notes,
-              paymentMethod: rule.paymentMethod,
-              expenseDate: cursor,
-              tags: ['recurring', 'auto'],
-              isRecurring: true,
-              recurringInterval: rule.interval,
-              isFavorite: false,
-            } as Omit<Expense, 'id' | 'createdAt' | 'updatedAt'>);
-            expenseCount++;
-          } else {
-            await firebaseService.income.add(userId, {
-              userId,
-              amount: rule.amount,
-              source: rule.source || 'Other',
-              description: rule.description,
-              notes: rule.notes,
-              paymentMethod: rule.paymentMethod,
-              incomeDate: cursor,
-              tags: ['recurring', 'auto'],
-              isRecurring: true,
-              recurringInterval: rule.interval,
-              isFavorite: false,
-            } as Omit<Income, 'id' | 'createdAt' | 'updatedAt'>);
-            incomeCount++;
-          }
-          batchCount++;
-          log(`Created: ${rule.description} for ${dateStr}`);
+      const nextExec = computeNextExecution(new Date(nextExecution), rule.interval);
+
+      await runTransaction(db, async (tx) => {
+        const ruleSnap = await tx.get(ruleDocRef);
+        if (!ruleSnap.exists()) return;
+        const currentNext = (ruleSnap.data() as Record<string, unknown>).nextExecution as Timestamp;
+        if (currentNext.toMillis() !== (rule.nextExecution instanceof Timestamp
+          ? (rule.nextExecution as unknown as Timestamp).toMillis()
+          : new Date(rule.nextExecution).getTime())) {
+          log(`Rule was already updated by another process: ${rule.description}`);
+          return;
         }
 
-        cursor = advanceDate(cursor, rule.interval);
-      }
-
-      const nextExec = computeNextExecution(new Date(originalNext), rule.interval);
-      await firebaseService.recurringTransactions.update(rule.id, {
-        nextExecution: nextExec,
-        lastExecuted: new Date(),
-      } as Partial<RecurringTransaction>);
-
-      if (batchCount > 0) {
-        const typeLabel = rule.type === 'expense' ? 'Expense' : 'Income';
-        const itemLabel = rule.type === 'expense' ? 'expenses' : 'income';
-        await firebaseService.notifications.add(userId, {
+        const baseData: Record<string, unknown> = {
           userId,
-        title: `Recurring ${typeLabel} Created`,
-        message: `${batchCount} recurring ${itemLabel} created for "${rule.description}".`,
-        type: 'recurring_payment' as const,
-          isRead: false,
-          data: { ruleId: rule.id, count: batchCount },
-        });
-      }
+          amount: rule.amount,
+          description: rule.description,
+          notes: rule.notes || '',
+          paymentMethod: rule.paymentMethod,
+          tags: ['recurring', 'auto'],
+          isRecurring: true,
+          recurringInterval: rule.interval,
+          isFavorite: false,
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
+        };
 
-      log(`Rule processed: ${rule.description} (${batchCount} created)`);
+        if (rule.type === 'expense') {
+          tx.set(newTransRef, {
+            ...baseData,
+            category: rule.category || 'Other',
+            expenseDate: Timestamp.fromDate(new Date()),
+          });
+        } else {
+          tx.set(newTransRef, {
+            ...baseData,
+            source: rule.source || 'Other',
+            incomeDate: Timestamp.fromDate(new Date()),
+          });
+        }
+
+        tx.update(ruleDocRef, {
+          nextExecution: Timestamp.fromDate(nextExec),
+          lastExecuted: serverTimestamp(),
+          updatedAt: serverTimestamp(),
+        });
+      });
+
+      await firebaseService.notifications.add(userId, {
+        userId,
+        title: `Recurring ${rule.type === 'expense' ? 'Expense' : 'Income'} Created`,
+        message: `Recurring ${rule.type === 'expense' ? 'expense' : 'income'} created for "${rule.description}".`,
+        type: 'recurring_payment',
+        isRead: false,
+        data: { ruleId: rule.id },
+      });
+
+      if (rule.type === 'expense') expenseCount++;
+      else incomeCount++;
+      log(`Rule processed: ${rule.description} -> next: ${nextExec.toISOString()}`);
     } catch (e) {
       console.error(`${LOG_PREFIX} Failed recurring rule: ${rule.id}`, e);
     }
@@ -282,6 +382,13 @@ export async function processDueRecurringRules(userId: string): Promise<{ expens
 }
 
 export async function runAutomation(userId: string): Promise<ProcessResult> {
+  if (isProcessing) {
+    processingQueue++;
+    log(`Already processing. Queue depth: ${processingQueue}. Skipping.`);
+    return { recurringExpenses: 0, recurringIncome: 0, subscriptions: 0, loanEmis: 0, errors: 0 };
+  }
+
+  isProcessing = true;
   log('=== Automation Engine Started ===');
   log('User:', userId);
   log('Local date:', getLocalDate());
@@ -331,5 +438,6 @@ export async function runAutomation(userId: string): Promise<ProcessResult> {
     log(`  Errors: ${result.errors}`);
   }
 
+  isProcessing = false;
   return result;
 }
