@@ -33,21 +33,35 @@ export function proxy(request: NextRequest) {
     'max-age=63072000; includeSubDomains'
   );
   response.headers.set(
-    'Content-Security-Policy',
-    [
-      "default-src 'self'",
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.firebaseio.com https://*.googleapis.com https://*.gstatic.com",
-      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-      "connect-src 'self' https://*.firebaseio.com wss://*.firebaseio.com https://*.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://firestore.googleapis.com https://storage.googleapis.com",
-      "font-src 'self' data: https://fonts.gstatic.com",
-      "img-src 'self' data: blob: https://firebasestorage.googleapis.com https://lh3.googleusercontent.com https://graph.facebook.com https://*.googleapis.com",
-      "frame-src 'self' https://*.firebaseapp.com",
-      "media-src 'self'",
-      "object-src 'none'",
-      "base-uri 'self'",
-      "form-action 'self'",
-    ].join('; ')
-  );
+  'Content-Security-Policy',
+  [
+    "default-src 'self'",
+
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://apis.google.com https://accounts.google.com https://*.googleapis.com https://*.gstatic.com https://*.firebaseio.com",
+
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+
+    "connect-src 'self' https://*.firebaseio.com wss://*.firebaseio.com https://*.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://firestore.googleapis.com https://firebasestorage.googleapis.com https://storage.googleapis.com",
+
+    "img-src 'self' data: blob: https://firebasestorage.googleapis.com https://lh3.googleusercontent.com https://graph.facebook.com https://*.googleapis.com",
+
+    "font-src 'self' data: https://fonts.gstatic.com",
+
+    "frame-src 'self' https://accounts.google.com https://*.firebaseapp.com",
+
+    "manifest-src 'self'",
+
+    "worker-src 'self' blob:",
+
+    "media-src 'self'",
+
+    "object-src 'none'",
+
+    "base-uri 'self'",
+
+    "form-action 'self'",
+  ].join('; ')
+);
 
   return response;
 }
