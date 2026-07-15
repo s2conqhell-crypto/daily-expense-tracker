@@ -7,9 +7,6 @@ import {
   collection,
   runTransaction,
   Timestamp,
-  getDocs,
-  query,
-  where,
   serverTimestamp,
 } from 'firebase/firestore';
 import { FIRESTORE_COLLECTIONS } from '@/constants';
@@ -80,17 +77,18 @@ async function getTodayDescriptionMatch(
   collectionName: string,
   description: string
 ): Promise<boolean> {
-  const start = getTodayStart();
-  const end = getTodayEnd();
-  const dateField = collectionName === FIRESTORE_COLLECTIONS.INCOME ? 'incomeDate' : 'expenseDate';
-  const q = query(
-    collection(getFirebaseDB(), collectionName),
-    where('userId', '==', userId),
-    where(dateField, '>=', Timestamp.fromDate(start)),
-    where(dateField, '<=', Timestamp.fromDate(end))
-  );
-  const snap = await getDocs(q);
-  return snap.docs.some((d) => d.data().description === description);
+  const startMs = getTodayStart().getTime();
+  const endMs = getTodayEnd().getTime();
+  const allItems = collectionName === FIRESTORE_COLLECTIONS.EXPENSES
+    ? await firebaseService.expenses.getAll(userId)
+    : await firebaseService.income.getAll(userId);
+  return allItems.some((item) => {
+    const raw = item as unknown as { [key: string]: unknown };
+    const dateKey = collectionName === FIRESTORE_COLLECTIONS.INCOME ? 'incomeDate' : 'expenseDate';
+    const dateVal = raw[dateKey];
+    const itemMs = dateVal instanceof Timestamp ? dateVal.toMillis() : new Date(dateVal as Date).getTime();
+    return raw.description === description && itemMs >= startMs && itemMs <= endMs;
+  });
 }
 
 const db = getFirebaseDB();
