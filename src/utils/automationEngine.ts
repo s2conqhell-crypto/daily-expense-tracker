@@ -62,11 +62,15 @@ function advanceDate(current: Date, interval: string): Date {
   return next;
 }
 
-function computeNextExecution(currentNext: Date, interval: string): Date {
+function computeNextExecution(currentNext: Date, interval: string, dayOfMonth?: number): Date {
   let next = new Date(currentNext);
   const today = getTodayStart();
   while (next <= today) {
     next = advanceDate(next, interval);
+    if (interval === 'monthly' && dayOfMonth !== undefined && dayOfMonth > 0) {
+      const lastDay = new Date(next.getFullYear(), next.getMonth() + 1, 0).getDate();
+      next.setDate(Math.min(dayOfMonth, lastDay));
+    }
   }
   return next;
 }
@@ -282,6 +286,11 @@ export async function processDueLoans(userId: string): Promise<number> {
   return count;
 }
 
+function captureNextMillis(rule: Record<string, unknown>): number {
+  const next = rule.nextExecution;
+  return next instanceof Timestamp ? next.toMillis() : new Date(next as Date).getTime();
+}
+
 export async function processDueRecurringRules(userId: string): Promise<{ expenses: number; income: number }> {
   log('Checking recurring rules...');
   const allRules = await firebaseService.recurringTransactions.getAll(userId);
@@ -293,37 +302,59 @@ export async function processDueRecurringRules(userId: string): Promise<{ expens
   let incomeCount = 0;
 
   for (const rule of activeRules) {
-    const nextExecution = rule.nextExecution instanceof Timestamp
+    if (!rule.nextExecution) continue;
+    const nextExecutionDate = rule.nextExecution instanceof Timestamp
       ? (rule.nextExecution as unknown as Timestamp).toDate()
       : new Date(rule.nextExecution as unknown as Date);
-    if (nextExecution > today) continue;
+    if (nextExecutionDate > today) continue;
 
-    log(`Processing rule: ${rule.description} (next: ${nextExecution.toISOString()})`);
+    const capturedNextMs = captureNextMillis(rule as unknown as Record<string, unknown>);
+    log(`Processing rule: ${rule.description} (next: ${nextExecutionDate.toISOString()})`);
 
     try {
       const expenseColl = FIRESTORE_COLLECTIONS.EXPENSES;
       const incomeColl = FIRESTORE_COLLECTIONS.INCOME;
       const collName = rule.type === 'expense' ? expenseColl : incomeColl;
-
-      const alreadyExists = await getTodayDescriptionMatch(userId, collName, rule.description);
-      if (alreadyExists) {
-        log(`Duplicate found, skipping rule: ${rule.description}`);
-        continue;
-      }
-
       const ruleDocRef = doc(db, FIRESTORE_COLLECTIONS.RECURRING_TRANSACTIONS, rule.id);
       const newTransRef = doc(collection(db, collName));
 
-      const nextExec = computeNextExecution(new Date(nextExecution), rule.interval);
+      const nextExec = computeNextExecution(
+        new Date(nextExecutionDate),
+        rule.interval,
+        rule.dayOfMonth
+      );
+
+      const alreadyExists = await getTodayDescriptionMatch(userId, collName, rule.description);
+
+      if (alreadyExists) {
+        log(`Duplicate found for rule: ${rule.description}. Advancing nextExecution to ${nextExec.toISOString()}.`);
+        try {
+          await runTransaction(db, async (tx) => {
+            const snap = await tx.get(ruleDocRef);
+            if (!snap.exists()) return;
+            const currentMs = captureNextMillis(snap.data() as Record<string, unknown>);
+            if (currentMs !== capturedNextMs) {
+              log(`Rule was already updated by another process: ${rule.description}`);
+              return;
+            }
+            tx.update(ruleDocRef, {
+              nextExecution: Timestamp.fromDate(nextExec),
+              lastExecuted: serverTimestamp(),
+              updatedAt: serverTimestamp(),
+            });
+          });
+        } catch (txErr) {
+          console.error(`${LOG_PREFIX} Failed to advance nextExecution for: ${rule.description}`, txErr);
+        }
+        continue;
+      }
 
       await runTransaction(db, async (tx) => {
         const ruleSnap = await tx.get(ruleDocRef);
         if (!ruleSnap.exists()) return;
-        const currentNext = (ruleSnap.data() as Record<string, unknown>).nextExecution as Timestamp;
-        if (currentNext.toMillis() !== (rule.nextExecution instanceof Timestamp
-          ? (rule.nextExecution as unknown as Timestamp).toMillis()
-          : new Date(rule.nextExecution).getTime())) {
-          log(`Rule was already updated by another process: ${rule.description}`);
+        const currentMs = captureNextMillis(ruleSnap.data() as Record<string, unknown>);
+        if (currentMs !== capturedNextMs) {
+          log(`Rule was already processed by another call: ${rule.description}`);
           return;
         }
 
